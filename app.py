@@ -1,197 +1,235 @@
-from flask import Flask, render_template, request, flash
+from flask import Flask, render_template, request, flash, redirect
 import mysql.connector
-from mysql.connector import Error
-from datetime import datetime
+from mysql.connector import Error, pooling
+import time
 import requests
 import os
+import logging
+from contextlib import contextmanager
 from dotenv import load_dotenv
+from datetime import datetime
+from cachetools import cached, TTLCache
 
+# Инициализация
 load_dotenv()
 
-app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key')
+# Настройка логирования
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[logging.FileHandler('app.log'), logging.StreamHandler()]
+)
 
-# Конфигурация подключения к БД
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY')
+
+# Конфигурация БД
 DB_CONFIG = {
-    'host': os.getenv('DB_HOST', 'localhost'),
-    'user': os.getenv('DB_USER', 'root'),
-    'password': os.getenv('DB_PASSWORD', ''),
-    'database': os.getenv('DB_NAME', 'crypto_db')
+    'host': os.getenv('DB_HOST'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'database': os.getenv('DB_NAME'),
+    'pool_name': 'crypto_pool',
+    'pool_size': 5
 }
 
+db_pool = pooling.MySQLConnectionPool(**DB_CONFIG)
 TOP_CRYPTO = ['bitcoin', 'ethereum', 'binancecoin']
 CURRENCIES = ['usd', 'eur', 'gbp', 'jpy', 'cny', 'rub']
+crypto_list_cache = TTLCache(maxsize=1, ttl=3600)
 
 
-def get_db_connection():
-    """Устанавливает соединение с MySQL"""
+@contextmanager
+def db_connection():
+    conn = db_pool.get_connection()
     try:
-        return mysql.connector.connect(**DB_CONFIG)
+        yield conn
     except Error as e:
-        log_message(f"Ошибка подключения к MySQL: {e}", 'error')
-        return None
+        conn.rollback()
+        log_message(f"DB Error: {e}", 'error')
+        raise
+    finally:
+        conn.close()
 
 
-def log_message(message, level='info'):
-    """Записывает сообщение в таблицу app_logs"""
-    conn = get_db_connection()
-    if conn:
-        try:
+def log_message(message: str, level: str = 'info'):
+    """Запись лога в БД и файл"""
+    logging.log(getattr(logging, level.upper()), message)
+
+    try:
+        with db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT INTO app_logs (message, level)
-                VALUES (%s, %s)
-            """, (message, level))
+                INSERT INTO app_logs (message, level, timestamp)
+                VALUES (%s, %s, %s)
+            """, (message, level, int(time.time())))
             conn.commit()
-        except Error as e:
-            print(f"Критическая ошибка при записи лога: {e}")
-        finally:
-            if conn.is_connected():
-                cursor.close()
-                conn.close()
+    except Error as e:
+        logging.error(f"Failed to write log to DB: {e}")
 
 
-def check_and_create_tables():
-    """Проверяет существование таблиц и создает их при необходимости"""
-    conn = get_db_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
+def init_db():
+    """Инициализация структуры БД"""
+    with db_connection() as conn:
+        cursor = conn.cursor()
 
-            # Проверяем существование таблицы crypto_rates
-            cursor.execute("""
-                SELECT COUNT(*)
-                FROM information_schema.tables
-                WHERE table_schema = %s AND table_name = 'crypto_rates'
-            """, (DB_CONFIG['database'],))
+        # Таблица курсов
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS crypto_rates (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                crypto VARCHAR(50) NOT NULL,
+                currency VARCHAR(10) NOT NULL,
+                rate DECIMAL(20,8) NOT NULL,
+                source VARCHAR(100) NOT NULL,
+                timestamp BIGINT NOT NULL,
+                INDEX idx_crypto_currency (crypto, currency)
+            )
+        """)
 
-            if cursor.fetchone()[0] == 0:
-                cursor.execute("""
-                    CREATE TABLE crypto_rates (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        crypto VARCHAR(50) NOT NULL,
-                        currency VARCHAR(10) NOT NULL,
-                        rate FLOAT NOT NULL,
-                        source VARCHAR(200) NOT NULL,
-                        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-                    )
-                """)
-                log_message("Создана таблица crypto_rates", 'info')
-
-            # Проверяем существование таблицы app_logs
-            cursor.execute("""
-                SELECT COUNT(*)
-                FROM information_schema.tables
-                WHERE table_schema = %s AND table_name = 'app_logs'
-            """, (DB_CONFIG['database'],))
-
-            if cursor.fetchone()[0] == 0:
-                cursor.execute("""
-                    CREATE TABLE app_logs (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        message VARCHAR(500) NOT NULL,
-                        level VARCHAR(20) NOT NULL,
-                        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-                    )
-                """)
-                log_message("Создана таблица app_logs", 'info')
-
-            conn.commit()
-        except Error as e:
-            log_message(f"Ошибка при работе с таблицами: {e}", 'error')
-        finally:
-            if conn.is_connected():
-                cursor.close()
-                conn.close()
+        # Таблица логов
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS app_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                message TEXT NOT NULL,
+                level VARCHAR(20) NOT NULL,
+                timestamp BIGINT NOT NULL,
+                INDEX idx_timestamp (timestamp)
+            )
+        """)
+        conn.commit()
+    log_message("Database initialized", 'info')
 
 
-@app.before_first_request
-def initialize():
-    """Инициализация приложения перед первым запросом"""
-    log_message("Запуск приложения", 'info')
-    check_and_create_tables()
+@cached(crypto_list_cache)
+def load_crypto_list():
+    """Загружает список криптовалют, сохраняя TOP_CRYPTO в начале"""
+    try:
+        response = requests.get(
+            "https://api.coingecko.com/api/v3/coins/list",
+            timeout=5
+        )
+        response.raise_for_status()
+
+        # Получаем все криптовалюты из API
+        all_crypto = [c['id'] for c in response.json()]
+
+        # Фильтруем, чтобы TOP_CRYPTO были в начале
+        sorted_crypto = TOP_CRYPTO.copy()  # Стартуем с основных криптовалют
+
+        # Добавляем остальные, исключая дубликаты
+        for crypto in all_crypto:
+            if crypto not in TOP_CRYPTO:
+                sorted_crypto.append(crypto)
+
+        return sorted_crypto
+
+    except requests.RequestException as e:
+        logging.warning(f"Ошибка загрузки списка: {e}. Используем базовый набор.")
+        return TOP_CRYPTO  # Возвращаем хотя бы основные, если API недоступно
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    crypto_rate = None
-
+    rate = None
     if request.method == 'POST':
         crypto = request.form.get('crypto')
         currency = request.form.get('currency')
 
         if not crypto or not currency:
-            msg = "Не выбрана криптовалюта или валюта"
-            log_message(msg, 'warning')
+            flash("Select crypto and currency", 'error')
+            log_message("No crypto/currency selected", 'warning')
+            return redirect('/')
+
+        try:
+            # Получаем курс
+            url = f"https://api.coingecko.com/api/v3/simple/price?ids={crypto}&vs_currencies={currency}"
+            log_message(f"API request: {url}", 'debug')
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+
+            if currency not in data.get(crypto, {}):
+                msg = f"Rate not found for {crypto}/{currency}"
+                flash(msg, 'error')
+                log_message(msg, 'error')
+                return redirect('/')
+
+            rate = data[crypto][currency]
+            epoch_time = int(time.time())
+
+            # Запись в БД
+            with db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO crypto_rates
+                    (crypto, currency, rate, source, timestamp)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (crypto, currency, rate, "coingecko", epoch_time))
+                conn.commit()
+
+            msg = f"Rate saved: {crypto.upper()}/{currency.upper()} = {rate:.4f}"
+            flash(msg, 'success')
+            log_message(msg, 'info')
+
+        except requests.RequestException as e:
+            msg = f"API Error: {str(e)}"
             flash(msg, 'error')
-        else:
-            try:
-                url = f"https://api.coingecko.com/api/v3/simple/price?ids={crypto}&vs_currencies={currency}"
-                log_message(f"Запрос к API: {url}", 'debug')
-                response = requests.get(url)
-                response.raise_for_status()
-                data = response.json()
+            log_message(msg, 'error')
+        except Error as e:
+            msg = f"DB Error: {str(e)}"
+            flash(msg, 'error')
+            log_message(msg, 'error')
 
-                if crypto in data and currency in data[crypto]:
-                    crypto_rate = data[crypto][currency]
-                    source = "https://www.coingecko.com"
-                    log_message(f"Получен курс: {crypto} -> {currency} = {crypto_rate}", 'info')
+    cryptos = load_crypto_list()
+    return render_template('index.html', cryptos=cryptos, currencies=CURRENCIES, rate=rate)
 
-                    conn = get_db_connection()
-                    if conn:
-                        try:
-                            cursor = conn.cursor()
-                            cursor.execute("""
-                                INSERT INTO crypto_rates (crypto, currency, rate, source)
-                                VALUES (%s, %s, %s, %s)
-                            """, (crypto, currency, crypto_rate, source))
-                            conn.commit()
-                            log_message("Данные сохранены в crypto_rates", 'info')
 
-                            formatted_rate = f"{crypto_rate:.2f}" if isinstance(crypto_rate, float) else crypto_rate
-                            flash_msg = f"Курс {crypto.upper()} к {currency.upper()}: {formatted_rate}"
-                            flash(flash_msg, 'success')
+@app.route('/crypto_table')
+def show_crypto_table():
+    """Отображает содержимое таблицы crypto_rates"""
+    with db_connection() as conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT 
+                crypto, 
+                currency, 
+                rate, 
+                FROM_UNIXTIME(timestamp) as date_time,
+                source
+            FROM crypto_rates
+            ORDER BY timestamp DESC
+            LIMIT 100
+        """)
+        rates = cursor.fetchall()
 
-                        except Error as e:
-                            error_msg = f"Ошибка БД: {str(e)}"
-                            log_message(error_msg, 'error')
-                            flash(error_msg, 'error')
-                        finally:
-                            if conn.is_connected():
-                                cursor.close()
-                                conn.close()
-                else:
-                    error_msg = f"API не вернул курс для пары {crypto}/{currency}"
-                    log_message(error_msg, 'error')
-                    flash(error_msg, 'error')
+    return render_template('data_table.html',
+                           title='Курсы криптовалют',
+                           data=rates,
+                           columns=['crypto', 'currency', 'rate', 'date_time', 'source'])
 
-            except requests.RequestException as e:
-                error_msg = f"Ошибка API: {str(e)}"
-                log_message(error_msg, 'error')
-                flash(error_msg, 'error')
 
-    # Получаем список криптовалют
-    try:
-        response = requests.get("https://api.coingecko.com/api/v3/coins/list")
-        response.raise_for_status()
-        all_crypto = response.json()
-        crypto_list = sorted([crypto['id'] for crypto in all_crypto])
-        sorted_crypto = TOP_CRYPTO + [c for c in crypto_list if c not in TOP_CRYPTO]
-        log_message("Список криптовалют успешно загружен", 'info')
-    except requests.RequestException as e:
-        sorted_crypto = TOP_CRYPTO
-        error_msg = f"Ошибка загрузки списка криптовалют: {str(e)}"
-        log_message(error_msg, 'error')
-        flash("Не удалось загрузить полный список криптовалют. Используем базовый набор.", 'error')
+@app.route('/log_table')
+def show_log_table():
+    """Отображает содержимое таблицы app_logs"""
+    with db_connection() as conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT 
+                message, 
+                level, 
+                FROM_UNIXTIME(timestamp) as date_time
+            FROM app_logs
+            ORDER BY timestamp DESC
+            LIMIT 100
+        """)
+        logs = cursor.fetchall()
 
-    return render_template(
-        'index.html',
-        cryptos=sorted_crypto,
-        currencies=CURRENCIES,
-        rate=crypto_rate
-    )
-
+    return render_template('data_table.html',
+                           title='Логи приложения',
+                           data=logs,
+                           columns=['date_time', 'level', 'message'])
 
 if __name__ == '__main__':
-    check_and_create_tables()
+    init_db()
+    log_message("Application started", 'info')
     app.run(debug=True)
