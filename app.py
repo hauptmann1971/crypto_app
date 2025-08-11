@@ -128,60 +128,100 @@ def load_crypto_list():
         return TOP_CRYPTO  # Возвращаем хотя бы основные, если API недоступно
 
 
+def get_crypto_rate(crypto: str, currency: str) -> dict:
+    """
+    Получает курс криптовалюты к валюте через API CoinGecko
+    Возвращает словарь с результатами или ошибкой
+
+    Args:
+        crypto: Идентификатор криптовалюты (например 'bitcoin')
+        currency: Код валюты (например 'usd')
+
+    Returns:
+        {
+            'success': bool,
+            'rate': float,       # Только если success=True
+            'error': str,        # Только если success=False
+            'source': str,
+            'timestamp': int
+        }
+    """
+    try:
+        url = f"https://api.coingecko.com/api/v3/simple/price?ids={crypto}&vs_currencies={currency}"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+
+        if currency not in data.get(crypto, {}):
+            return {
+                'success': False,
+                'error': f"Курс для {crypto}/{currency} не найден",
+                'source': 'coingecko',
+                'timestamp': int(time.time())
+            }
+
+        return {
+            'success': True,
+            'rate': data[crypto][currency],
+            'source': 'coingecko',
+            'timestamp': int(time.time())
+        }
+
+    except requests.RequestException as e:
+        return {
+            'success': False,
+            'error': f"Ошибка API: {str(e)}",
+            'source': 'coingecko',
+            'timestamp': int(time.time())
+        }
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    rate = None
     if request.method == 'POST':
         crypto = request.form.get('crypto')
         currency = request.form.get('currency')
 
         if not crypto or not currency:
-            flash("Select crypto and currency", 'error')
-            log_message("No crypto/currency selected", 'warning')
+            flash("Выберите криптовалюту и валюту", 'error')
+            log_message("Не выбрана криптовалюта или валюта", 'warning')
             return redirect('/')
 
+        # Получаем курс через новую функцию
+        rate_data = get_crypto_rate(crypto, currency)
+
+        if not rate_data['success']:
+            flash(rate_data['error'], 'error')
+            log_message(rate_data['error'], 'error')
+            return redirect('/')
+
+        # Сохраняем в БД
         try:
-            # Получаем курс
-            url = f"https://api.coingecko.com/api/v3/simple/price?ids={crypto}&vs_currencies={currency}"
-            log_message(f"API request: {url}", 'debug')
-            response = requests.get(url, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-
-            if currency not in data.get(crypto, {}):
-                msg = f"Rate not found for {crypto}/{currency}"
-                flash(msg, 'error')
-                log_message(msg, 'error')
-                return redirect('/')
-
-            rate = data[crypto][currency]
-            epoch_time = int(time.time())
-
-            # Запись в БД
             with db_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     INSERT INTO crypto_rates
                     (crypto, currency, rate, source, timestamp)
                     VALUES (%s, %s, %s, %s, %s)
-                """, (crypto, currency, rate, "coingecko", epoch_time))
+                """, (crypto, currency, rate_data['rate'],
+                     rate_data['source'], rate_data['timestamp']))
                 conn.commit()
 
-            msg = f"Rate saved: {crypto.upper()}/{currency.upper()} = {rate:.4f}"
+            msg = f"Курс {crypto.upper()}/{currency.upper()}: {rate_data['rate']:.4f}"
             flash(msg, 'success')
             log_message(msg, 'info')
 
-        except requests.RequestException as e:
-            msg = f"API Error: {str(e)}"
-            flash(msg, 'error')
-            log_message(msg, 'error')
         except Error as e:
-            msg = f"DB Error: {str(e)}"
-            flash(msg, 'error')
-            log_message(msg, 'error')
+            error_msg = f"Ошибка БД: {str(e)}"
+            flash(error_msg, 'error')
+            log_message(error_msg, 'error')
 
+    # Загрузка списка криптовалют (кэшированная)
     cryptos = load_crypto_list()
-    return render_template('index.html', cryptos=cryptos, currencies=CURRENCIES, rate=rate)
+    return render_template('index.html',
+                         cryptos=cryptos,
+                         currencies=CURRENCIES,
+                         rate=rate_data.get('rate') if request.method == 'POST' else None)
 
 
 @app.route('/crypto_table')
