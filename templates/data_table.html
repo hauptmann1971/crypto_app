@@ -1,37 +1,128 @@
 # Шаблон templates/data_table.html
 """
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>{{ title }}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Crypto App</title>
     <style>
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
-        th { background-color: #f2f2f2; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+        }
+        td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        tr:hover {
+            background-color: #e9f7fe;
+        }
+        .nav-links {
+            margin-top: 20px;
+        }
+        .nav-links a {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .nav-links a:hover {
+            background-color: #2980b9;
+        }
+        .level-info {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        .level-warning {
+            color: #f39c12;
+            font-weight: bold;
+        }
+        .level-error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <h1>{{ title }}</h1>
-    <table>
-        <thead>
-            <tr>
-                {% for column in columns %}
-                    <th>{{ column }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in data %}
-                <tr>
-                    {% for column in columns %}
-                        <td>{{ row[column] }}</td>
+    <div class="container">
+        <h1>{{ title }}</h1>
+
+        {% if data %}
+            <table>
+                <thead>
+                    <tr>
+                        {% for column in columns %}
+                            <th>{{ column|replace('_', ' ')|title }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                        <tr>
+                            {% for column in columns %}
+                                <td>
+                                    {% if column == 'level' %}
+                                        <span class="level-{{ row[column] }}">{{ row[column]|upper }}</span>
+                                    {% elif column == 'rate' %}
+                                        {{ "%.4f"|format(row[column]) }}
+                                    {% elif column == 'date_time' %}
+                                        {{ row[column] or 'N/A' }}
+                                    {% else %}
+                                        {{ row[column] or '' }}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
                     {% endfor %}
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <p><a href="/">На главную</a></p>
+                </tbody>
+            </table>
+        {% else %}
+            <p>Нет данных для отображения</p>
+        {% endif %}
+
+        <div class="nav-links">
+            <a href="/">На главную</a>
+            {% if title == 'Курсы криптовалют' %}
+                <a href="/log_table">Просмотреть логи</a>
+            {% else %}
+                <a href="/crypto_table">Просмотреть курсы</a>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>
 """
