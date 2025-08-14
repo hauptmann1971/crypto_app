@@ -1,14 +1,17 @@
-from flask import Flask, render_template, request, flash, redirect
-import mysql.connector
-from mysql.connector import Error, pooling
+# app.py
+from flask import Flask, render_template, request, flash, redirect, url_for
+from sqlalchemy import create_engine, Column, Integer, String, Float, Text, BigInteger, DateTime, func
+from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base
+from sqlalchemy.exc import SQLAlchemyError
 import time
 import requests
 import os
 import logging
-from contextlib import contextmanager
+from logging.handlers import RotatingFileHandler
 from dotenv import load_dotenv
 from datetime import datetime
 from cachetools import cached, TTLCache
+from contextlib import contextmanager
 
 # Инициализация
 load_dotenv()
@@ -17,92 +20,153 @@ load_dotenv()
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[logging.FileHandler('app.log'), logging.StreamHandler()]
+    handlers=[
+        RotatingFileHandler('app.log', maxBytes=1_000_000, backupCount=3),
+        logging.StreamHandler()
+    ]
 )
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
 
-# Конфигурация БД
-DB_CONFIG = {
-    'host': os.getenv('DB_HOST'),
-    'user': os.getenv('DB_USER'),
-    'password': os.getenv('DB_PASSWORD'),
-    'database': os.getenv('DB_NAME'),
-    'pool_name': 'crypto_pool',
-    'pool_size': 5
-}
+# Конфигурация SQLAlchemy
+Base = declarative_base()
+engine = None
+SessionLocal = None
+db_connection_active = True
 
-db_pool = pooling.MySQLConnectionPool(**DB_CONFIG)
+
+# Модели данных
+class CryptoRate(Base):
+    __tablename__ = 'crypto_rates'
+
+    id = Column(Integer, primary_key=True)
+    crypto = Column(String(50), nullable=False)
+    currency = Column(String(10), nullable=False)
+    rate = Column(Float(precision=8), nullable=False)
+    source = Column(String(100), nullable=False)
+    timestamp = Column(BigInteger, nullable=False)
+
+
+class AppLog(Base):
+    __tablename__ = 'app_logs'
+
+    id = Column(Integer, primary_key=True)
+    service = Column(String(50), default='crypto_api')
+    component = Column(String(50), default='backend')
+    message = Column(Text, nullable=False)
+    level = Column(String(20), nullable=False)
+    traceback = Column(Text)
+    user_id = Column(String(36))
+    timestamp = Column(BigInteger, nullable=False)
+
+
+def log_message(
+        message: str,
+        level: str = 'info',
+        service: str = 'crypto_api',
+        component: str = 'backend',
+        traceback: str = None,
+        user_id: str = None
+):
+    """Запись лога в БД и файл"""
+    logging.log(
+        getattr(logging, level.upper()),
+        f"[{service}.{component}] User={user_id} | {message}",
+        exc_info=traceback is not None
+    )
+
+    if db_connection_active:
+        try:
+            with get_db() as db:
+                log_entry = AppLog(
+                    message=message,
+                    level=level,
+                    service=service,
+                    component=component,
+                    traceback=traceback,
+                    user_id=user_id,
+                    timestamp=int(time.time())
+                )
+                db.add(log_entry)
+                db.commit()
+        except SQLAlchemyError as e:
+            logging.error(f"Ошибка записи лога в БД: {e}")
+
+
+def init_db_connection():
+    """Инициализация подключения к базе данных"""
+    global engine, SessionLocal, db_connection_active
+
+    try:
+        DATABASE_URI = f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
+        engine = create_engine(
+            DATABASE_URI,
+            pool_size=5,
+            max_overflow=10,
+            pool_pre_ping=True
+        )
+        SessionLocal = scoped_session(
+            sessionmaker(
+                autocommit=False,
+                autoflush=False,
+                bind=engine
+            )
+        )
+        db_connection_active = True
+        log_message("Инициализировано подключение к базе данных", 'info')
+    except SQLAlchemyError as e:
+        db_connection_active = False
+        log_message(f"Ошибка подключения к базе данных: {e}", 'error')
+        raise
+
+
+@contextmanager
+def get_db():
+    """Контекстный менеджер для работы с сессией"""
+    global db_connection_active
+
+    if not db_connection_active:
+        flash("Соединение с базой данных отключено", 'error')
+        log_message("Попытка доступа к отключенной БД", 'warning')
+        raise RuntimeError("Соединение с базой данных отключено")
+
+    if SessionLocal is None:
+        init_db_connection()
+
+    db = SessionLocal()
+    try:
+        yield db
+    except SQLAlchemyError as e:
+        db.rollback()
+        log_message(f"Ошибка БД: {e}", 'error')
+        raise
+    finally:
+        db.close()
+
+
+def init_db():
+    """Инициализация структуры БД"""
+    if not db_connection_active:
+        log_message("Попытка инициализации БД при отключенном соединении", 'error')
+        return
+
+    try:
+        Base.metadata.create_all(bind=engine)
+        log_message("База данных инициализирована", 'info')
+    except SQLAlchemyError as e:
+        log_message(f"Ошибка инициализации БД: {e}", 'error')
+
+
+# Константы
 TOP_CRYPTO = ['bitcoin', 'ethereum', 'binancecoin']
 CURRENCIES = ['usd', 'eur', 'gbp', 'jpy', 'cny', 'rub']
 crypto_list_cache = TTLCache(maxsize=1, ttl=3600)
 
 
-@contextmanager
-def db_connection():
-    conn = db_pool.get_connection()
-    try:
-        yield conn
-    except Error as e:
-        conn.rollback()
-        log_message(f"DB Error: {e}", 'error')
-        raise
-    finally:
-        conn.close()
-
-
-def log_message(message: str, level: str = 'info'):
-    """Запись лога в БД и файл"""
-    logging.log(getattr(logging, level.upper()), message)
-
-    try:
-        with db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                INSERT INTO app_logs (message, level, timestamp)
-                VALUES (%s, %s, %s)
-            """, (message, level, int(time.time())))
-            conn.commit()
-    except Error as e:
-        logging.error(f"Failed to write log to DB: {e}")
-
-
-def init_db():
-    """Инициализация структуры БД"""
-    with db_connection() as conn:
-        cursor = conn.cursor()
-
-        # Таблица курсов
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS crypto_rates (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                crypto VARCHAR(50) NOT NULL,
-                currency VARCHAR(10) NOT NULL,
-                rate DECIMAL(20,8) NOT NULL,
-                source VARCHAR(100) NOT NULL,
-                timestamp BIGINT NOT NULL,
-                INDEX idx_crypto_currency (crypto, currency)
-            )
-        """)
-
-        # Таблица логов
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS app_logs (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                message TEXT NOT NULL,
-                level VARCHAR(20) NOT NULL,
-                timestamp BIGINT NOT NULL,
-                INDEX idx_timestamp (timestamp)
-            )
-        """)
-        conn.commit()
-    log_message("Database initialized", 'info')
-
-
 @cached(crypto_list_cache)
 def load_crypto_list():
-    """Загружает список криптовалют, сохраняя TOP_CRYPTO в начале"""
+    """Загружает список криптовалют"""
     try:
         response = requests.get(
             "https://api.coingecko.com/api/v3/coins/list",
@@ -110,13 +174,9 @@ def load_crypto_list():
         )
         response.raise_for_status()
 
-        # Получаем все криптовалюты из API
         all_crypto = [c['id'] for c in response.json()]
+        sorted_crypto = TOP_CRYPTO.copy()
 
-        # Фильтруем, чтобы TOP_CRYPTO были в начале
-        sorted_crypto = TOP_CRYPTO.copy()  # Стартуем с основных криптовалют
-
-        # Добавляем остальные, исключая дубликаты
         for crypto in all_crypto:
             if crypto not in TOP_CRYPTO:
                 sorted_crypto.append(crypto)
@@ -125,27 +185,11 @@ def load_crypto_list():
 
     except requests.RequestException as e:
         logging.warning(f"Ошибка загрузки списка: {e}. Используем базовый набор.")
-        return TOP_CRYPTO  # Возвращаем хотя бы основные, если API недоступно
+        return TOP_CRYPTO
 
 
 def get_crypto_rate(crypto: str, currency: str) -> dict:
-    """
-    Получает курс криптовалюты к валюте через API CoinGecko
-    Возвращает словарь с результатами или ошибкой
-
-    Args:
-        crypto: Идентификатор криптовалюты (например 'bitcoin')
-        currency: Код валюты (например 'usd')
-
-    Returns:
-        {
-            'success': bool,
-            'rate': float,       # Только если success=True
-            'error': str,        # Только если success=False
-            'source': str,
-            'timestamp': int
-        }
-    """
+    """Получает курс криптовалюты к валюте"""
     try:
         url = f"https://api.coingecko.com/api/v3/simple/price?ids={crypto}&vs_currencies={currency}"
         response = requests.get(url, timeout=10)
@@ -176,8 +220,40 @@ def get_crypto_rate(crypto: str, currency: str) -> dict:
         }
 
 
+@app.route('/disconnect_db', methods=['POST'])
+def disconnect_db():
+    """Отключение подключения к базе данных"""
+    global db_connection_active, engine
+
+    db_connection_active = False
+    if engine:
+        engine.dispose()
+
+    flash("Соединение с базой данных отключено", 'warning')
+    log_message("Ручное отключение базы данных", 'info')
+    return redirect(url_for('index'))
+
+
+@app.route('/connect_db', methods=['POST'])
+def connect_db():
+    """Включение подключения к базе данных"""
+    global db_connection_active
+
+    try:
+        init_db_connection()
+        db_connection_active = True
+        flash("Соединение с базой данных восстановлено", 'success')
+        log_message("Ручное подключение базы данных", 'info')
+    except SQLAlchemyError as e:
+        flash(f"Ошибка подключения: {str(e)}", 'error')
+        log_message(f"Ошибка подключения к БД: {e}", 'error')
+
+    return redirect(url_for('index'))
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    rate_data = None
     if request.method == 'POST':
         crypto = request.form.get('crypto')
         currency = request.form.get('currency')
@@ -187,7 +263,6 @@ def index():
             log_message("Не выбрана криптовалюта или валюта", 'warning')
             return redirect('/')
 
-        # Получаем курс через новую функцию
         rate_data = get_crypto_rate(crypto, currency)
 
         if not rate_data['success']:
@@ -195,81 +270,113 @@ def index():
             log_message(rate_data['error'], 'error')
             return redirect('/')
 
-        # Сохраняем в БД
         try:
-            with db_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("""
-                    INSERT INTO crypto_rates
-                    (crypto, currency, rate, source, timestamp)
-                    VALUES (%s, %s, %s, %s, %s)
-                """, (crypto, currency, rate_data['rate'],
-                     rate_data['source'], rate_data['timestamp']))
-                conn.commit()
+            with get_db() as db:
+                rate_entry = CryptoRate(
+                    crypto=crypto,
+                    currency=currency,
+                    rate=round(rate_data['rate'], 8),
+                    source=rate_data['source'],
+                    timestamp=rate_data['timestamp']
+                )
+                db.add(rate_entry)
+                db.commit()
 
             msg = f"Курс {crypto.upper()}/{currency.upper()}: {rate_data['rate']:.4f}"
             flash(msg, 'success')
             log_message(msg, 'info')
 
-        except Error as e:
+        except SQLAlchemyError as e:
             error_msg = f"Ошибка БД: {str(e)}"
             flash(error_msg, 'error')
-            log_message(error_msg, 'error')
+            log_message(error_msg, 'error', traceback=str(e))
 
-    # Загрузка списка криптовалют (кэшированная)
     cryptos = load_crypto_list()
     return render_template('index.html',
-                         cryptos=cryptos,
-                         currencies=CURRENCIES,
-                         rate=rate_data.get('rate') if request.method == 'POST' else None)
+                           cryptos=cryptos,
+                           currencies=CURRENCIES,
+                           rate=rate_data.get('rate') if request.method == 'POST' else None,
+                           db_connected=db_connection_active)
 
 
 @app.route('/crypto_table')
 def show_crypto_table():
-    """Отображает содержимое таблицы crypto_rates"""
-    with db_connection() as conn:
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("""
-            SELECT 
-                crypto, 
-                currency, 
-                rate, 
-                FROM_UNIXTIME(timestamp) as date_time,
-                source
-            FROM crypto_rates
-            ORDER BY timestamp DESC
-            LIMIT 100
-        """)
-        rates = cursor.fetchall()
+    """Отображает таблицу курсов криптовалют"""
+    if not db_connection_active:
+        flash("Соединение с базой данных отключено", 'error')
+        return redirect(url_for('index'))
 
-    return render_template('data_table.html',
-                           title='Курсы криптовалют',
-                           data=rates,
-                           columns=['crypto', 'currency', 'rate', 'date_time', 'source'])
+    try:
+        with get_db() as db:
+            # Запрашиваем только существующие столбцы
+            rates = db.query(
+                CryptoRate.crypto,
+                CryptoRate.currency,
+                CryptoRate.rate,
+                CryptoRate.source,
+                CryptoRate.timestamp
+            ).order_by(CryptoRate.timestamp.desc()).limit(100).all()
+
+        # Форматируем данные для шаблона
+        rates_data = [{
+            'crypto': r.crypto,
+            'currency': r.currency,
+            'rate': r.rate,
+            'date_time': datetime.fromtimestamp(r.timestamp).strftime('%Y-%m-%d %H:%M:%S'),
+            'source': r.source
+        } for r in rates]
+
+        return render_template('data_table.html',
+                               title='Курсы криптовалют',
+                               data=rates_data,
+                               columns=['crypto', 'currency', 'rate', 'date_time', 'source'])
+    except SQLAlchemyError as e:
+        flash(f"Ошибка БД: {str(e)}", 'error')
+        return redirect(url_for('index'))
 
 
 @app.route('/log_table')
 def show_log_table():
-    """Отображает содержимое таблицы app_logs"""
-    with db_connection() as conn:
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("""
-            SELECT 
-                message, 
-                level, 
-                FROM_UNIXTIME(timestamp) as date_time
-            FROM app_logs
-            ORDER BY timestamp DESC
-            LIMIT 100
-        """)
-        logs = cursor.fetchall()
+    """Отображает таблицу логов"""
+    if not db_connection_active:
+        flash("Соединение с базой данных отключено", 'error')
+        return redirect(url_for('index'))
 
-    return render_template('data_table.html',
-                           title='Логи приложения',
-                           data=logs,
-                           columns=['date_time', 'level', 'message'])
+    try:
+        with get_db() as db:
+            logs = db.query(
+                AppLog.id,
+                AppLog.service,
+                AppLog.component,
+                AppLog.message,
+                AppLog.level,
+                AppLog.traceback,
+                AppLog.user_id,
+                AppLog.timestamp
+            ).order_by(AppLog.timestamp.desc()).limit(100).all()
+
+        logs_data = [{
+            'date_time': datetime.fromtimestamp(l.timestamp).strftime('%Y-%m-%d %H:%M:%S'),
+            'level': l.level,
+            'message': l.message,
+            'service': l.service,
+            'component': l.component,
+            'user_id': l.user_id,
+            'traceback': l.traceback
+        } for l in logs]
+
+        return render_template('data_table.html',
+                               title='Логи приложения',
+                               data=logs_data,
+                               columns=['date_time', 'level', 'message', 'service', 'component', 'user_id',
+                                        'traceback'])
+    except SQLAlchemyError as e:
+        flash(f"Ошибка БД: {str(e)}", 'error')
+        return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
+    init_db_connection()
     init_db()
-    log_message("Application started", 'info')
+    log_message("Приложение запущено", 'info')
     app.run(debug=True)
