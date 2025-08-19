@@ -6,3 +6,6 @@ celery==5.3.1
 redis==4.5.5
 mysql~=0.0.3
 cachetools~=6.1.0
+sqlalchemy
+sqlalchemy.orm
+sqlalchemy.exc
