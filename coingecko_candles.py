@@ -25,6 +25,7 @@ class CoinGeckoAPI:
         response = requests.get(url, params=params)
         if response.status_code == 200:
             data = response.json()
+            print(data)
             # Конвертируем в DataFrame
             df = pd.DataFrame(data, columns=['timestamp', 'open', 'high', 'low', 'close'])
             df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
@@ -34,24 +35,32 @@ class CoinGeckoAPI:
             print(f"Ошибка: {response.status_code}")
             return None
 
+
+    def get_plot(self, data):
+        
+        if data is not None:
+            print(data.head())
+            
+            # Построение графика
+            plt.figure(figsize=(12, 6))
+            
+            # Линейный график
+            
+            plt.plot(data.index, data['close'])
+            plt.title('BTC/USD Price (1 day(s))')
+            plt.xlabel('Date')
+            plt.ylabel('Price (EUR)')
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+            plt.show()      
+
 # Пример использования
+
 api = CoinGeckoAPI()
 
 # Получаем данные по Bitcoin за 30 дней
-btc_data = api.get_ohlc('bitcoin', 'eur', 1)
+btc_data = api.get_ohlc('bitcoin', 'rub', 1)
+api.get_plot(btc_data)
 
-if btc_data is not None:
-    print(btc_data.head())
     
-    # Построение свечного графика
-    plt.figure(figsize=(12, 6))
     
-    # Простой линейный график для начала
-    print(btc_data['close'])
-    plt.plot(btc_data.index, btc_data['close'])
-    plt.title('BTC/USD Price (1 day(s))')
-    plt.xlabel('Date')
-    plt.ylabel('Price (EUR)')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.show()
