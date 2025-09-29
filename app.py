@@ -334,8 +334,8 @@ def connect_db():
 def index():
     rate_data = None
     if request.method == 'POST':
-        crypto = request.form.get('crypto')
-        currency = request.form.get('currency')
+        crypto = request.form.get('crypto', 'bitcoin')
+        currency = request.form.get('currency', 'usd')
 
         if not crypto or not currency:
             flash("Выберите криптовалюту и валюту", 'error')

@@ -70,7 +70,9 @@
                                     <select class="form-select" id="crypto" name="crypto" required>
                                         <option value="">Выберите криптовалюту</option>
                                         {% for crypto in cryptos %}
-                                            <option value="{{ crypto }}">{{ crypto }}</option>
+                                            <option value="{{ crypto }}" {% if crypto == 'bitcoin' %}selected{% endif %}>
+                                                {{ crypto }}
+                                            </option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -80,7 +82,9 @@
                                     <select class="form-select" id="currency" name="currency" required>
                                         <option value="">Выберите валюту</option>
                                         {% for currency in currencies %}
-                                            <option value="{{ currency }}">{{ currency|upper }}</option>
+                                            <option value="{{ currency }}" {% if currency == 'usd' %}selected{% endif %}>
+                                                {{ currency|upper }}
+                                            </option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -158,10 +162,12 @@
                     </div>
                     <div class="card-body">
                         <small class="text-muted">
+                            <strong>Значения по умолчанию:</strong><br>
+                            • Криптовалюта: Bitcoin<br>
+                            • Валюта: USD<br>
                             <strong>Источник данных:</strong> CoinGecko API<br>
                             <strong>Доступно криптовалют:</strong> {{ cryptos|length }}<br>
-                            <strong>Доступно валют:</strong> {{ currencies|length }}<br>
-                            <strong>Последнее обновление:</strong> {{ now }}
+                            <strong>Доступно валют:</strong> {{ currencies|length }}
                         </small>
                     </div>
                 </div>
@@ -177,11 +183,54 @@
                     </div>
                     <div class="card-body">
                         <div class="d-flex flex-wrap gap-2">
-                            {% for crypto in cryptos[:6] %}
-                                <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('{{ crypto }}')">
-                                    {{ crypto }}
-                                </button>
-                            {% endfor %}
+                            <button class="btn btn-primary btn-sm" onclick="selectCrypto('bitcoin')">
+                                Bitcoin
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('ethereum')">
+                                Ethereum
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('binancecoin')">
+                                Binance Coin
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('ripple')">
+                                Ripple
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('cardano')">
+                                Cardano
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('solana')">
+                                Solana
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Быстрый доступ к валютам -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">💱 Популярные валюты</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-success btn-sm" onclick="selectCurrency('usd')">
+                                USD
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" onclick="selectCurrency('eur')">
+                                EUR
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" onclick="selectCurrency('gbp')">
+                                GBP
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" onclick="selectCurrency('jpy')">
+                                JPY
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" onclick="selectCurrency('rub')">
+                                RUB
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -207,6 +256,16 @@
                 bsAlert.close();
             });
         }, 5000);
+
+        // Показать уведомление о значениях по умолчанию при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            const cryptoSelect = document.getElementById('crypto');
+            const currencySelect = document.getElementById('currency');
+            
+            if (cryptoSelect.value === 'bitcoin' && currencySelect.value === 'usd') {
+                console.log('Значения по умолчанию установлены: Bitcoin/USD');
+            }
+        });
     </script>
 </body>
 </html>
