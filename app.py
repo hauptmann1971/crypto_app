@@ -1,5 +1,5 @@
 # app.py
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for, send_file
 from sqlalchemy import create_engine, Column, Integer, String, Float, Text, BigInteger, DateTime, func
 from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base
 from sqlalchemy.exc import SQLAlchemyError
@@ -12,6 +12,12 @@ from dotenv import load_dotenv
 from datetime import datetime
 from cachetools import cached, TTLCache
 from contextlib import contextmanager
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg')  # Для работы без GUI
+import matplotlib.pyplot as plt
+import io
+import base64
 
 # Инициализация
 load_dotenv()
@@ -161,6 +167,14 @@ def init_db():
 # Константы
 TOP_CRYPTO = ['bitcoin', 'ethereum', 'binancecoin']
 CURRENCIES = ['usd', 'eur', 'gbp', 'jpy', 'cny', 'rub']
+PERIODS = [
+    {'value': '1', 'label': '1 день'},
+    {'value': '7', 'label': '7 дней'},
+    {'value': '30', 'label': '30 дней'},
+    {'value': '90', 'label': '90 дней'},
+    {'value': '180', 'label': '180 дней'},
+    {'value': '365', 'label': '1 год'}
+]
 crypto_list_cache = TTLCache(maxsize=1, ttl=3600)
 
 
@@ -218,6 +232,71 @@ def get_crypto_rate(crypto: str, currency: str) -> dict:
             'source': 'coingecko',
             'timestamp': int(time.time())
         }
+
+
+class CoinGeckoAPI:
+    def __init__(self):
+        self.base_url = "https://api.coingecko.com/api/v3"
+    
+    def get_ohlc(self, coin_id, vs_currency, days):
+        """
+        Получение OHLC данных (Open, High, Low, Close)
+        
+        Args:
+            coin_id: идентификатор монеты (e.g., 'bitcoin')
+            vs_currency: валюта (e.g., 'usd')
+            days: период (1, 7, 14, 30, 90, 180, 365)
+        """
+        url = f"{self.base_url}/coins/{coin_id}/ohlc"
+        params = {
+            'vs_currency': vs_currency,
+            'days': days
+        }
+        
+        try:
+            response = requests.get(url, params=params, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                # Конвертируем в DataFrame
+                df = pd.DataFrame(data, columns=['timestamp', 'open', 'high', 'low', 'close'])
+                df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+                df.set_index('timestamp', inplace=True)
+                return df
+            else:
+                logging.error(f"Ошибка API CoinGecko: {response.status_code}")
+                return None
+        except requests.RequestException as e:
+            logging.error(f"Ошибка запроса к CoinGecko: {e}")
+            return None
+
+    def generate_plot(self, data, crypto, currency, period):
+        """Генерирует график и возвращает его в base64"""
+        if data is None or data.empty:
+            return None
+            
+        try:
+            # Создаем график
+            plt.figure(figsize=(12, 6))
+            plt.plot(data.index, data['close'], linewidth=2)
+            plt.title(f'{crypto.upper()}/{currency.upper()} Price ({period} дней)', fontsize=14, fontweight='bold')
+            plt.xlabel('Date', fontsize=12)
+            plt.ylabel(f'Price ({currency.upper()})', fontsize=12)
+            plt.grid(True, alpha=0.3)
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+            
+            # Конвертируем график в base64
+            img = io.BytesIO()
+            plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
+            img.seek(0)
+            plt.close()
+            
+            plot_url = base64.b64encode(img.getvalue()).decode()
+            return f"data:image/png;base64,{plot_url}"
+            
+        except Exception as e:
+            logging.error(f"Ошибка генерации графика: {e}")
+            return None
 
 
 @app.route('/disconnect_db', methods=['POST'])
@@ -295,8 +374,50 @@ def index():
     return render_template('index.html',
                            cryptos=cryptos,
                            currencies=CURRENCIES,
+                           periods=PERIODS,
                            rate=rate_data.get('rate') if request.method == 'POST' else None,
                            db_connected=db_connection_active)
+
+
+@app.route('/chart', methods=['GET', 'POST'])
+def chart():
+    """Страница с графиком курса криптовалюты"""
+    plot_url = None
+    error = None
+    
+    if request.method == 'POST':
+        crypto = request.form.get('crypto')
+        currency = request.form.get('currency')
+        period = request.form.get('period', '7')
+        
+        if not crypto or not currency:
+            flash("Выберите криптовалюту и валюту", 'error')
+            return redirect(url_for('chart'))
+        
+        try:
+            api = CoinGeckoAPI()
+            data = api.get_ohlc(crypto, currency, period)
+            
+            if data is not None:
+                plot_url = api.generate_plot(data, crypto, currency, period)
+                if plot_url:
+                    log_message(f"Сгенерирован график для {crypto}/{currency} за {period} дней", 'info')
+                else:
+                    error = "Ошибка генерации графика"
+            else:
+                error = "Не удалось получить данные для построения графика"
+                
+        except Exception as e:
+            error = f"Ошибка: {str(e)}"
+            log_message(f"Ошибка построения графика: {e}", 'error')
+    
+    cryptos = load_crypto_list()
+    return render_template('chart.html',
+                           cryptos=cryptos,
+                           currencies=CURRENCIES,
+                           periods=PERIODS,
+                           plot_url=plot_url,
+                           error=error)
 
 
 @app.route('/crypto_table')
