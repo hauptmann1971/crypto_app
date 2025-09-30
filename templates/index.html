@@ -1,270 +1,242 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Криптоконвертер</title>
+    <title>Курсы криптовалют</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .card {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+        .telegram-btn {
+            background: linear-gradient(135deg, #0088cc, #00a2e8);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
         }
-        .status-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+        .telegram-btn:hover {
+            background: linear-gradient(135deg, #0077b3, #0088cc);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
+            color: white;
         }
-        .btn-group-vertical .btn {
-            margin-bottom: 10px;
+        .navbar-brand {
+            font-weight: bold;
         }
         .rate-display {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #198754;
-            text-align: center;
-            padding: 15px;
             background: #f8f9fa;
-            border-radius: 5px;
-            margin-top: 15px;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .db-status {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .db-connected {
+            background: #d1edff;
+            color: #0066cc;
+        }
+        .db-disconnected {
+            background: #ffe6e6;
+            color: #cc0000;
         }
     </style>
 </head>
 <body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                📊 Crypto Rates
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">Курсы</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('chart') }}">Графики</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('show_crypto_table') }}">Таблица курсов</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('show_log_table') }}">Логи</a>
+                    </li>
+                </ul>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Статус БД -->
+                    <span class="db-status {{ 'db-connected' if db_connected else 'db-disconnected' }}">
+                        🗄️ БД: {{ 'Подключена' if db_connected else 'Отключена' }}
+                    </span>
+                    
+                    <!-- Кнопка авторизации через Telegram -->
+                    <a href="{{ url_for('auth') }}" class="telegram-btn text-decoration-none">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.78 5.42-.9 6.8-.06.67-.36.89-.89.56-2.45-1.83-3.57-2.98-5.79-4.78-.54-.45-.92-.68-.89-1.07.03-.39.43-.56.98-.4 3.87 1.56 5.57 2.47 8.39 4.01.38.21.67.1.77-.32.23-.85.78-3.57.9-5.08.07-.85-.25-1.18-.82-1.18-.27 0-.58.05-.92.12-1.37.45-7.92 3.14-8.07 3.19-.38.13-.74.19-1.08.19-.54 0-.8-.26-.8-.67 0-.34.23-.73.68-1.05 4.78-3.28 7.74-5.14 9.14-5.98 2.08-1.23 2.52-1.44 2.82-1.44.2 0 .65.04.94.31.29.27.28.8.25 1.13z"/>
+                        </svg>
+                        Авторизация
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <div class="container mt-4">
-        <!-- Заголовок -->
-        <div class="row">
-            <div class="col-12">
-                <h1 class="text-center mb-4">💰 Криптоконвертер</h1>
+        <!-- Flash сообщения -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <h1 class="mb-4">Курсы криптовалют</h1>
+
+        <!-- Форма выбора криптовалюты и валюты -->
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('index') }}">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label for="crypto" class="form-label">Криптовалюта</label>
+                            <select class="form-select" id="crypto" name="crypto" required>
+                                <option value="">Выберите криптовалюту...</option>
+                                {% for crypto in cryptos %}
+                                    <option value="{{ crypto }}" {{ 'selected' if request.form.get('crypto') == crypto }}>
+                                        {{ crypto.upper() }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-5">
+                            <label for="currency" class="form-label">Валюта</label>
+                            <select class="form-select" id="currency" name="currency" required>
+                                <option value="">Выберите валюту...</option>
+                                {% for currency in currencies %}
+                                    <option value="{{ currency }}" {{ 'selected' if request.form.get('currency') == currency }}>
+                                        {{ currency.upper() }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                Получить курс
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
 
-        <!-- Флеш-сообщения -->
-        <div class="row">
-            <div class="col-12">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'warning' }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
+        <!-- Отображение курса -->
+        {% if rate %}
+            <div class="rate-display mt-4">
+                <h3 class="text-success">
+                    💰 Курс: {{ request.form.get('crypto', '').upper() }}/{{ request.form.get('currency', '').upper() }}
+                </h3>
+                <h2 class="display-4 fw-bold text-primary">{{ "%.4f"|format(rate) }}</h2>
+                <p class="text-muted">Данные предоставлены CoinGecko API</p>
             </div>
-        </div>
+        {% endif %}
 
-        <div class="row">
-            <!-- Основная форма -->
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Конвертер курсов</h5>
-                    </div>
-                    <div class="card-body">
-                        <form method="POST">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="crypto" class="form-label">Криптовалюта:</label>
-                                    <select class="form-select" id="crypto" name="crypto" required>
-                                        <option value="">Выберите криптовалюту</option>
-                                        {% for crypto in cryptos %}
-                                            <option value="{{ crypto }}" {% if crypto == 'bitcoin' %}selected{% endif %}>
-                                                {{ crypto }}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <label for="currency" class="form-label">Валюта:</label>
-                                    <select class="form-select" id="currency" name="currency" required>
-                                        <option value="">Выберите валюту</option>
-                                        {% for currency in currencies %}
-                                            <option value="{{ currency }}" {% if currency == 'usd' %}selected{% endif %}>
-                                                {{ currency|upper }}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                
-                                <div class="col-12">
-                                    <button type="submit" class="btn btn-primary btn-lg w-100">
-                                        Получить курс
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-
-                        <!-- Отображение результата -->
-                        {% if rate %}
-                            <div class="rate-display">
-                                Текущий курс: {{ rate }}
-                            </div>
-                        {% endif %}
-                    </div>
+        <!-- Управление БД (только для админов) -->
+        {% if not db_connected %}
+            <div class="card mt-4 border-warning">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">⚠️ База данных отключена</h5>
+                    <p class="card-text">Некоторые функции могут быть недоступны.</p>
+                    <form method="POST" action="{{ url_for('connect_db') }}" class="d-inline">
+                        <button type="submit" class="btn btn-success btn-sm">Подключить БД</button>
+                    </form>
                 </div>
             </div>
+        {% else %}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Управление базой данных</h5>
+                    <form method="POST" action="{{ url_for('disconnect_db') }}" class="d-inline">
+                        <button type="submit" class="btn btn-warning btn-sm">Отключить БД</button>
+                    </form>
+                    <a href="{{ url_for('show_crypto_table') }}" class="btn btn-outline-primary btn-sm">Просмотр данных</a>
+                    <a href="{{ url_for('show_log_table') }}" class="btn btn-outline-secondary btn-sm">Просмотр логов</a>
+                </div>
+            </div>
+        {% endif %}
 
-            <!-- Панель управления -->
+        <!-- Информация о функциях -->
+        <div class="row mt-5">
             <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Управление</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="btn-group-vertical w-100">
-                            <!-- Новая кнопка для графиков -->
-                            <a href="{{ url_for('chart') }}" class="btn btn-info">
-                                📊 Построить график
-                            </a>
-
-                            <!-- Кнопки для таблиц -->
-                            <a href="{{ url_for('show_crypto_table') }}" class="btn btn-outline-primary">
-                                📋 Таблица курсов
-                            </a>
-                            
-                            <a href="{{ url_for('show_log_table') }}" class="btn btn-outline-secondary">
-                                📝 Логи приложения
-                            </a>
-
-                            <!-- Кнопки управления БД -->
-                            {% if db_connected %}
-                                <form method="POST" action="{{ url_for('disconnect_db') }}" class="d-grid">
-                                    <button type="submit" class="btn btn-warning">
-                                        🔌 Отключить БД
-                                    </button>
-                                </form>
-                            {% else %}
-                                <form method="POST" action="{{ url_for('connect_db') }}" class="d-grid">
-                                    <button type="submit" class="btn btn-success">
-                                        🔗 Подключить БД
-                                    </button>
-                                </form>
-                            {% endif %}
-                        </div>
-
-                        <!-- Статус БД -->
-                        <div class="mt-3 p-3 rounded {{ 'bg-success' if db_connected else 'bg-danger' }} text-white">
-                            <small>
-                                <strong>Статус БД:</strong> 
-                                {{ 'Подключена' if db_connected else 'Отключена' }}
-                            </small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Информационная панель -->
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <h6 class="card-title mb-0">ℹ️ Информация</h6>
-                    </div>
-                    <div class="card-body">
-                        <small class="text-muted">
-                            <strong>Значения по умолчанию:</strong><br>
-                            • Криптовалюта: Bitcoin<br>
-                            • Валюта: USD<br>
-                            <strong>Источник данных:</strong> CoinGecko API<br>
-                            <strong>Доступно криптовалют:</strong> {{ cryptos|length }}<br>
-                            <strong>Доступно валют:</strong> {{ currencies|length }}
-                        </small>
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h3>📈</h3>
+                        <h5 class="card-title">Графики</h5>
+                        <p class="card-text">Анализируйте динамику курсов с помощью интерактивных графиков</p>
+                        <a href="{{ url_for('chart') }}" class="btn btn-outline-primary">Перейти к графикам</a>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Быстрый доступ к популярным криптовалютам -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="card-title mb-0">🚀 Популярные криптовалюты</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex flex-wrap gap-2">
-                            <button class="btn btn-primary btn-sm" onclick="selectCrypto('bitcoin')">
-                                Bitcoin
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('ethereum')">
-                                Ethereum
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('binancecoin')">
-                                Binance Coin
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('ripple')">
-                                Ripple
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('cardano')">
-                                Cardano
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('solana')">
-                                Solana
-                            </button>
-                        </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h3>🔐</h3>
+                        <h5 class="card-title">Авторизация</h5>
+                        <p class="card-text">Войдите через Telegram для доступа к персонализированным функциям</p>
+                        <a href="{{ url_for('auth') }}" class="btn telegram-btn">Авторизоваться</a>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Быстрый доступ к валютам -->
-        <div class="row mt-3">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="card-title mb-0">💱 Популярные валюты</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex flex-wrap gap-2">
-                            <button class="btn btn-success btn-sm" onclick="selectCurrency('usd')">
-                                USD
-                            </button>
-                            <button class="btn btn-outline-success btn-sm" onclick="selectCurrency('eur')">
-                                EUR
-                            </button>
-                            <button class="btn btn-outline-success btn-sm" onclick="selectCurrency('gbp')">
-                                GBP
-                            </button>
-                            <button class="btn btn-outline-success btn-sm" onclick="selectCurrency('jpy')">
-                                JPY
-                            </button>
-                            <button class="btn btn-outline-success btn-sm" onclick="selectCurrency('rub')">
-                                RUB
-                            </button>
-                        </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h3>📊</h3>
+                        <h5 class="card-title">История данных</h5>
+                        <p class="card-text">Просматривайте исторические данные и логи приложения</p>
+                        <a href="{{ url_for('show_crypto_table') }}" class="btn btn-outline-primary">Таблица курсов</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">Crypto Rates App &copy; 2024</p>
+        </div>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-        function selectCrypto(crypto) {
-            document.getElementById('crypto').value = crypto;
-        }
-
-        function selectCurrency(currency) {
-            document.getElementById('currency').value = currency;
-        }
-
-        // Автоматическое закрытие алертов через 5 секунд
-        setTimeout(function() {
-            var alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                var bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            });
-        }, 5000);
-
-        // Показать уведомление о значениях по умолчанию при загрузке
+        // Автоматическое скрытие alert через 5 секунд
         document.addEventListener('DOMContentLoaded', function() {
-            const cryptoSelect = document.getElementById('crypto');
-            const currencySelect = document.getElementById('currency');
-            
-            if (cryptoSelect.value === 'bitcoin' && currencySelect.value === 'usd') {
-                console.log('Значения по умолчанию установлены: Bitcoin/USD');
-            }
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
+            });
         });
     </script>
 </body>

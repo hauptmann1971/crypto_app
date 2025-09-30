@@ -18,6 +18,8 @@ matplotlib.use('Agg')  # Для работы без GUI
 import matplotlib.pyplot as plt
 import io
 import base64
+import telegram_auth as t_a
+import phonenumbers
 
 # Инициализация
 load_dotenv()
@@ -377,6 +379,83 @@ def index():
                            periods=PERIODS,
                            rate=rate_data.get('rate') if request.method == 'POST' else None,
                            db_connected=db_connection_active)
+
+
+@app.route('/auth', methods=['GET', 'POST'])
+def auth():
+    """Страница авторизации через telegram"""
+    if request.method == 'GET':
+        return render_template('auth.html')
+    
+    # POST обработка
+    phone_number = request.form.get('phone_number')
+    
+    # Проверка наличия номера
+    if not phone_number:
+        flash("Введите номер телефона", 'error')
+        return redirect(url_for('auth'))
+    
+    # Добавляем + если его нет
+    if not phone_number.startswith('+'):
+        phone_number = '+' + phone_number
+    
+    """
+    Проверка с использованием библиотеки phonenumbers
+    """
+    try:
+        parsed = phonenumbers.parse(phone_number, None)
+        if not phonenumbers.is_valid_number(parsed):
+            flash("Неверный формат номера телефона", 'error')
+            return redirect(url_for('auth'))
+            
+    except phonenumbers.NumberParseException:
+        flash("Введите номер телефона в международном формате (например: +79161234567)", 'error')
+        return redirect(url_for('auth'))
+
+    # Отправка сообщения через Telegram
+    try:
+        response = t_a.send_message(phone_number)
+        
+        if t_a.check_message(response):
+            flash("Код подтверждения отправлен в Telegram! Проверьте ваши сообщения.", 'success')
+            log_message(f"Успешная отправка кода для номера: {phone_number}", 'info')
+            return redirect(url_for('index'))
+        else:
+            flash("Ошибка отправки сообщения. Проверьте номер и попробуйте снова.", 'error')
+            log_message(f"Ошибка отправки кода для номера: {phone_number}", 'error')
+            return redirect(url_for('auth'))
+            
+    except Exception as e:
+        error_msg = f"Ошибка при отправке сообщения: {str(e)}"
+        flash(error_msg, 'error')
+        log_message(f"Исключение при отправке Telegram сообщения: {e}", 'error')
+        return redirect(url_for('auth'))
+
+
+@app.route('/verify_code', methods=['POST'])
+def verify_code():
+    """Проверка кода подтверждения из Telegram"""
+    verification_code = request.form.get('verification_code')
+    
+    if not verification_code or len(verification_code) != 6:
+        flash("Введите 6-значный код подтверждения", 'error')
+        return redirect(url_for('auth'))
+    
+    # Здесь добавьте логику проверки кода через ваш модуль telegram_auth
+    try:
+        # Пример проверки кода
+        if t_a.verify_code(verification_code):  # Предполагаем, что такая функция есть
+            flash("Авторизация успешно завершена! Добро пожаловать!", 'success')
+            log_message("Успешная авторизация через Telegram", 'info')
+            return redirect(url_for('index'))
+        else:
+            flash("Неверный код подтверждения. Попробуйте снова.", 'error')
+            return redirect(url_for('auth'))
+            
+    except Exception as e:
+        flash(f"Ошибка при проверке кода: {str(e)}", 'error')
+        log_message(f"Ошибка проверки кода: {e}", 'error')
+        return redirect(url_for('auth'))
 
 
 @app.route('/chart', methods=['GET', 'POST'])
