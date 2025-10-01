@@ -407,7 +407,6 @@ def auth():
         if not phonenumbers.is_valid_number(parsed):
             flash("Неверный формат номера телефона", 'error')
             return redirect(url_for('auth'))
-            
     except phonenumbers.NumberParseException:
         flash("Введите номер телефона в международном формате (например: +79161234567)", 'error')
         return redirect(url_for('auth'))
@@ -415,11 +414,13 @@ def auth():
     # Отправка сообщения через Telegram
     try:
         response = t_a.send_message(phone_number)
-        
-        if t_a.check_message(response):
+        res = response.get('delivery_status')
+        if res.get("status") == "sent":
+            t_a.last_request_response = response
             flash("Код подтверждения отправлен в Telegram! Проверьте ваши сообщения.", 'success')
             log_message(f"Успешная отправка кода для номера: {phone_number}", 'info')
-            return redirect(url_for('index'))
+            return redirect(url_for('auth'))
+            
         else:
             flash("Ошибка отправки сообщения. Проверьте номер и попробуйте снова.", 'error')
             log_message(f"Ошибка отправки кода для номера: {phone_number}", 'error')
@@ -441,10 +442,9 @@ def verify_code():
         flash("Введите 6-значный код подтверждения", 'error')
         return redirect(url_for('auth'))
     
-    # Здесь добавьте логику проверки кода через ваш модуль telegram_auth
+    # Проверка кода авторнизации через модуль telegram_auth
     try:
-        # Пример проверки кода
-        if t_a.verify_code(verification_code):  # Предполагаем, что такая функция есть
+        if t_a.verify_code(t_a.last_request_response, verification_code):  # Предполагаем, что такая функция есть
             flash("Авторизация успешно завершена! Добро пожаловать!", 'success')
             log_message("Успешная авторизация через Telegram", 'info')
             return redirect(url_for('index'))

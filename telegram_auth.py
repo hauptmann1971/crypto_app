@@ -3,6 +3,8 @@ import os
 import json
 from dotenv import load_dotenv
 
+last_request_response = None
+
 "Авторизация через telegram API"
 
 load_dotenv()
@@ -42,15 +44,21 @@ def send_message(phone_number):
     print(response)
     return response
 
-def check_message(response):
+def check_message(response, code):
     endpoint = 'checkVerificationStatus'
     json_body = {
-        'request_id': response.get_value('request_id'), # Relevant request id
-        'code': request_id_code[1],            # The code the user entered in your app
+        'request_id': response.get('request_id'), # Relevant request id
+        'code': code,            # The code the user entered in your app
     }
     result = post_request_status(endpoint, json_body)
     status = result.get('verification_status', {}).get('status')
     return status == 'code_valid'
+
+
+def verify_code(response, verification_code):
+    return check_message(response, verification_code)
+        
+
 
 #res = send_message('79166844293')
 #print(check_message((res['request_id'], input("Input code: "))))

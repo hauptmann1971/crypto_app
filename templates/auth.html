@@ -42,60 +42,24 @@
             letter-spacing: 3px;
             font-weight: bold;
         }
-        .step-indicator {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
+        .divider {
+            text-align: center;
+            margin: 20px 0;
             position: relative;
         }
-        .step-indicator::before {
+        .divider::before {
             content: '';
             position: absolute;
-            top: 15px;
+            top: 50%;
             left: 0;
             right: 0;
-            height: 2px;
+            height: 1px;
             background: #dee2e6;
-            z-index: 1;
         }
-        .step {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: #dee2e6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            position: relative;
-            z-index: 2;
-        }
-        .step.active {
-            background: #0088cc;
-            color: white;
-        }
-        .step.completed {
-            background: #28a745;
-            color: white;
-        }
-        .step-text {
-            position: absolute;
-            top: 35px;
-            left: 50%;
-            transform: translateX(-50%);
-            white-space: nowrap;
-            font-size: 0.8rem;
+        .divider-text {
+            background: white;
+            padding: 0 15px;
             color: #6c757d;
-        }
-        .hidden {
-            display: none;
-        }
-        .timer {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-        .resend-btn:disabled {
-            opacity: 0.5;
         }
     </style>
 </head>
@@ -112,29 +76,14 @@
                 <h2 class="mb-4">Авторизация через Telegram</h2>
             </div>
 
-            <!-- Индикатор шагов -->
-            <div class="step-indicator">
-                <div class="step active" id="step1">
-                    1
-                    <div class="step-text">Номер</div>
-                </div>
-                <div class="step" id="step2">
-                    2
-                    <div class="step-text">Код</div>
-                </div>
-                <div class="step" id="step3">
-                    3
-                    <div class="step-text">Готово</div>
-                </div>
-            </div>
-
             <!-- Блок с инструкциями -->
             <div class="instructions">
                 <h6>Как это работает:</h6>
                 <ul class="mb-0 small">
                     <li>Введите номер телефона, привязанный к вашему Telegram аккаунту</li>
-                    <li>На указанный номер будет отправлено сообщение с кодом подтверждения</li>
-                    <li>Введите полученный код в Telegram для завершения авторизации</li>
+                    <li>Нажмите "Отправить код в Telegram"</li>
+                    <li>Получите код в Telegram и введите его ниже</li>
+                    <li>Нажмите "Подтвердить код" для завершения авторизации</li>
                 </ul>
             </div>
 
@@ -151,7 +100,7 @@
             {% endwith %}
 
             <!-- Форма ввода номера телефона -->
-            <form method="POST" action="{{ url_for('auth') }}" id="phoneForm">
+            <form method="POST" action="{{ url_for('auth') }}">
                 <div class="mb-3">
                     <label for="phone_number" class="form-label">Номер телефона</label>
                     <div class="input-group">
@@ -171,24 +120,25 @@
                     </div>
                 </div>
 
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-primary btn-lg" id="sendCodeBtn">
+                <div class="d-grid gap-2 mb-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="white" style="margin-right: 8px;">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.78 5.42-.9 6.8-.06.67-.36.89-.89.56-2.45-1.83-3.57-2.98-5.79-4.78-.54-.45-.92-.68-.89-1.07.03-.39.43-.56.98-.4 3.87 1.56 5.57 2.47 8.39 4.01.38.21.67.1.77-.32.23-.85.78-3.57.9-5.08.07-.85-.25-1.18-.82-1.18-.27 0-.58.05-.92.12-1.37.45-7.92 3.14-8.07 3.19-.38.13-.74.19-1.08.19-.54 0-.8-.26-.8-.67 0-.34.23-.73.68-1.05 4.78-3.28 7.74-5.14 9.14-5.98 2.08-1.23 2.52-1.44 2.82-1.44.2 0 .65.04.94.31.29.27.28.8.25 1.13z"/>
                         </svg>
                         Отправить код в Telegram
                     </button>
-                    
-                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
-                        ← Назад к курсам
-                    </a>
                 </div>
             </form>
 
+            <!-- Разделитель -->
+            <div class="divider">
+                <span class="divider-text">или</span>
+            </div>
+
             <!-- Форма ввода кода подтверждения -->
-            <form method="POST" action="{{ url_for('verify_code') }}" id="codeForm" class="hidden">
+            <form method="POST" action="{{ url_for('verify_code') }}">
                 <div class="mb-3">
-                    <label for="verification_code" class="form-label">Код подтверждения</label>
+                    <label for="verification_code" class="form-label">Уже получили код?</label>
                     <input type="text" 
                            class="form-control code-input" 
                            id="verification_code" 
@@ -198,17 +148,8 @@
                            pattern="[0-9]{6}"
                            required>
                     <div class="form-text">
-                        Введите 6-значный код, который вы получили в Telegram
+                        Введите 6-значный код из Telegram
                     </div>
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="timer">
-                        <span id="timerText">Отправить код повторно через: <span id="countdown">60</span> сек</span>
-                    </div>
-                    <button type="button" class="btn btn-outline-secondary btn-sm resend-btn" id="resendBtn" disabled>
-                        Отправить повторно
-                    </button>
                 </div>
 
                 <div class="d-grid gap-2">
@@ -216,9 +157,9 @@
                         ✅ Подтвердить код
                     </button>
                     
-                    <button type="button" class="btn btn-outline-secondary" id="backToPhoneBtn">
-                        ← Изменить номер
-                    </button>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        ← Назад к курсам
+                    </a>
                 </div>
             </form>
 
@@ -234,88 +175,15 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Элементы DOM
-        const phoneForm = document.getElementById('phoneForm');
-        const codeForm = document.getElementById('codeForm');
-        const step1 = document.getElementById('step1');
-        const step2 = document.getElementById('step2');
-        const step3 = document.getElementById('step3');
-        const backToPhoneBtn = document.getElementById('backToPhoneBtn');
-        const resendBtn = document.getElementById('resendBtn');
-        const countdownElement = document.getElementById('countdown');
-        const timerText = document.getElementById('timerText');
-
-        // Переменные таймера
-        let countdown = 60;
-        let countdownInterval;
-
-        // Функция для показа формы кода
-        function showCodeForm() {
-            phoneForm.classList.add('hidden');
-            codeForm.classList.remove('hidden');
-            step1.classList.remove('active');
-            step1.classList.add('completed');
-            step2.classList.add('active');
-            
-            // Запуск таймера
-            startCountdown();
-        }
-
-        // Функция для возврата к форме номера
-        function showPhoneForm() {
-            codeForm.classList.add('hidden');
-            phoneForm.classList.remove('hidden');
-            step1.classList.add('active');
-            step1.classList.remove('completed');
-            step2.classList.remove('active');
-            
-            // Остановка таймера
-            stopCountdown();
-        }
-
-        // Таймер обратного отсчета
-        function startCountdown() {
-            countdown = 60;
-            countdownElement.textContent = countdown;
-            resendBtn.disabled = true;
-            
-            countdownInterval = setInterval(() => {
-                countdown--;
-                countdownElement.textContent = countdown;
-                
-                if (countdown <= 0) {
-                    stopCountdown();
-                    resendBtn.disabled = false;
-                    timerText.textContent = 'Код устарел';
-                }
-            }, 1000);
-        }
-
-        function stopCountdown() {
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-            }
-        }
-
         // Автоматическое форматирование номера телефона
         document.getElementById('phone_number').addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             e.target.value = value;
         });
 
-        // Автоматический переход к следующему полю при вводе кода
+        // Автоматический ввод кода
         document.getElementById('verification_code').addEventListener('input', function(e) {
-            if (this.value.length === 6) {
-                this.value = this.value.replace(/\D/g, '').substring(0, 6);
-            }
-        });
-
-        // Обработчики событий
-        backToPhoneBtn.addEventListener('click', showPhoneForm);
-        
-        resendBtn.addEventListener('click', function() {
-            // Здесь можно добавить логику повторной отправки кода
-            phoneForm.submit();
+            this.value = this.value.replace(/\D/g, '').substring(0, 6);
         });
 
         // Автоматическое скрытие alert через 5 секунд
@@ -327,31 +195,6 @@
                     bsAlert.close();
                 }, 5000);
             });
-
-            // Если есть успешное сообщение о отправке кода, показываем форму ввода кода
-            const successAlerts = document.querySelectorAll('.alert-success');
-            if (successAlerts.length > 0) {
-                const successMessage = successAlerts[0].textContent.toLowerCase();
-                if (successMessage.includes('отправлен') || successMessage.includes('success')) {
-                    showCodeForm();
-                }
-            }
-        });
-
-        // Обработка отправки формы номера
-        phoneForm.addEventListener('submit', function(e) {
-            // Можно добавить дополнительную валидацию перед отправкой
-            const phoneInput = document.getElementById('phone_number');
-            if (phoneInput.value.length < 5) {
-                e.preventDefault();
-                alert('Введите корректный номер телефона');
-                return;
-            }
-            
-            // Показываем индикатор загрузки
-            const submitBtn = document.getElementById('sendCodeBtn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Отправка...';
         });
     </script>
 </body>

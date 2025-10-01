@@ -211,3 +211,124 @@
 2025-09-30 16:18:55,487 - INFO -  * Debugger PIN: 413-573-039
 2025-09-30 16:19:09,067 - INFO -  * Detected change in 'c:\\Users\\romanov\\Проекты\\crypto_app\\crypto_app-1\\telegram_auth.py', reloading
 2025-09-30 16:19:09,518 - INFO -  * Restarting with stat
+2025-10-01 12:59:43,172 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-01 12:59:43,738 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-01 12:59:43,783 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-01 12:59:44,635 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-10-01 12:59:44,645 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-01 12:59:44,665 - INFO -  * Restarting with stat
+2025-10-01 12:59:50,004 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-01 12:59:50,306 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-01 12:59:50,369 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-01 12:59:50,519 - WARNING -  * Debugger is active!
+2025-10-01 12:59:50,653 - INFO -  * Debugger PIN: 413-573-039
+2025-10-01 13:00:08,100 - INFO - 127.0.0.1 - - [01/Oct/2025 13:00:08] "GET / HTTP/1.1" 200 -
+2025-10-01 13:00:11,108 - INFO - 127.0.0.1 - - [01/Oct/2025 13:00:11] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-01 13:00:17,181 - INFO - 127.0.0.1 - - [01/Oct/2025 13:00:17] "GET /auth HTTP/1.1" 200 -
+2025-10-01 13:00:56,073 - ERROR - [crypto_api.backend] User=None | Ошибка отправки кода для номера: +79166844293
+2025-10-01 13:00:56,353 - INFO - 127.0.0.1 - - [01/Oct/2025 13:00:56] "[32mPOST /auth HTTP/1.1[0m" 302 -
+2025-10-01 13:00:56,393 - INFO - 127.0.0.1 - - [01/Oct/2025 13:00:56] "GET /auth HTTP/1.1" 200 -
+2025-10-01 13:01:32,548 - INFO - [crypto_api.backend] User=None | Успешная отправка кода для номера: +79166844293
+2025-10-01 13:01:32,687 - INFO - 127.0.0.1 - - [01/Oct/2025 13:01:32] "[32mPOST /auth HTTP/1.1[0m" 302 -
+2025-10-01 13:01:33,960 - INFO - 127.0.0.1 - - [01/Oct/2025 13:01:33] "GET / HTTP/1.1" 200 -
+2025-10-01 13:46:08,526 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-01 13:46:08,919 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-01 13:46:08,968 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-01 13:46:09,721 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-10-01 13:46:09,724 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-01 13:46:09,758 - INFO -  * Restarting with stat
+2025-10-01 13:46:13,564 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-01 13:46:13,891 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-01 13:46:13,943 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-01 13:46:14,037 - WARNING -  * Debugger is active!
+2025-10-01 13:46:14,084 - INFO -  * Debugger PIN: 413-573-039
+2025-10-01 13:46:24,037 - INFO - 127.0.0.1 - - [01/Oct/2025 13:46:24] "GET / HTTP/1.1" 200 -
+2025-10-01 13:46:31,675 - INFO - 127.0.0.1 - - [01/Oct/2025 13:46:31] "GET /auth HTTP/1.1" 200 -
+2025-10-01 13:46:37,112 - INFO - [crypto_api.backend] User=None | Успешная отправка кода для номера: +79166844293
+2025-10-01 13:46:37,177 - INFO - 127.0.0.1 - - [01/Oct/2025 13:46:37] "[32mPOST /auth HTTP/1.1[0m" 302 -
+2025-10-01 13:46:37,199 - INFO - 127.0.0.1 - - [01/Oct/2025 13:46:37] "[31m[1mGET /verify_code HTTP/1.1[0m" 405 -
+2025-10-01 13:51:48,444 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-01 13:51:48,784 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-01 13:51:48,828 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-01 13:51:48,977 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-10-01 13:51:48,978 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-01 13:51:48,983 - INFO -  * Restarting with stat
+2025-10-01 13:51:53,107 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-01 13:51:53,434 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-01 13:51:53,499 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-01 13:51:53,627 - WARNING -  * Debugger is active!
+2025-10-01 13:51:53,642 - INFO -  * Debugger PIN: 413-573-039
+2025-10-01 13:52:08,446 - INFO - 127.0.0.1 - - [01/Oct/2025 13:52:08] "GET / HTTP/1.1" 200 -
+2025-10-01 13:52:13,354 - INFO - 127.0.0.1 - - [01/Oct/2025 13:52:13] "GET /auth HTTP/1.1" 200 -
+2025-10-01 13:52:17,729 - INFO - [crypto_api.backend] User=None | Успешная отправка кода для номера: +79166844293
+2025-10-01 13:52:17,790 - INFO - 127.0.0.1 - - [01/Oct/2025 13:52:17] "[32mPOST /auth HTTP/1.1[0m" 302 -
+2025-10-01 13:52:17,821 - INFO - 127.0.0.1 - - [01/Oct/2025 13:52:17] "[31m[1mGET /verify_code HTTP/1.1[0m" 405 -
+2025-10-01 14:00:09,286 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-01 14:00:09,648 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-01 14:00:09,706 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-01 14:00:09,839 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-10-01 14:00:09,840 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-01 14:00:09,845 - INFO -  * Restarting with stat
+2025-10-01 14:00:13,630 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-01 14:00:13,969 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-01 14:00:14,016 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-01 14:00:14,156 - WARNING -  * Debugger is active!
+2025-10-01 14:00:14,226 - INFO -  * Debugger PIN: 413-573-039
+2025-10-01 14:00:28,666 - INFO - 127.0.0.1 - - [01/Oct/2025 14:00:28] "GET / HTTP/1.1" 200 -
+2025-10-01 14:00:45,874 - INFO - 127.0.0.1 - - [01/Oct/2025 14:00:45] "GET /auth HTTP/1.1" 200 -
+2025-10-01 14:00:58,345 - INFO - [crypto_api.backend] User=None | Успешная отправка кода для номера: +79166844293
+2025-10-01 14:00:58,501 - INFO - 127.0.0.1 - - [01/Oct/2025 14:00:58] "[32mPOST /auth HTTP/1.1[0m" 302 -
+2025-10-01 14:00:58,531 - INFO - 127.0.0.1 - - [01/Oct/2025 14:00:58] "[31m[1mGET /verify_code HTTP/1.1[0m" 405 -
+2025-10-01 14:04:26,996 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-01 14:04:27,318 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-01 14:04:27,390 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-01 14:04:27,621 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-10-01 14:04:27,696 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-01 14:04:27,704 - INFO -  * Restarting with stat
+2025-10-01 14:04:33,022 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-01 14:04:33,374 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-01 14:04:33,441 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-01 14:04:33,597 - WARNING -  * Debugger is active!
+2025-10-01 14:04:33,612 - INFO -  * Debugger PIN: 413-573-039
+2025-10-01 14:04:42,798 - INFO - 127.0.0.1 - - [01/Oct/2025 14:04:42] "GET / HTTP/1.1" 200 -
+2025-10-01 14:04:47,793 - INFO - 127.0.0.1 - - [01/Oct/2025 14:04:47] "GET /auth HTTP/1.1" 200 -
+2025-10-01 14:04:55,399 - INFO - 127.0.0.1 - - [01/Oct/2025 14:04:55] "[32mPOST /auth HTTP/1.1[0m" 302 -
+2025-10-01 14:04:55,410 - INFO - 127.0.0.1 - - [01/Oct/2025 14:04:55] "GET /auth HTTP/1.1" 200 -
+2025-10-01 14:05:17,336 - INFO - [crypto_api.backend] User=None | Успешная отправка кода для номера: +79166844293
+2025-10-01 14:05:17,528 - INFO - 127.0.0.1 - - [01/Oct/2025 14:05:17] "[35m[1mPOST /auth HTTP/1.1[0m" 500 -
+2025-10-01 14:05:17,951 - INFO - 127.0.0.1 - - [01/Oct/2025 14:05:17] "GET /auth?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+2025-10-01 14:05:18,401 - INFO - 127.0.0.1 - - [01/Oct/2025 14:05:18] "GET /auth?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+2025-10-01 14:05:18,858 - INFO - 127.0.0.1 - - [01/Oct/2025 14:05:18] "GET /auth?__debugger__=yes&cmd=resource&f=console.png&s=HM2prHHP6dJrZn1cTFwU HTTP/1.1" 200 -
+2025-10-01 14:05:19,018 - INFO - 127.0.0.1 - - [01/Oct/2025 14:05:19] "GET /auth?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+2025-10-01 14:08:44,080 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-01 14:08:44,453 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-01 14:08:44,507 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-01 14:08:44,658 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-10-01 14:08:44,689 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-01 14:08:44,698 - INFO -  * Restarting with stat
+2025-10-01 14:08:48,666 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-01 14:08:49,036 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-01 14:08:49,084 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-01 14:08:49,215 - WARNING -  * Debugger is active!
+2025-10-01 14:08:49,242 - INFO -  * Debugger PIN: 413-573-039
+2025-10-01 14:08:59,674 - INFO - 127.0.0.1 - - [01/Oct/2025 14:08:59] "GET / HTTP/1.1" 200 -
+2025-10-01 14:09:06,285 - INFO - 127.0.0.1 - - [01/Oct/2025 14:09:06] "GET /auth HTTP/1.1" 200 -
+2025-10-01 14:09:16,483 - INFO - [crypto_api.backend] User=None | Успешная отправка кода для номера: +79166844293
+2025-10-01 14:09:16,545 - INFO - 127.0.0.1 - - [01/Oct/2025 14:09:16] "[32mPOST /auth HTTP/1.1[0m" 302 -
+2025-10-01 14:09:16,566 - INFO - 127.0.0.1 - - [01/Oct/2025 14:09:16] "GET /auth HTTP/1.1" 200 -
+2025-10-01 14:09:41,527 - INFO - [crypto_api.backend] User=None | Успешная авторизация через Telegram
+2025-10-01 14:09:41,589 - INFO - 127.0.0.1 - - [01/Oct/2025 14:09:41] "[32mPOST /verify_code HTTP/1.1[0m" 302 -
+2025-10-01 14:09:42,281 - INFO - 127.0.0.1 - - [01/Oct/2025 14:09:42] "GET / HTTP/1.1" 200 -
+2025-10-01 14:11:12,975 - INFO - 127.0.0.1 - - [01/Oct/2025 14:11:12] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-01 14:11:37,239 - INFO - [crypto_api.backend] User=None | Курс ETHEREUM/JPY: 631347.0000
+2025-10-01 14:11:37,976 - INFO - 127.0.0.1 - - [01/Oct/2025 14:11:37] "POST / HTTP/1.1" 200 -
+2025-10-01 14:11:45,823 - INFO - 127.0.0.1 - - [01/Oct/2025 14:11:45] "GET /crypto_table HTTP/1.1" 200 -
+2025-10-01 14:11:55,110 - INFO - 127.0.0.1 - - [01/Oct/2025 14:11:55] "GET /log_table HTTP/1.1" 200 -
+2025-10-01 14:12:05,983 - INFO - 127.0.0.1 - - [01/Oct/2025 14:12:05] "GET / HTTP/1.1" 200 -
+2025-10-01 14:12:10,122 - INFO - 127.0.0.1 - - [01/Oct/2025 14:12:10] "GET /chart HTTP/1.1" 200 -
