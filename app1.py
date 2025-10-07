@@ -1,5 +1,5 @@
 # app.py
-from flask import Flask, render_template, request, flash, redirect, url_for, send_file, session, jsonify
+from flask import Flask, render_template, request, flash, redirect, url_for, send_file
 from sqlalchemy import create_engine, Column, Integer, String, Float, Text, BigInteger, DateTime, func
 from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base
 from sqlalchemy.exc import SQLAlchemyError
@@ -9,7 +9,7 @@ import os
 import logging
 from logging.handlers import RotatingFileHandler
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
+from datetime import datetime
 from cachetools import cached, TTLCache
 from contextlib import contextmanager
 import pandas as pd
@@ -20,10 +20,6 @@ import io
 import base64
 import telegram_auth as t_a
 import phonenumbers
-import hashlib
-import hmac
-from dataclasses import dataclass
-from typing import Optional
 
 # Инициализация
 load_dotenv()
@@ -39,7 +35,7 @@ logging.basicConfig(
 )
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')
+app.secret_key = os.getenv('SECRET_KEY')
 
 # Конфигурация SQLAlchemy
 Base = declarative_base()
@@ -47,59 +43,6 @@ engine = None
 SessionLocal = None
 db_connection_active = True
 
-# Конфигурация Telegram
-BOT_USERNAME = os.getenv('BOT_USERNAME', '@romanov_crypto_currency_bot')
-BOT_TOKEN = os.getenv('BOT_TOKEN', '8264247176:AAFByVrbcY8K-aanicYu2QK-tYRaFNq0lxY')
-
-@dataclass
-class TelegramUser:
-    id: int
-    first_name: str
-    auth_date: int
-    hash: str
-    username: Optional[str] = None
-    photo_url: Optional[str] = None
-    last_name: Optional[str] = None
-
-def verify_telegram_authentication(data: dict, bot_token: str) -> bool:
-    """
-    Проверяет данные авторизации Telegram
-    """
-    try:
-        # Проверяем обязательные поля
-        required_fields = ['id', 'first_name', 'auth_date', 'hash']
-        for field in required_fields:
-            if field not in data:
-                return False
-
-        # Проверяем, что данные не устарели (не старше 24 часов)
-        auth_date = datetime.fromtimestamp(int(data['auth_date']))
-        if datetime.now() - auth_date > timedelta(hours=24):
-            return False
-
-        # Формируем строку для проверки
-        data_check_string = '\n'.join(
-            f'{key}={value}'
-            for key, value in sorted(data.items())
-            if key != 'hash'
-        )
-
-        # Вычисляем секретный ключ
-        secret_key = hashlib.sha256(bot_token.encode()).digest()
-
-        # Вычисляем хэш
-        computed_hash = hmac.new(
-            secret_key,
-            data_check_string.encode(),
-            hashlib.sha256
-        ).hexdigest()
-
-        # Сравниваем хэши безопасным способом
-        return hmac.compare_digest(computed_hash, data['hash'])
-
-    except Exception as e:
-        print(f"Error verifying Telegram auth: {e}")
-        return False
 
 # Модели данных
 class CryptoRate(Base):
@@ -358,54 +301,6 @@ class CoinGeckoAPI:
             return None
 
 
-@app.route('/telegram-auth', methods=['POST'])
-def telegram_auth():
-    """
-    Обрабатывает callback от Telegram Login Widget
-    """
-    try:
-        user_data = request.get_json()
-        
-        if not user_data:
-            return jsonify({'success': False, 'error': 'No data received'})
-        
-        print(f"Received Telegram auth data: {user_data}")
-        
-        # Проверяем подлинность данных
-        if not verify_telegram_authentication(user_data, BOT_TOKEN):
-            return jsonify({'success': False, 'error': 'Invalid authentication data'})
-        
-        # Сохраняем пользователя в сессии
-        session['user'] = {
-            'id': user_data['id'],
-            'first_name': user_data['first_name'],
-            'username': user_data.get('username'),
-            'photo_url': user_data.get('photo_url'),
-            'auth_date': user_data['auth_date']
-        }
-        
-        log_message(f"User {user_data['id']} successfully authenticated via Telegram", 'info', user_id=str(user_data['id']))
-        
-        return jsonify({'success': True})
-        
-    except Exception as e:
-        print(f"Telegram auth error: {e}")
-        log_message(f"Telegram auth error: {e}", 'error')
-        return jsonify({'success': False, 'error': str(e)})
-
-
-@app.route('/logout')
-def logout():
-    """
-    Выход пользователя
-    """
-    user_id = session.get('user', {}).get('id')
-    session.pop('user', None)
-    flash('Вы успешно вышли из системы', 'success')
-    log_message("User logged out", 'info', user_id=str(user_id) if user_id else None)
-    return redirect(url_for('index'))
-
-
 @app.route('/disconnect_db', methods=['POST'])
 def disconnect_db():
     """Отключение подключения к базе данных"""
@@ -440,22 +335,20 @@ def connect_db():
 @app.route('/', methods=['GET', 'POST'])
 def index():
     rate_data = None
-    user = session.get('user')
-    
     if request.method == 'POST':
         crypto = request.form.get('crypto', 'bitcoin')
         currency = request.form.get('currency', 'usd')
 
         if not crypto or not currency:
             flash("Выберите криптовалюту и валюту", 'error')
-            log_message("Не выбрана криптовалюта или валюта", 'warning', user_id=str(user['id']) if user else None)
+            log_message("Не выбрана криптовалюта или валюта", 'warning')
             return redirect('/')
 
         rate_data = get_crypto_rate(crypto, currency)
 
         if not rate_data['success']:
             flash(rate_data['error'], 'error')
-            log_message(rate_data['error'], 'error', user_id=str(user['id']) if user else None)
+            log_message(rate_data['error'], 'error')
             return redirect('/')
 
         try:
@@ -472,12 +365,12 @@ def index():
 
             msg = f"Курс {crypto.upper()}/{currency.upper()}: {rate_data['rate']:.4f}"
             flash(msg, 'success')
-            log_message(msg, 'info', user_id=str(user['id']) if user else None)
+            log_message(msg, 'info')
 
         except SQLAlchemyError as e:
             error_msg = f"Ошибка БД: {str(e)}"
             flash(error_msg, 'error')
-            log_message(error_msg, 'error', traceback=str(e), user_id=str(user['id']) if user else None)
+            log_message(error_msg, 'error', traceback=str(e))
 
     cryptos = load_crypto_list()
     return render_template('index.html',
@@ -485,22 +378,14 @@ def index():
                            currencies=CURRENCIES,
                            periods=PERIODS,
                            rate=rate_data.get('rate') if request.method == 'POST' else None,
-                           db_connected=db_connection_active,
-                           user=user,
-                           bot_username=BOT_USERNAME)
+                           db_connected=db_connection_active)
 
 
 @app.route('/auth', methods=['GET', 'POST'])
 def auth():
     """Страница авторизации через telegram"""
-    user = session.get('user')
-    
-    if user:
-        flash("Вы уже авторизованы!", 'info')
-        return redirect(url_for('index'))
-    
     if request.method == 'GET':
-        return render_template('auth.html', user=user, bot_username=BOT_USERNAME)
+        return render_template('auth.html')
     
     # POST обработка
     phone_number = request.form.get('phone_number')
@@ -578,7 +463,6 @@ def chart():
     """Страница с графиком курса криптовалюты"""
     plot_url = None
     error = None
-    user = session.get('user')
     
     if request.method == 'POST':
         crypto = request.form.get('crypto')
@@ -596,7 +480,7 @@ def chart():
             if data is not None:
                 plot_url = api.generate_plot(data, crypto, currency, period)
                 if plot_url:
-                    log_message(f"Сгенерирован график для {crypto}/{currency} за {period} дней", 'info', user_id=str(user['id']) if user else None)
+                    log_message(f"Сгенерирован график для {crypto}/{currency} за {period} дней", 'info')
                 else:
                     error = "Ошибка генерации графика"
             else:
@@ -604,7 +488,7 @@ def chart():
                 
         except Exception as e:
             error = f"Ошибка: {str(e)}"
-            log_message(f"Ошибка построения графика: {e}", 'error', user_id=str(user['id']) if user else None)
+            log_message(f"Ошибка построения графика: {e}", 'error')
     
     cryptos = load_crypto_list()
     return render_template('chart.html',
@@ -612,8 +496,7 @@ def chart():
                            currencies=CURRENCIES,
                            periods=PERIODS,
                            plot_url=plot_url,
-                           error=error,
-                           user=user)
+                           error=error)
 
 
 @app.route('/crypto_table')
@@ -622,8 +505,6 @@ def show_crypto_table():
     if not db_connection_active:
         flash("Соединение с базой данных отключено", 'error')
         return redirect(url_for('index'))
-
-    user = session.get('user')
 
     try:
         with get_db() as db:
@@ -648,8 +529,7 @@ def show_crypto_table():
         return render_template('data_table.html',
                                title='Курсы криптовалют',
                                data=rates_data,
-                               columns=['crypto', 'currency', 'rate', 'date_time', 'source'],
-                               user=user)
+                               columns=['crypto', 'currency', 'rate', 'date_time', 'source'])
     except SQLAlchemyError as e:
         flash(f"Ошибка БД: {str(e)}", 'error')
         return redirect(url_for('index'))
@@ -661,8 +541,6 @@ def show_log_table():
     if not db_connection_active:
         flash("Соединение с базой данных отключено", 'error')
         return redirect(url_for('index'))
-
-    user = session.get('user')
 
     try:
         with get_db() as db:
@@ -691,8 +569,7 @@ def show_log_table():
                                title='Логи приложения',
                                data=logs_data,
                                columns=['date_time', 'level', 'message', 'service', 'component', 'user_id',
-                                        'traceback'],
-                               user=user)
+                                        'traceback'])
     except SQLAlchemyError as e:
         flash(f"Ошибка БД: {str(e)}", 'error')
         return redirect(url_for('index'))

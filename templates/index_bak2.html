@@ -47,25 +47,6 @@
             background: #ffe6e6;
             color: #cc0000;
         }
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 12px;
-            background: #f8f9fa;
-            border-radius: 20px;
-        }
-        #telegram-widget-container {
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-        }
     </style>
 </head>
 <body>
@@ -102,41 +83,13 @@
                         🗄️ БД: {{ 'Подключена' if db_connected else 'Отключена' }}
                     </span>
                     
-                    <!-- Информация о пользователе или кнопка авторизации -->
-                    {% if user %}
-                        <div class="user-info">
-                            {% if user.photo_url %}
-                                <img src="{{ user.photo_url }}" alt="Avatar" class="user-avatar">
-                            {% endif %}
-                            <div>
-                                <div class="fw-bold">{{ user.first_name }}</div>
-                                {% if user.username %}
-                                    <small class="text-muted">@{{ user.username }}</small>
-                                {% endif %}
-                            </div>
-                            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm ms-2">Выйти</a>
-                        </div>
-                    {% else %}
-                        <!-- Контейнер для Telegram Widget -->
-                        <div id="telegram-widget-container">
-                            <script async src="https://telegram.org/js/telegram-widget.js?22" 
-                                    data-telegram-login="{{ bot_username.replace('@', '') }}" 
-                                    data-size="medium" 
-                                    data-onauth="onTelegramAuth(user)" 
-                                    data-request-access="write">
-                            </script>
-                        </div>
-                        
-                        <!-- Fallback кнопка (показывается если виджет не загрузился) -->
-                        <div id="fallback-auth" style="display: none;">
-                            <a href="{{ url_for('auth') }}" class="telegram-btn text-decoration-none">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.78 5.42-.9 6.8-.06.67-.36.89-.89.56-2.45-1.83-3.57-2.98-5.79-4.78-.54-.45-.92-.68-.89-1.07.03-.39.43-.56.98-.4 3.87 1.56 5.57 2.47 8.39 4.01.38.21.67.1.77-.32.23-.85.78-3.57.9-5.08.07-.85-.25-1.18-.82-1.18-.27 0-.58.05-.92.12-1.37.45-7.92 3.14-8.07 3.19-.38.13-.74.19-1.08.19-.54 0-.8-.26-.8-.67 0-.34.23-.73.68-1.05 4.78-3.28 7.74-5.14 9.14-5.98 2.08-1.23 2.52-1.44 2.82-1.44.2 0 .65.04.94.31.29.27.28.8.25 1.13z"/>
-                                </svg>
-                                Авторизация
-                            </a>
-                        </div>
-                    {% endif %}
+                    <!-- Кнопка авторизации через Telegram -->
+                    <a href="{{ url_for('auth') }}" class="telegram-btn text-decoration-none">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.78 5.42-.9 6.8-.06.67-.36.89-.89.56-2.45-1.83-3.57-2.98-5.79-4.78-.54-.45-.92-.68-.89-1.07.03-.39.43-.56.98-.4 3.87 1.56 5.57 2.47 8.39 4.01.38.21.67.1.77-.32.23-.85.78-3.57.9-5.08.07-.85-.25-1.18-.82-1.18-.27 0-.58.05-.92.12-1.37.45-7.92 3.14-8.07 3.19-.38.13-.74.19-1.08.19-.54 0-.8-.26-.8-.67 0-.34.23-.73.68-1.05 4.78-3.28 7.74-5.14 9.14-5.98 2.08-1.23 2.52-1.44 2.82-1.44.2 0 .65.04.94.31.29.27.28.8.25 1.13z"/>
+                        </svg>
+                        Авторизация
+                    </a>
                 </div>
             </div>
         </div>
@@ -249,19 +202,7 @@
                         <h3>🔐</h3>
                         <h5 class="card-title">Авторизация</h5>
                         <p class="card-text">Войдите через Telegram для доступа к персонализированным функциям</p>
-                        {% if not user %}
-                            <div id="telegram-widget-container-bottom">
-                                <script async src="https://telegram.org/js/telegram-widget.js?22" 
-                                        data-telegram-login="{{ bot_username.replace('@', '') }}" 
-                                        data-size="large" 
-                                        data-onauth="onTelegramAuth(user)" 
-                                        data-request-access="write">
-                                </script>
-                            </div>
-                        {% else %}
-                            <p class="text-success">✅ Вы авторизованы как {{ user.first_name }}</p>
-                            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">Выйти</a>
-                        {% endif %}
+                        <a href="{{ url_for('auth') }}" class="btn telegram-btn">Авторизоваться</a>
                     </div>
                 </div>
             </div>
@@ -287,122 +228,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Функция для обработки авторизации Telegram
-        function onTelegramAuth(user) {
-            console.log('Telegram auth callback received:', user);
-            
-            // Показываем загрузку
-            const widgetContainer = document.getElementById('telegram-widget-container');
-            const widgetContainerBottom = document.getElementById('telegram-widget-container-bottom');
-            if (widgetContainer) {
-                widgetContainer.innerHTML = '<div class="text-light">⏳ Обработка...</div>';
-            }
-            if (widgetContainerBottom) {
-                widgetContainerBottom.innerHTML = '<div class="text-dark">⏳ Обработка авторизации...</div>';
-            }
-            
-            // Отправляем данные пользователя на сервер
-            fetch('/telegram-auth', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(user)
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                return response.json();
-            })
-            .then(data => {
-                console.log('Response data:', data);
-                if (data.success) {
-                    showAlert('success', 'Авторизация прошла успешно!');
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
-                } else {
-                    showAlert('error', 'Ошибка авторизации: ' + data.error);
-                    // Восстанавливаем виджет при ошибке
-                    restoreTelegramWidget();
-                }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-                showAlert('error', 'Произошла ошибка при авторизации');
-                // Восстанавливаем виджет при ошибке
-                restoreTelegramWidget();
-            });
-        }
-        
-        function restoreTelegramWidget() {
-            const widgetContainer = document.getElementById('telegram-widget-container');
-            const widgetContainerBottom = document.getElementById('telegram-widget-container-bottom');
-            
-            if (widgetContainer) {
-                widgetContainer.innerHTML = `
-                    <script async src="https://telegram.org/js/telegram-widget.js?22" 
-                            data-telegram-login="{{ bot_username.replace('@', '') }}" 
-                            data-size="medium" 
-                            data-onauth="onTelegramAuth(user)" 
-                            data-request-access="write">
-                    <\/script>
-                `;
-            }
-            
-            if (widgetContainerBottom) {
-                widgetContainerBottom.innerHTML = `
-                    <script async src="https://telegram.org/js/telegram-widget.js?22" 
-                            data-telegram-login="{{ bot_username.replace('@', '') }}" 
-                            data-size="large" 
-                            data-onauth="onTelegramAuth(user)" 
-                            data-request-access="write">
-                    <\/script>
-                `;
-            }
-        }
-        
-        function showAlert(type, message) {
-            // Удаляем существующие алерты
-            const existingAlerts = document.querySelectorAll('.alert');
-            existingAlerts.forEach(alert => alert.remove());
-            
-            // Создаем новый alert
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            // Добавляем alert в начало контейнера
-            const container = document.querySelector('.container');
-            if (container) {
-                container.insertBefore(alertDiv, container.firstChild);
-            }
-            
-            // Автоматически скрываем через 5 секунд
-            setTimeout(() => {
-                if (alertDiv.parentElement) {
-                    alertDiv.remove();
-                }
-            }, 5000);
-        }
-
-        // Проверяем загрузку виджета
+        // Автоматическое скрытие alert через 5 секунд
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Telegram Widget should be loaded');
-            
-            // Показываем fallback кнопку если виджет не загрузился за 3 секунды
-            setTimeout(() => {
-                const widgetContainer = document.getElementById('telegram-widget-container');
-                const fallbackAuth = document.getElementById('fallback-auth');
-                if (widgetContainer && widgetContainer.children.length === 0 && fallbackAuth) {
-                    widgetContainer.style.display = 'none';
-                    fallbackAuth.style.display = 'block';
-                }
-            }, 3000);
-            
-            // Автоматическое скрытие alert через 5 секунд
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(function(alert) {
                 setTimeout(function() {
