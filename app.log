@@ -478,3 +478,24 @@
 2025-10-08 11:06:54,659 - INFO - [crypto_api.backend] User=None | Приложение запущено
 2025-10-08 11:06:54,784 - WARNING -  * Debugger is active!
 2025-10-08 11:06:54,830 - INFO -  * Debugger PIN: 413-573-039
+2025-10-08 13:23:36,044 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-08 13:23:36,666 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-08 13:23:36,712 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-08 13:23:37,428 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-10-08 13:23:37,428 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-08 13:23:37,448 - INFO -  * Restarting with stat
+2025-10-08 13:23:41,364 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-08 13:23:41,694 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-08 13:23:41,744 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-08 13:23:41,859 - WARNING -  * Debugger is active!
+2025-10-08 13:23:42,004 - INFO -  * Debugger PIN: 413-573-039
+2025-10-08 13:24:00,276 - INFO - 127.0.0.1 - - [08/Oct/2025 13:24:00] "GET / HTTP/1.1" 200 -
+2025-10-08 13:24:09,601 - INFO - 127.0.0.1 - - [08/Oct/2025 13:24:09] "GET /candlestick HTTP/1.1" 200 -
+2025-10-08 13:32:37,548 - INFO - 127.0.0.1 - - [08/Oct/2025 13:32:37] "GET / HTTP/1.1" 200 -
+2025-10-08 13:32:43,028 - INFO - 127.0.0.1 - - [08/Oct/2025 13:32:43] "GET / HTTP/1.1" 200 -
+2025-10-08 13:32:46,083 - INFO - 127.0.0.1 - - [08/Oct/2025 13:32:46] "GET /chart HTTP/1.1" 200 -
+2025-10-08 13:32:55,911 - INFO - 127.0.0.1 - - [08/Oct/2025 13:32:55] "GET / HTTP/1.1" 200 -
+2025-10-08 13:33:26,683 - INFO - 127.0.0.1 - - [08/Oct/2025 13:33:26] "GET /users_table HTTP/1.1" 200 -
+2025-10-08 13:33:30,520 - INFO - 127.0.0.1 - - [08/Oct/2025 13:33:30] "GET / HTTP/1.1" 200 -
+2025-10-08 13:33:32,999 - INFO - 127.0.0.1 - - [08/Oct/2025 13:33:32] "GET /candlestick HTTP/1.1" 200 -

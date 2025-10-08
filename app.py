@@ -24,6 +24,8 @@ import hashlib
 import hmac
 from dataclasses import dataclass
 from typing import Optional
+from crypto_chart import crypto_chart_api
+import threading
 
 # Инициализация
 load_dotenv()
@@ -50,6 +52,24 @@ db_connection_active = True
 # Конфигурация Telegram
 BOT_USERNAME = os.getenv('BOT_USERNAME', '@romanov_crypto_currency_bot')
 BOT_TOKEN = os.getenv('BOT_TOKEN', '8264247176:AAFByVrbcY8K-aanicYu2QK-tYRaFNq0lxY')
+
+# Словарь популярных криптовалют (50 штук)
+POPULAR_CRYPTOS = [
+    'bitcoin', 'ethereum', 'binancecoin', 'ripple', 'cardano', 'solana',
+    'polkadot', 'dogecoin', 'matic-network', 'stellar', 'litecoin', 'chainlink',
+    'bitcoin-cash', 'ethereum-classic', 'monero', 'eos', 'tezos', 'aave',
+    'cosmos', 'uniswap', 'tron', 'neo', 'vechain', 'theta-token', 'filecoin',
+    'algorand', 'maker', 'compound-governance-token', 'dash', 'zcash',
+    'decred', 'waves', 'ontology', 'icon', 'zilliqa', 'bittorrent',
+    'pancakeswap-token', 'sushi', 'curve-dao-token', 'yearn-finance',
+    'balancer', 'uma', 'renbtc', 'helium', 'chiliz', 'enjincoin',
+    'axie-infinity', 'the-sandbox', 'decentraland', 'gala'
+]
+
+# Глобальные переменные для асинхронной загрузки
+FULL_CRYPTO_LIST = POPULAR_CRYPTOS.copy()
+CRYPTO_LOADING = False
+CRYPTO_LOADED = False
 
 @dataclass
 class TelegramUser:
@@ -252,6 +272,60 @@ PERIODS = [
 ]
 crypto_list_cache = TTLCache(maxsize=1, ttl=3600)
 
+
+def load_full_crypto_list_async():
+    """Асинхронно загружает полный список криптовалют"""
+    global FULL_CRYPTO_LIST, CRYPTO_LOADING, CRYPTO_LOADED, POPULAR_CRYPTOS
+    
+    if CRYPTO_LOADING or CRYPTO_LOADED:
+        return
+    
+    CRYPTO_LOADING = True
+    
+    def load_thread():
+        global FULL_CRYPTO_LIST, CRYPTO_LOADING, CRYPTO_LOADED
+        try:
+            logging.info("Starting async full crypto list loading...")
+            response = requests.get(
+                "https://api.coingecko.com/api/v3/coins/list",
+                timeout=30
+            )
+            response.raise_for_status()
+            
+            all_crypto = [c['id'] for c in response.json()]
+            
+            # Объединяем популярные + полный список (убираем дубликаты)
+            combined_list = POPULAR_CRYPTOS.copy()
+            for crypto in all_crypto:
+                if crypto not in combined_list:
+                    combined_list.append(crypto)
+            
+            FULL_CRYPTO_LIST = combined_list
+            CRYPTO_LOADED = True
+            CRYPTO_LOADING = False
+            
+            logging.info(f"Full crypto list loaded: {len(FULL_CRYPTO_LIST)} items")
+            
+        except Exception as e:
+            logging.error(f"Async crypto list loading failed: {e}")
+            CRYPTO_LOADING = False
+    
+    # Запускаем в отдельном потоке
+    thread = threading.Thread(target=load_thread)
+    thread.daemon = True
+    thread.start()
+
+@cached(crypto_list_cache)
+def load_crypto_list():
+    """Возвращает список криптовалют (сначала популярные, потом полный список)"""
+    # Запускаем асинхронную загрузку полного списка
+    load_full_crypto_list_async()
+    
+    # Всегда возвращаем актуальный список
+    return FULL_CRYPTO_LIST
+
+# Запускаем асинхронную загрузку при импорте модуля
+load_full_crypto_list_async()
 
 @cached(crypto_list_cache)
 def load_crypto_list():
@@ -837,7 +911,84 @@ def show_users_table():
                                columns=['id', 'telegram_id', 'first_name', 'last_name', 'username', 'created_at', 'last_login', 'is_active'])
     except SQLAlchemyError as e:
         flash(f"Ошибка БД: {str(e)}", 'error')
-        return redirect(url_for('index'))       
+        return redirect(url_for('index'))
+
+@app.route('/candlestick', methods=['GET', 'POST'])
+def candlestick_chart():
+    """Страница со свечным графиком"""
+    plot_url = None
+    error = None
+    chart_data = None
+    
+    if request.method == 'POST':
+        crypto = request.form.get('crypto')
+        currency = request.form.get('currency')
+        period = request.form.get('period', '7')
+        chart_type = request.form.get('chart_type', 'candlestick')
+        
+        if not crypto or not currency:
+            flash("Выберите криптовалюту и валюту", 'error')
+            return redirect(url_for('candlestick_chart'))
+        
+        try:
+            # Получаем OHLC данные для свечного графика
+            if chart_type == 'candlestick':
+                data = crypto_chart_api.get_ohlc_data(crypto, currency, period)
+                if data is not None:
+                    plot_url = crypto_chart_api.create_candlestick_chart(data, crypto, currency, period)
+                    chart_data = data
+                else:
+                    error = "Не удалось получить данные для свечного графика"
+            else:
+                # Простой линейный график
+                data = crypto_chart_api.get_historical_data(crypto, currency, period)
+                if data is not None:
+                    plot_url = crypto_chart_api.create_simple_price_chart(data, crypto, currency, period, chart_type)
+                    chart_data = data
+                else:
+                    error = "Не удалось получить данные для графика"
+            
+            if plot_url:
+                log_message(f"Сгенерирован {chart_type} график для {crypto}/{currency} за {period} дней", 'info')
+            elif not error:
+                error = "Ошибка генерации графика"
+                
+        except Exception as e:
+            error = f"Ошибка: {str(e)}"
+            log_message(f"Ошибка построения графика: {e}", 'error')
+    
+    cryptos = load_crypto_list()
+    periods = crypto_chart_api.get_available_periods()
+    
+    return render_template('candlestick.html',
+                           cryptos=cryptos,
+                           currencies=CURRENCIES,
+                           periods=periods,
+                           plot_url=plot_url,
+                           chart_data=chart_data,
+                           error=error)
+
+@app.route('/chart-data/<crypto>/<currency>/<period>')
+def get_chart_data(crypto: str, currency: str, period: str):
+    """API endpoint для получения данных графика в JSON"""
+    try:
+        data = crypto_chart_api.get_ohlc_data(crypto, currency, period)
+        if data is not None:
+            # Конвертируем DataFrame в JSON
+            chart_data = []
+            for idx, row in data.iterrows():
+                chart_data.append({
+                    'timestamp': idx.isoformat(),
+                    'open': row['open'],
+                    'high': row['high'],
+                    'low': row['low'],
+                    'close': row['close']
+                })
+            return jsonify({'success': True, 'data': chart_data})
+        else:
+            return jsonify({'success': False, 'error': 'No data available'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})               
 
 
 if __name__ == '__main__':
