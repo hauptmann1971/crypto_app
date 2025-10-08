@@ -452,3 +452,24 @@
 2025-10-07 16:28:56,449 - INFO - [crypto_api.backend] User=None | Приложение запущено
 2025-10-07 16:28:56,559 - WARNING -  * Debugger is active!
 2025-10-07 16:28:56,577 - INFO -  * Debugger PIN: 413-573-039
+2025-10-08 11:03:55,960 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-08 11:03:56,411 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-08 11:03:56,471 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-08 11:03:57,595 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-10-08 11:03:57,595 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-08 11:03:57,627 - INFO -  * Restarting with stat
+2025-10-08 11:04:02,162 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-08 11:04:02,503 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-08 11:04:02,549 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-08 11:04:02,655 - WARNING -  * Debugger is active!
+2025-10-08 11:04:02,729 - INFO -  * Debugger PIN: 413-573-039
+2025-10-08 11:04:39,734 - INFO - 127.0.0.1 - - [08/Oct/2025 11:04:39] "GET / HTTP/1.1" 200 -
+2025-10-08 11:04:47,551 - INFO - 127.0.0.1 - - [08/Oct/2025 11:04:47] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-08 11:05:10,965 - INFO - 127.0.0.1 - - [08/Oct/2025 11:05:10] "GET /users_table HTTP/1.1" 200 -
+2025-10-08 11:05:16,176 - INFO - 127.0.0.1 - - [08/Oct/2025 11:05:16] "GET / HTTP/1.1" 200 -
+2025-10-08 11:05:47,309 - INFO - 127.0.0.1 - - [08/Oct/2025 11:05:47] "GET /crypto_table HTTP/1.1" 200 -
+2025-10-08 11:05:52,412 - INFO - 127.0.0.1 - - [08/Oct/2025 11:05:52] "GET /log_table HTTP/1.1" 200 -
+2025-10-08 11:06:00,698 - INFO - 127.0.0.1 - - [08/Oct/2025 11:06:00] "GET / HTTP/1.1" 200 -
+2025-10-08 11:06:49,074 - INFO -  * Detected change in 'c:\\Users\\romanov\\Проекты\\crypto_app\\crypto_app-1\\app.py', reloading
+2025-10-08 11:06:49,644 - INFO -  * Restarting with stat

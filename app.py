@@ -1,6 +1,6 @@
 # app.py
-from flask import Flask, render_template, request, flash, redirect, url_for, send_file, session, jsonify
-from sqlalchemy import create_engine, Column, Integer, String, Float, Text, BigInteger, DateTime, func
+from flask import Flask, render_template, request, flash, redirect, url_for, session, jsonify
+from sqlalchemy import create_engine, Column, Integer, String, Float, Text, BigInteger, DateTime, func, Boolean
 from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base
 from sqlalchemy.exc import SQLAlchemyError
 import time
@@ -124,6 +124,22 @@ class AppLog(Base):
     traceback = Column(Text)
     user_id = Column(String(36))
     timestamp = Column(BigInteger, nullable=False)
+
+
+# Добавь эту модель после других моделей
+class TelegramUser(Base):
+    __tablename__ = 'telegram_users'
+    
+    id = Column(Integer, primary_key=True)
+    telegram_id = Column(BigInteger, unique=True, nullable=False)
+    first_name = Column(String(100), nullable=False)
+    last_name = Column(String(100))
+    username = Column(String(100))
+    photo_url = Column(Text)
+    auth_date = Column(BigInteger, nullable=False)
+    created_at = Column(BigInteger, nullable=False)
+    last_login = Column(BigInteger, nullable=False)
+    is_active = Column(Boolean, default=True)
 
 
 def log_message(
@@ -293,6 +309,33 @@ def get_crypto_rate(crypto: str, currency: str) -> dict:
         }
 
 
+def get_user_from_db(telegram_id: int) -> Optional[TelegramUser]:
+    """Получает пользователя из базы данных по telegram_id"""
+    try:
+        with get_db() as db:
+            user = db.query(TelegramUser).filter(
+                TelegramUser.telegram_id == telegram_id,
+                TelegramUser.is_active == True
+            ).first()
+            return user
+    except SQLAlchemyError as e:
+        log_message(f"Error getting user from DB: {e}", 'error')
+        return None
+
+def update_user_last_login(telegram_id: int):
+    """Обновляет время последнего входа пользователя"""
+    try:
+        with get_db() as db:
+            user = db.query(TelegramUser).filter(
+                TelegramUser.telegram_id == telegram_id
+            ).first()
+            if user:
+                user.last_login = int(time.time())
+                db.commit()
+    except SQLAlchemyError as e:
+        log_message(f"Error updating user last login: {e}", 'error')
+
+
 class CoinGeckoAPI:
     def __init__(self):
         self.base_url = "https://api.coingecko.com/api/v3"
@@ -366,14 +409,68 @@ def telegram_auth():
     try:
         user_data = request.get_json()
         
-        if not user_data:
-            return jsonify({'success': False, 'error': 'No data received'})
+        print("=" * 50)
+        print("TELEGRAM AUTH DEBUG INFO:")
+        print(f"Received data: {user_data}")
+        print("=" * 50)
         
-        print(f"Received Telegram auth data: {user_data}")
+        if not user_data:
+            print("ERROR: No user data received")
+            return jsonify({'success': False, 'error': 'No data received'})
         
         # Проверяем подлинность данных
         if not verify_telegram_authentication(user_data, BOT_TOKEN):
+            print("ERROR: Telegram authentication failed")
             return jsonify({'success': False, 'error': 'Invalid authentication data'})
+        
+        # Сохраняем/обновляем пользователя в БД
+        try:
+            with get_db() as db:
+                # Проверяем существует ли пользователь
+                existing_user = db.query(TelegramUser).filter(
+                    TelegramUser.telegram_id == user_data['id']
+                ).first()
+                
+                current_time = int(time.time())
+                
+                if existing_user:
+                    # Обновляем существующего пользователя
+                    existing_user.first_name = user_data['first_name']
+                    existing_user.last_name = user_data.get('last_name')
+                    existing_user.username = user_data.get('username')
+                    existing_user.photo_url = user_data.get('photo_url')
+                    existing_user.auth_date = user_data['auth_date']
+                    existing_user.last_login = current_time
+                    existing_user.is_active = True
+                    
+                    db.commit()
+                    user_id = existing_user.id
+                    action = "updated"
+                else:
+                    # Создаем нового пользователя
+                    new_user = TelegramUser(
+                        telegram_id=user_data['id'],
+                        first_name=user_data['first_name'],
+                        last_name=user_data.get('last_name'),
+                        username=user_data.get('username'),
+                        photo_url=user_data.get('photo_url'),
+                        auth_date=user_data['auth_date'],
+                        created_at=current_time,
+                        last_login=current_time,
+                        is_active=True
+                    )
+                    
+                    db.add(new_user)
+                    db.commit()
+                    user_id = new_user.id
+                    action = "created"
+                
+                print(f"SUCCESS: User {user_data['id']} {action} in database")
+                
+        except SQLAlchemyError as e:
+            print(f"ERROR: Database operation failed: {e}")
+            log_message(f"Database error during user save: {e}", 'error')
+            return jsonify({'success': False, 'error': 'Database error'})
         
         # Сохраняем пользователя в сессии
         session['user'] = {
@@ -381,15 +478,17 @@ def telegram_auth():
             'first_name': user_data['first_name'],
             'username': user_data.get('username'),
             'photo_url': user_data.get('photo_url'),
-            'auth_date': user_data['auth_date']
+            'auth_date': user_data['auth_date'],
+            'db_user_id': user_id
         }
         
-        log_message(f"User {user_data['id']} successfully authenticated via Telegram", 'info', user_id=str(user_data['id']))
+        log_message(f"User {user_data['id']} successfully authenticated via Telegram (DB ID: {user_id})", 
+                   'info', user_id=str(user_data['id']))
         
         return jsonify({'success': True})
         
     except Exception as e:
-        print(f"Telegram auth error: {e}")
+        print(f"ERROR: Telegram auth exception: {e}")
         log_message(f"Telegram auth error: {e}", 'error')
         return jsonify({'success': False, 'error': str(e)})
 
@@ -440,7 +539,15 @@ def connect_db():
 @app.route('/', methods=['GET', 'POST'])
 def index():
     rate_data = None
-    user = session.get('user')
+    user_session = session.get('user')
+    user_from_db = None
+    
+    # Если пользователь авторизован в сессии, загружаем данные из БД
+    if user_session:
+        user_from_db = get_user_from_db(user_session['id'])
+        if user_from_db:
+            # Обновляем время последнего входа
+            update_user_last_login(user_session['id'])
     
     if request.method == 'POST':
         crypto = request.form.get('crypto', 'bitcoin')
@@ -448,14 +555,16 @@ def index():
 
         if not crypto or not currency:
             flash("Выберите криптовалюту и валюту", 'error')
-            log_message("Не выбрана криптовалюта или валюта", 'warning', user_id=str(user['id']) if user else None)
+            log_message("Не выбрана криптовалюта или валюта", 'warning', 
+                       user_id=str(user_session['id']) if user_session else None)
             return redirect('/')
 
         rate_data = get_crypto_rate(crypto, currency)
 
         if not rate_data['success']:
             flash(rate_data['error'], 'error')
-            log_message(rate_data['error'], 'error', user_id=str(user['id']) if user else None)
+            log_message(rate_data['error'], 'error', 
+                       user_id=str(user_session['id']) if user_session else None)
             return redirect('/')
 
         try:
@@ -472,12 +581,14 @@ def index():
 
             msg = f"Курс {crypto.upper()}/{currency.upper()}: {rate_data['rate']:.4f}"
             flash(msg, 'success')
-            log_message(msg, 'info', user_id=str(user['id']) if user else None)
+            log_message(msg, 'info', 
+                       user_id=str(user_session['id']) if user_session else None)
 
         except SQLAlchemyError as e:
             error_msg = f"Ошибка БД: {str(e)}"
             flash(error_msg, 'error')
-            log_message(error_msg, 'error', traceback=str(e), user_id=str(user['id']) if user else None)
+            log_message(error_msg, 'error', traceback=str(e), 
+                       user_id=str(user_session['id']) if user_session else None)
 
     cryptos = load_crypto_list()
     return render_template('index.html',
@@ -486,7 +597,7 @@ def index():
                            periods=PERIODS,
                            rate=rate_data.get('rate') if request.method == 'POST' else None,
                            db_connected=db_connection_active,
-                           user=user,
+                           user=user_from_db,  # Передаем пользователя из БД
                            bot_username=BOT_USERNAME)
 
 
@@ -696,6 +807,37 @@ def show_log_table():
     except SQLAlchemyError as e:
         flash(f"Ошибка БД: {str(e)}", 'error')
         return redirect(url_for('index'))
+
+
+@app.route('/users_table')
+def show_users_table():
+    """Отображает таблицу пользователей"""
+    if not db_connection_active:
+        flash("Соединение с базой данных отключено", 'error')
+        return redirect(url_for('index'))
+
+    try:
+        with get_db() as db:
+            users = db.query(TelegramUser).order_by(TelegramUser.last_login.desc()).limit(100).all()
+
+        users_data = [{
+            'id': u.id,
+            'telegram_id': u.telegram_id,
+            'first_name': u.first_name,
+            'last_name': u.last_name,
+            'username': u.username,
+            'created_at': datetime.fromtimestamp(u.created_at).strftime('%Y-%m-%d %H:%M:%S'),
+            'last_login': datetime.fromtimestamp(u.last_login).strftime('%Y-%m-%d %H:%M:%S'),
+            'is_active': 'Да' if u.is_active else 'Нет'
+        } for u in users]
+
+        return render_template('data_table.html',
+                               title='Пользователи Telegram',
+                               data=users_data,
+                               columns=['id', 'telegram_id', 'first_name', 'last_name', 'username', 'created_at', 'last_login', 'is_active'])
+    except SQLAlchemyError as e:
+        flash(f"Ошибка БД: {str(e)}", 'error')
+        return redirect(url_for('index'))       
 
 
 if __name__ == '__main__':
