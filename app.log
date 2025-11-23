@@ -452,3 +452,32 @@
 2025-10-07 16:28:56,449 - INFO - [crypto_api.backend] User=None | Приложение запущено
 2025-10-07 16:28:56,559 - WARNING -  * Debugger is active!
 2025-10-07 16:28:56,577 - INFO -  * Debugger PIN: 413-573-039
+2025-11-24 00:39:46,679 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 00:39:47,440 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 00:39:47,511 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-11-24 00:39:47,652 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-11-24 00:39:47,652 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-24 00:39:47,654 - INFO -  * Restarting with stat
+2025-11-24 00:39:49,288 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 00:39:49,647 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 00:39:49,720 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-11-24 00:39:49,822 - WARNING -  * Debugger is active!
+2025-11-24 00:39:49,826 - INFO -  * Debugger PIN: 459-658-001
+2025-11-24 00:40:23,218 - INFO - 127.0.0.1 - - [24/Nov/2025 00:40:23] "GET / HTTP/1.1" 200 -
+2025-11-24 00:40:24,122 - INFO - 127.0.0.1 - - [24/Nov/2025 00:40:24] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-24 00:40:40,688 - INFO - [crypto_api.backend] User=None | Курс ETHEREUM/EUR: 2459.4200
+2025-11-24 00:40:40,879 - INFO - 127.0.0.1 - - [24/Nov/2025 00:40:40] "POST / HTTP/1.1" 200 -
+2025-11-24 00:40:44,811 - INFO - 127.0.0.1 - - [24/Nov/2025 00:40:44] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-24 00:40:51,319 - INFO - 127.0.0.1 - - [24/Nov/2025 00:40:51] "GET / HTTP/1.1" 200 -
+2025-11-24 00:40:54,855 - INFO - 127.0.0.1 - - [24/Nov/2025 00:40:54] "GET /log_table HTTP/1.1" 200 -
+2025-11-24 00:41:02,498 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:02] "GET / HTTP/1.1" 200 -
+2025-11-24 00:41:06,898 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:06] "GET /chart HTTP/1.1" 200 -
+2025-11-24 00:41:18,830 - INFO - [crypto_api.backend] User=None | Сгенерирован график для bitcoin/gbp за 30 дней
+2025-11-24 00:41:18,936 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:18] "POST /chart HTTP/1.1" 200 -
+2025-11-24 00:41:31,170 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:31] "GET / HTTP/1.1" 200 -
+2025-11-24 00:41:41,948 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:41] "GET /chart HTTP/1.1" 200 -
+2025-11-24 00:41:43,698 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:43] "GET / HTTP/1.1" 200 -
+2025-11-24 00:41:45,221 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:45] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-24 00:41:48,876 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:48] "GET /log_table HTTP/1.1" 200 -
+2025-11-24 00:41:52,979 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:52] "GET / HTTP/1.1" 200 -
