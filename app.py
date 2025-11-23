@@ -199,7 +199,7 @@ def get_db():
     if SessionLocal is None:
         init_db_connection()
 
-    db = SessionLocal()
+    db = SessionLocal
     try:
         yield db
     except SQLAlchemyError as e:
