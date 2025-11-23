@@ -452,32 +452,70 @@
 2025-10-07 16:28:56,449 - INFO - [crypto_api.backend] User=None | Приложение запущено
 2025-10-07 16:28:56,559 - WARNING -  * Debugger is active!
 2025-10-07 16:28:56,577 - INFO -  * Debugger PIN: 413-573-039
-2025-11-24 00:39:46,679 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
-2025-11-24 00:39:47,440 - INFO - [crypto_api.backend] User=None | База данных инициализирована
-2025-11-24 00:39:47,511 - INFO - [crypto_api.backend] User=None | Приложение запущено
-2025-11-24 00:39:47,652 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-10-08 11:03:55,960 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-08 11:03:56,411 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-08 11:03:56,471 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-08 11:03:57,595 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on http://127.0.0.1:5000
-2025-11-24 00:39:47,652 - INFO - [33mPress CTRL+C to quit[0m
-2025-11-24 00:39:47,654 - INFO -  * Restarting with stat
-2025-11-24 00:39:49,288 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
-2025-11-24 00:39:49,647 - INFO - [crypto_api.backend] User=None | База данных инициализирована
-2025-11-24 00:39:49,720 - INFO - [crypto_api.backend] User=None | Приложение запущено
-2025-11-24 00:39:49,822 - WARNING -  * Debugger is active!
-2025-11-24 00:39:49,826 - INFO -  * Debugger PIN: 459-658-001
-2025-11-24 00:40:23,218 - INFO - 127.0.0.1 - - [24/Nov/2025 00:40:23] "GET / HTTP/1.1" 200 -
-2025-11-24 00:40:24,122 - INFO - 127.0.0.1 - - [24/Nov/2025 00:40:24] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
-2025-11-24 00:40:40,688 - INFO - [crypto_api.backend] User=None | Курс ETHEREUM/EUR: 2459.4200
-2025-11-24 00:40:40,879 - INFO - 127.0.0.1 - - [24/Nov/2025 00:40:40] "POST / HTTP/1.1" 200 -
-2025-11-24 00:40:44,811 - INFO - 127.0.0.1 - - [24/Nov/2025 00:40:44] "GET /crypto_table HTTP/1.1" 200 -
-2025-11-24 00:40:51,319 - INFO - 127.0.0.1 - - [24/Nov/2025 00:40:51] "GET / HTTP/1.1" 200 -
-2025-11-24 00:40:54,855 - INFO - 127.0.0.1 - - [24/Nov/2025 00:40:54] "GET /log_table HTTP/1.1" 200 -
-2025-11-24 00:41:02,498 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:02] "GET / HTTP/1.1" 200 -
-2025-11-24 00:41:06,898 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:06] "GET /chart HTTP/1.1" 200 -
-2025-11-24 00:41:18,830 - INFO - [crypto_api.backend] User=None | Сгенерирован график для bitcoin/gbp за 30 дней
-2025-11-24 00:41:18,936 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:18] "POST /chart HTTP/1.1" 200 -
-2025-11-24 00:41:31,170 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:31] "GET / HTTP/1.1" 200 -
-2025-11-24 00:41:41,948 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:41] "GET /chart HTTP/1.1" 200 -
-2025-11-24 00:41:43,698 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:43] "GET / HTTP/1.1" 200 -
-2025-11-24 00:41:45,221 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:45] "GET /crypto_table HTTP/1.1" 200 -
-2025-11-24 00:41:48,876 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:48] "GET /log_table HTTP/1.1" 200 -
-2025-11-24 00:41:52,979 - INFO - 127.0.0.1 - - [24/Nov/2025 00:41:52] "GET / HTTP/1.1" 200 -
+2025-10-08 11:03:57,595 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-08 11:03:57,627 - INFO -  * Restarting with stat
+2025-10-08 11:04:02,162 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-08 11:04:02,503 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-08 11:04:02,549 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-08 11:04:02,655 - WARNING -  * Debugger is active!
+2025-10-08 11:04:02,729 - INFO -  * Debugger PIN: 413-573-039
+2025-10-08 11:04:39,734 - INFO - 127.0.0.1 - - [08/Oct/2025 11:04:39] "GET / HTTP/1.1" 200 -
+2025-10-08 11:04:47,551 - INFO - 127.0.0.1 - - [08/Oct/2025 11:04:47] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-08 11:05:10,965 - INFO - 127.0.0.1 - - [08/Oct/2025 11:05:10] "GET /users_table HTTP/1.1" 200 -
+2025-10-08 11:05:16,176 - INFO - 127.0.0.1 - - [08/Oct/2025 11:05:16] "GET / HTTP/1.1" 200 -
+2025-10-08 11:05:47,309 - INFO - 127.0.0.1 - - [08/Oct/2025 11:05:47] "GET /crypto_table HTTP/1.1" 200 -
+2025-10-08 11:05:52,412 - INFO - 127.0.0.1 - - [08/Oct/2025 11:05:52] "GET /log_table HTTP/1.1" 200 -
+2025-10-08 11:06:00,698 - INFO - 127.0.0.1 - - [08/Oct/2025 11:06:00] "GET / HTTP/1.1" 200 -
+2025-10-08 11:06:49,074 - INFO -  * Detected change in 'c:\\Users\\romanov\\Проекты\\crypto_app\\crypto_app-1\\app.py', reloading
+2025-10-08 11:06:49,644 - INFO -  * Restarting with stat
+2025-10-08 11:06:54,258 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-08 11:06:54,614 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-08 11:06:54,659 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-08 11:06:54,784 - WARNING -  * Debugger is active!
+2025-10-08 11:06:54,830 - INFO -  * Debugger PIN: 413-573-039
+2025-10-08 13:23:36,044 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-08 13:23:36,666 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-08 13:23:36,712 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-08 13:23:37,428 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-10-08 13:23:37,428 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-08 13:23:37,448 - INFO -  * Restarting with stat
+2025-10-08 13:23:41,364 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-08 13:23:41,694 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-08 13:23:41,744 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-08 13:23:41,859 - WARNING -  * Debugger is active!
+2025-10-08 13:23:42,004 - INFO -  * Debugger PIN: 413-573-039
+2025-10-08 13:24:00,276 - INFO - 127.0.0.1 - - [08/Oct/2025 13:24:00] "GET / HTTP/1.1" 200 -
+2025-10-08 13:24:09,601 - INFO - 127.0.0.1 - - [08/Oct/2025 13:24:09] "GET /candlestick HTTP/1.1" 200 -
+2025-10-08 13:32:37,548 - INFO - 127.0.0.1 - - [08/Oct/2025 13:32:37] "GET / HTTP/1.1" 200 -
+2025-10-08 13:32:43,028 - INFO - 127.0.0.1 - - [08/Oct/2025 13:32:43] "GET / HTTP/1.1" 200 -
+2025-10-08 13:32:46,083 - INFO - 127.0.0.1 - - [08/Oct/2025 13:32:46] "GET /chart HTTP/1.1" 200 -
+2025-10-08 13:32:55,911 - INFO - 127.0.0.1 - - [08/Oct/2025 13:32:55] "GET / HTTP/1.1" 200 -
+2025-10-08 13:33:26,683 - INFO - 127.0.0.1 - - [08/Oct/2025 13:33:26] "GET /users_table HTTP/1.1" 200 -
+2025-10-08 13:33:30,520 - INFO - 127.0.0.1 - - [08/Oct/2025 13:33:30] "GET / HTTP/1.1" 200 -
+2025-10-08 13:33:32,999 - INFO - 127.0.0.1 - - [08/Oct/2025 13:33:32] "GET /candlestick HTTP/1.1" 200 -
+2025-10-08 13:45:02,642 - INFO - Starting async full crypto list loading...
+2025-10-08 13:45:02,788 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-08 13:45:03,767 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-08 13:45:03,918 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-08 13:45:04,299 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-10-08 13:45:04,360 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-08 13:45:04,380 - INFO -  * Restarting with stat
+2025-10-08 13:45:11,361 - INFO - Starting async full crypto list loading...
+2025-10-08 13:45:11,552 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-10-08 13:45:12,460 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-10-08 13:45:12,550 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-10-08 13:45:12,753 - WARNING -  * Debugger is active!
+2025-10-08 13:45:13,245 - INFO -  * Debugger PIN: 413-573-039
+2025-10-08 13:45:16,134 - INFO - 127.0.0.1 - - [08/Oct/2025 13:45:16] "GET /candlestick HTTP/1.1" 200 -
+2025-10-08 13:45:19,700 - INFO - Full crypto list loaded: 19103 items
+2025-10-08 13:45:26,976 - INFO - Full crypto list loaded: 19103 items
+2025-10-08 13:45:32,489 - INFO - 127.0.0.1 - - [08/Oct/2025 13:45:32] "GET / HTTP/1.1" 200 -
+2025-10-08 13:45:56,287 - INFO - 127.0.0.1 - - [08/Oct/2025 13:45:56] "GET / HTTP/1.1" 200 -
+2025-10-08 13:46:10,816 - INFO - 127.0.0.1 - - [08/Oct/2025 13:46:10] "GET / HTTP/1.1" 200 -
