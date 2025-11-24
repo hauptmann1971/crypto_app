@@ -1,6 +1,6 @@
 # app.py
 from flask import Flask, render_template, request, flash, redirect, url_for, session, jsonify
-from sqlalchemy import create_engine, Column, Integer, String, Float, Text, BigInteger, DateTime, func, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Float, Text, BigInteger, Boolean
 from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base
 from sqlalchemy.exc import SQLAlchemyError
 import time
@@ -14,6 +14,7 @@ from cachetools import cached, TTLCache
 from contextlib import contextmanager
 import pandas as pd
 import matplotlib
+
 matplotlib.use('Agg')  # Для работы без GUI
 import matplotlib.pyplot as plt
 import io
@@ -47,7 +48,7 @@ app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')
 Base = declarative_base()
 engine = None
 SessionLocal = None
-db_connection_active = True
+db_connection_active = False
 
 # Конфигурация Telegram
 BOT_USERNAME = os.getenv('BOT_USERNAME', '@romanov_crypto_currency_bot')
@@ -71,8 +72,9 @@ FULL_CRYPTO_LIST = POPULAR_CRYPTOS.copy()
 CRYPTO_LOADING = False
 CRYPTO_LOADED = False
 
+
 @dataclass
-class TelegramUser:
+class TelegramUserData:
     id: int
     first_name: str
     auth_date: int
@@ -80,6 +82,7 @@ class TelegramUser:
     username: Optional[str] = None
     photo_url: Optional[str] = None
     last_name: Optional[str] = None
+
 
 def verify_telegram_authentication(data: dict, bot_token: str) -> bool:
     """
@@ -121,6 +124,7 @@ def verify_telegram_authentication(data: dict, bot_token: str) -> bool:
         print(f"Error verifying Telegram auth: {e}")
         return False
 
+
 # Модели данных
 class CryptoRate(Base):
     __tablename__ = 'crypto_rates'
@@ -146,10 +150,9 @@ class AppLog(Base):
     timestamp = Column(BigInteger, nullable=False)
 
 
-# Добавь эту модель после других моделей
 class TelegramUser(Base):
     __tablename__ = 'telegram_users'
-    
+
     id = Column(Integer, primary_key=True)
     telegram_id = Column(BigInteger, unique=True, nullable=False)
     first_name = Column(String(100), nullable=False)
@@ -232,18 +235,24 @@ def get_db():
         log_message("Попытка доступа к отключенной БД", 'warning')
         raise RuntimeError("Соединение с базой данных отключено")
 
+    # Инициализируем подключение, если оно еще не создано
     if SessionLocal is None:
         init_db_connection()
 
-    db = SessionLocal()
-    try:
-        yield db
-    except SQLAlchemyError as e:
-        db.rollback()
-        log_message(f"Ошибка БД: {e}", 'error')
-        raise
-    finally:
-        db.close()
+    # Создаем сессию с проверкой на None
+    if SessionLocal is not None:
+        db = SessionLocal()
+        try:
+            yield db
+            db.commit()
+        except SQLAlchemyError as e:
+            db.rollback()
+            log_message(f"Ошибка БД: {e}", 'error')
+            raise
+        finally:
+            db.close()
+    else:
+        raise RuntimeError("Не удалось инициализировать подключение к базе данных")
 
 
 def init_db():
@@ -276,12 +285,12 @@ crypto_list_cache = TTLCache(maxsize=1, ttl=3600)
 def load_full_crypto_list_async():
     """Асинхронно загружает полный список криптовалют"""
     global FULL_CRYPTO_LIST, CRYPTO_LOADING, CRYPTO_LOADED, POPULAR_CRYPTOS
-    
+
     if CRYPTO_LOADING or CRYPTO_LOADED:
         return
-    
+
     CRYPTO_LOADING = True
-    
+
     def load_thread():
         global FULL_CRYPTO_LIST, CRYPTO_LOADING, CRYPTO_LOADED
         try:
@@ -291,64 +300,43 @@ def load_full_crypto_list_async():
                 timeout=30
             )
             response.raise_for_status()
-            
+
             all_crypto = [c['id'] for c in response.json()]
-            
+
             # Объединяем популярные + полный список (убираем дубликаты)
             combined_list = POPULAR_CRYPTOS.copy()
             for crypto in all_crypto:
                 if crypto not in combined_list:
                     combined_list.append(crypto)
-            
+
             FULL_CRYPTO_LIST = combined_list
             CRYPTO_LOADED = True
             CRYPTO_LOADING = False
-            
+
             logging.info(f"Full crypto list loaded: {len(FULL_CRYPTO_LIST)} items")
-            
+
         except Exception as e:
             logging.error(f"Async crypto list loading failed: {e}")
             CRYPTO_LOADING = False
-    
+
     # Запускаем в отдельном потоке
     thread = threading.Thread(target=load_thread)
     thread.daemon = True
     thread.start()
+
 
 @cached(crypto_list_cache)
 def load_crypto_list():
     """Возвращает список криптовалют (сначала популярные, потом полный список)"""
     # Запускаем асинхронную загрузку полного списка
     load_full_crypto_list_async()
-    
+
     # Всегда возвращаем актуальный список
     return FULL_CRYPTO_LIST
 
+
 # Запускаем асинхронную загрузку при импорте модуля
 load_full_crypto_list_async()
-
-@cached(crypto_list_cache)
-def load_crypto_list():
-    """Загружает список криптовалют"""
-    try:
-        response = requests.get(
-            "https://api.coingecko.com/api/v3/coins/list",
-            timeout=5
-        )
-        response.raise_for_status()
-
-        all_crypto = [c['id'] for c in response.json()]
-        sorted_crypto = TOP_CRYPTO.copy()
-
-        for crypto in all_crypto:
-            if crypto not in TOP_CRYPTO:
-                sorted_crypto.append(crypto)
-
-        return sorted_crypto
-
-    except requests.RequestException as e:
-        logging.warning(f"Ошибка загрузки списка: {e}. Используем базовый набор.")
-        return TOP_CRYPTO
 
 
 def get_crypto_rate(crypto: str, currency: str) -> dict:
@@ -396,6 +384,7 @@ def get_user_from_db(telegram_id: int) -> Optional[TelegramUser]:
         log_message(f"Error getting user from DB: {e}", 'error')
         return None
 
+
 def update_user_last_login(telegram_id: int):
     """Обновляет время последнего входа пользователя"""
     try:
@@ -413,11 +402,11 @@ def update_user_last_login(telegram_id: int):
 class CoinGeckoAPI:
     def __init__(self):
         self.base_url = "https://api.coingecko.com/api/v3"
-    
+
     def get_ohlc(self, coin_id, vs_currency, days):
         """
         Получение OHLC данных (Open, High, Low, Close)
-        
+
         Args:
             coin_id: идентификатор монеты (e.g., 'bitcoin')
             vs_currency: валюта (e.g., 'usd')
@@ -428,7 +417,7 @@ class CoinGeckoAPI:
             'vs_currency': vs_currency,
             'days': days
         }
-        
+
         try:
             response = requests.get(url, params=params, timeout=10)
             if response.status_code == 200:
@@ -449,7 +438,7 @@ class CoinGeckoAPI:
         """Генерирует график и возвращает его в base64"""
         if data is None or data.empty:
             return None
-            
+
         try:
             # Создаем график
             plt.figure(figsize=(12, 6))
@@ -460,16 +449,16 @@ class CoinGeckoAPI:
             plt.grid(True, alpha=0.3)
             plt.xticks(rotation=45)
             plt.tight_layout()
-            
+
             # Конвертируем график в base64
             img = io.BytesIO()
             plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
             img.seek(0)
             plt.close()
-            
+
             plot_url = base64.b64encode(img.getvalue()).decode()
             return f"data:image/png;base64,{plot_url}"
-            
+
         except Exception as e:
             logging.error(f"Ошибка генерации графика: {e}")
             return None
@@ -482,21 +471,21 @@ def telegram_auth():
     """
     try:
         user_data = request.get_json()
-        
+
         print("=" * 50)
         print("TELEGRAM AUTH DEBUG INFO:")
         print(f"Received data: {user_data}")
         print("=" * 50)
-        
+
         if not user_data:
             print("ERROR: No user data received")
             return jsonify({'success': False, 'error': 'No data received'})
-        
+
         # Проверяем подлинность данных
         if not verify_telegram_authentication(user_data, BOT_TOKEN):
             print("ERROR: Telegram authentication failed")
             return jsonify({'success': False, 'error': 'Invalid authentication data'})
-        
+
         # Сохраняем/обновляем пользователя в БД
         try:
             with get_db() as db:
@@ -504,9 +493,9 @@ def telegram_auth():
                 existing_user = db.query(TelegramUser).filter(
                     TelegramUser.telegram_id == user_data['id']
                 ).first()
-                
+
                 current_time = int(time.time())
-                
+
                 if existing_user:
                     # Обновляем существующего пользователя
                     existing_user.first_name = user_data['first_name']
@@ -516,7 +505,7 @@ def telegram_auth():
                     existing_user.auth_date = user_data['auth_date']
                     existing_user.last_login = current_time
                     existing_user.is_active = True
-                    
+
                     db.commit()
                     user_id = existing_user.id
                     action = "updated"
@@ -533,19 +522,19 @@ def telegram_auth():
                         last_login=current_time,
                         is_active=True
                     )
-                    
+
                     db.add(new_user)
                     db.commit()
                     user_id = new_user.id
                     action = "created"
-                
+
                 print(f"SUCCESS: User {user_data['id']} {action} in database")
-                
+
         except SQLAlchemyError as e:
             print(f"ERROR: Database operation failed: {e}")
             log_message(f"Database error during user save: {e}", 'error')
             return jsonify({'success': False, 'error': 'Database error'})
-        
+
         # Сохраняем пользователя в сессии
         session['user'] = {
             'id': user_data['id'],
@@ -555,12 +544,12 @@ def telegram_auth():
             'auth_date': user_data['auth_date'],
             'db_user_id': user_id
         }
-        
-        log_message(f"User {user_data['id']} successfully authenticated via Telegram (DB ID: {user_id})", 
-                   'info', user_id=str(user_data['id']))
-        
+
+        log_message(f"User {user_data['id']} successfully authenticated via Telegram (DB ID: {user_id})",
+                    'info', user_id=str(user_data['id']))
+
         return jsonify({'success': True})
-        
+
     except Exception as e:
         print(f"ERROR: Telegram auth exception: {e}")
         log_message(f"Telegram auth error: {e}", 'error')
@@ -585,7 +574,7 @@ def disconnect_db():
     global db_connection_active, engine
 
     db_connection_active = False
-    if engine:
+    if engine and hasattr(engine, 'dispose'):
         engine.dispose()
 
     flash("Соединение с базой данных отключено", 'warning')
@@ -615,30 +604,30 @@ def index():
     rate_data = None
     user_session = session.get('user')
     user_from_db = None
-    
+
     # Если пользователь авторизован в сессии, загружаем данные из БД
     if user_session:
         user_from_db = get_user_from_db(user_session['id'])
         if user_from_db:
             # Обновляем время последнего входа
             update_user_last_login(user_session['id'])
-    
+
     if request.method == 'POST':
         crypto = request.form.get('crypto', 'bitcoin')
         currency = request.form.get('currency', 'usd')
 
         if not crypto or not currency:
             flash("Выберите криптовалюту и валюту", 'error')
-            log_message("Не выбрана криптовалюта или валюта", 'warning', 
-                       user_id=str(user_session['id']) if user_session else None)
+            log_message("Не выбрана криптовалюта или валюта", 'warning',
+                        user_id=str(user_session['id']) if user_session else None)
             return redirect('/')
 
         rate_data = get_crypto_rate(crypto, currency)
 
         if not rate_data['success']:
             flash(rate_data['error'], 'error')
-            log_message(rate_data['error'], 'error', 
-                       user_id=str(user_session['id']) if user_session else None)
+            log_message(rate_data['error'], 'error',
+                        user_id=str(user_session['id']) if user_session else None)
             return redirect('/')
 
         try:
@@ -655,14 +644,14 @@ def index():
 
             msg = f"Курс {crypto.upper()}/{currency.upper()}: {rate_data['rate']:.4f}"
             flash(msg, 'success')
-            log_message(msg, 'info', 
-                       user_id=str(user_session['id']) if user_session else None)
+            log_message(msg, 'info',
+                        user_id=str(user_session['id']) if user_session else None)
 
         except SQLAlchemyError as e:
             error_msg = f"Ошибка БД: {str(e)}"
             flash(error_msg, 'error')
-            log_message(error_msg, 'error', traceback=str(e), 
-                       user_id=str(user_session['id']) if user_session else None)
+            log_message(error_msg, 'error', traceback=str(e),
+                        user_id=str(user_session['id']) if user_session else None)
 
     cryptos = load_crypto_list()
     return render_template('index.html',
@@ -679,26 +668,26 @@ def index():
 def auth():
     """Страница авторизации через telegram"""
     user = session.get('user')
-    
+
     if user:
         flash("Вы уже авторизованы!", 'info')
         return redirect(url_for('index'))
-    
+
     if request.method == 'GET':
         return render_template('auth.html', user=user, bot_username=BOT_USERNAME)
-    
+
     # POST обработка
     phone_number = request.form.get('phone_number')
-    
+
     # Проверка наличия номера
     if not phone_number:
         flash("Введите номер телефона", 'error')
         return redirect(url_for('auth'))
-    
+
     # Добавляем + если его нет
     if not phone_number.startswith('+'):
         phone_number = '+' + phone_number
-    
+
     """
     Проверка с использованием библиотеки phonenumbers
     """
@@ -720,12 +709,12 @@ def auth():
             flash("Код подтверждения отправлен в Telegram! Проверьте ваши сообщения.", 'success')
             log_message(f"Успешная отправка кода для номера: {phone_number}", 'info')
             return redirect(url_for('auth'))
-            
+
         else:
             flash("Ошибка отправки сообщения. Проверьте номер и попробуйте снова.", 'error')
             log_message(f"Ошибка отправки кода для номера: {phone_number}", 'error')
             return redirect(url_for('auth'))
-            
+
     except Exception as e:
         error_msg = f"Ошибка при отправке сообщения: {str(e)}"
         flash(error_msg, 'error')
@@ -737,11 +726,11 @@ def auth():
 def verify_code():
     """Проверка кода подтверждения из Telegram"""
     verification_code = request.form.get('verification_code')
-    
+
     if not verification_code or len(verification_code) != 6:
         flash("Введите 6-значный код подтверждения", 'error')
         return redirect(url_for('auth'))
-    
+
     # Проверка кода авторнизации через модуль telegram_auth
     try:
         if t_a.verify_code(t_a.last_request_response, verification_code):  # Предполагаем, что такая функция есть
@@ -751,7 +740,7 @@ def verify_code():
         else:
             flash("Неверный код подтверждения. Попробуйте снова.", 'error')
             return redirect(url_for('auth'))
-            
+
     except Exception as e:
         flash(f"Ошибка при проверке кода: {str(e)}", 'error')
         log_message(f"Ошибка проверки кода: {e}", 'error')
@@ -764,33 +753,34 @@ def chart():
     plot_url = None
     error = None
     user = session.get('user')
-    
+
     if request.method == 'POST':
         crypto = request.form.get('crypto')
         currency = request.form.get('currency')
         period = request.form.get('period', '7')
-        
+
         if not crypto or not currency:
             flash("Выберите криптовалюту и валюту", 'error')
             return redirect(url_for('chart'))
-        
+
         try:
             api = CoinGeckoAPI()
             data = api.get_ohlc(crypto, currency, period)
-            
+
             if data is not None:
                 plot_url = api.generate_plot(data, crypto, currency, period)
                 if plot_url:
-                    log_message(f"Сгенерирован график для {crypto}/{currency} за {period} дней", 'info', user_id=str(user['id']) if user else None)
+                    log_message(f"Сгенерирован график для {crypto}/{currency} за {period} дней", 'info',
+                                user_id=str(user['id']) if user else None)
                 else:
                     error = "Ошибка генерации графика"
             else:
                 error = "Не удалось получить данные для построения графика"
-                
+
         except Exception as e:
             error = f"Ошибка: {str(e)}"
             log_message(f"Ошибка построения графика: {e}", 'error', user_id=str(user['id']) if user else None)
-    
+
     cryptos = load_crypto_list()
     return render_template('chart.html',
                            cryptos=cryptos,
@@ -908,10 +898,12 @@ def show_users_table():
         return render_template('data_table.html',
                                title='Пользователи Telegram',
                                data=users_data,
-                               columns=['id', 'telegram_id', 'first_name', 'last_name', 'username', 'created_at', 'last_login', 'is_active'])
+                               columns=['id', 'telegram_id', 'first_name', 'last_name', 'username', 'created_at',
+                                        'last_login', 'is_active'])
     except SQLAlchemyError as e:
         flash(f"Ошибка БД: {str(e)}", 'error')
         return redirect(url_for('index'))
+
 
 @app.route('/candlestick', methods=['GET', 'POST'])
 def candlestick_chart():
@@ -919,17 +911,17 @@ def candlestick_chart():
     plot_url = None
     error = None
     chart_data = None
-    
+
     if request.method == 'POST':
         crypto = request.form.get('crypto')
         currency = request.form.get('currency')
         period = request.form.get('period', '7')
         chart_type = request.form.get('chart_type', 'candlestick')
-        
+
         if not crypto or not currency:
             flash("Выберите криптовалюту и валюту", 'error')
             return redirect(url_for('candlestick_chart'))
-        
+
         try:
             # Получаем OHLC данные для свечного графика
             if chart_type == 'candlestick':
@@ -947,19 +939,19 @@ def candlestick_chart():
                     chart_data = data
                 else:
                     error = "Не удалось получить данные для графика"
-            
+
             if plot_url:
                 log_message(f"Сгенерирован {chart_type} график для {crypto}/{currency} за {period} дней", 'info')
             elif not error:
                 error = "Ошибка генерации графика"
-                
+
         except Exception as e:
             error = f"Ошибка: {str(e)}"
             log_message(f"Ошибка построения графика: {e}", 'error')
-    
+
     cryptos = load_crypto_list()
     periods = crypto_chart_api.get_available_periods()
-    
+
     return render_template('candlestick.html',
                            cryptos=cryptos,
                            currencies=CURRENCIES,
@@ -967,6 +959,7 @@ def candlestick_chart():
                            plot_url=plot_url,
                            chart_data=chart_data,
                            error=error)
+
 
 @app.route('/chart-data/<crypto>/<currency>/<period>')
 def get_chart_data(crypto: str, currency: str, period: str):
@@ -988,11 +981,17 @@ def get_chart_data(crypto: str, currency: str, period: str):
         else:
             return jsonify({'success': False, 'error': 'No data available'})
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})               
+        return jsonify({'success': False, 'error': str(e)})
+
+    # Инициализация базы данных при импорте модуля
 
 
-if __name__ == '__main__':
+try:
     init_db_connection()
     init_db()
-    log_message("Приложение запущено", 'info')
+    log_message("Приложение инициализировано", 'info')
+except Exception as e:
+    log_message(f"Ошибка инициализации приложения: {e}", 'error')
+
+if __name__ == '__main__':
     app.run(debug=True)

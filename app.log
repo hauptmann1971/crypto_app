@@ -519,3 +519,88 @@
 2025-10-08 13:45:32,489 - INFO - 127.0.0.1 - - [08/Oct/2025 13:45:32] "GET / HTTP/1.1" 200 -
 2025-10-08 13:45:56,287 - INFO - 127.0.0.1 - - [08/Oct/2025 13:45:56] "GET / HTTP/1.1" 200 -
 2025-10-08 13:46:10,816 - INFO - 127.0.0.1 - - [08/Oct/2025 13:46:10] "GET / HTTP/1.1" 200 -
+2025-11-18 12:16:44,061 - INFO - Starting async full crypto list loading...
+2025-11-18 12:16:44,109 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-18 12:16:45,768 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-18 12:16:46,007 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-11-18 12:16:46,727 - INFO - Full crypto list loaded: 19430 items
+2025-11-18 12:16:46,788 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-11-18 12:16:46,788 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-18 12:16:46,789 - INFO -  * Restarting with stat
+2025-11-18 12:16:48,208 - INFO - Starting async full crypto list loading...
+2025-11-18 12:16:48,257 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-18 12:16:48,566 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-18 12:16:48,623 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-11-18 12:16:50,850 - INFO - Full crypto list loaded: 19430 items
+2025-11-18 12:16:50,858 - WARNING -  * Debugger is active!
+2025-11-18 12:16:50,859 - INFO -  * Debugger PIN: 678-835-787
+2025-11-18 12:17:21,180 - INFO - 127.0.0.1 - - [18/Nov/2025 12:17:21] "GET / HTTP/1.1" 200 -
+2025-11-18 12:17:21,826 - INFO - 127.0.0.1 - - [18/Nov/2025 12:17:21] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-18 12:17:38,703 - INFO - [crypto_api.backend] User=None | Курс ETHEREUM/RUB: 246893.0000
+2025-11-18 12:17:38,955 - INFO - 127.0.0.1 - - [18/Nov/2025 12:17:38] "POST / HTTP/1.1" 200 -
+2025-11-18 12:22:10,310 - INFO - Starting async full crypto list loading...
+2025-11-18 12:22:10,358 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-18 12:22:12,309 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-18 12:22:12,466 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-11-18 12:22:12,984 - INFO - Full crypto list loaded: 19430 items
+2025-11-18 12:22:13,004 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-11-18 12:22:13,004 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-18 12:22:13,005 - INFO -  * Restarting with stat
+2025-11-18 12:22:14,428 - INFO - Starting async full crypto list loading...
+2025-11-18 12:22:14,478 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-18 12:22:14,800 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-18 12:22:14,861 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-11-18 12:22:17,149 - INFO - Full crypto list loaded: 19430 items
+2025-11-18 12:22:17,154 - WARNING -  * Debugger is active!
+2025-11-18 12:22:17,156 - INFO -  * Debugger PIN: 678-835-787
+2025-11-18 12:22:33,438 - INFO - 127.0.0.1 - - [18/Nov/2025 12:22:33] "GET / HTTP/1.1" 200 -
+2025-11-18 12:22:44,374 - INFO - [crypto_api.backend] User=None | Курс ETHEREUM/GBP: 2314.2000
+2025-11-18 12:22:44,596 - INFO - 127.0.0.1 - - [18/Nov/2025 12:22:44] "POST / HTTP/1.1" 200 -
+2025-11-18 12:22:47,706 - INFO - 127.0.0.1 - - [18/Nov/2025 12:22:47] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-18 12:22:55,774 - INFO - 127.0.0.1 - - [18/Nov/2025 12:22:55] "GET / HTTP/1.1" 200 -
+2025-11-18 12:22:59,022 - INFO - 127.0.0.1 - - [18/Nov/2025 12:22:59] "GET /log_table HTTP/1.1" 200 -
+2025-11-18 12:23:05,470 - INFO - 127.0.0.1 - - [18/Nov/2025 12:23:05] "GET / HTTP/1.1" 200 -
+2025-11-18 12:50:38,797 - INFO - Starting async full crypto list loading...
+2025-11-18 12:50:38,843 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-18 12:50:40,860 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-18 12:50:41,084 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-11-18 12:50:41,498 - INFO - Full crypto list loaded: 19412 items
+2025-11-18 12:50:41,519 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-11-18 12:50:41,519 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-18 12:50:41,520 - INFO -  * Restarting with stat
+2025-11-18 12:50:42,937 - INFO - Starting async full crypto list loading...
+2025-11-18 12:50:42,983 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-18 12:50:43,288 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-18 12:50:43,344 - INFO - [crypto_api.backend] User=None | Приложение запущено
+2025-11-18 12:50:45,615 - INFO - Full crypto list loaded: 19412 items
+2025-11-18 12:50:45,622 - WARNING -  * Debugger is active!
+2025-11-18 12:50:45,624 - INFO -  * Debugger PIN: 678-835-787
+2025-11-18 12:51:04,094 - INFO - 127.0.0.1 - - [18/Nov/2025 12:51:04] "GET / HTTP/1.1" 200 -
+2025-11-18 12:51:13,099 - INFO - 127.0.0.1 - - [18/Nov/2025 12:51:13] "[32mGET /users_table HTTP/1.1[0m" 302 -
+2025-11-18 12:51:13,308 - INFO - 127.0.0.1 - - [18/Nov/2025 12:51:13] "GET / HTTP/1.1" 200 -
+2025-11-18 13:15:50,613 - INFO - Starting async full crypto list loading...
+2025-11-18 13:15:50,667 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-18 13:15:52,508 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-18 13:15:52,730 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-18 13:15:53,332 - INFO - Full crypto list loaded: 19411 items
+2025-11-18 13:15:53,355 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-11-18 13:15:53,355 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-18 13:15:53,356 - INFO -  * Restarting with stat
+2025-11-18 13:15:54,962 - INFO - Starting async full crypto list loading...
+2025-11-18 13:15:55,017 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-18 13:15:55,323 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-18 13:15:55,379 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-18 13:15:57,608 - INFO - Full crypto list loaded: 19411 items
+2025-11-18 13:15:57,617 - WARNING -  * Debugger is active!
+2025-11-18 13:15:57,618 - INFO -  * Debugger PIN: 678-835-787
+2025-11-18 13:16:08,122 - INFO - 127.0.0.1 - - [18/Nov/2025 13:16:08] "GET / HTTP/1.1" 200 -
+2025-11-18 13:16:23,476 - INFO - [crypto_api.backend] User=None | Курс AAVE/CNY: 1218.3000
+2025-11-18 13:16:23,723 - INFO - 127.0.0.1 - - [18/Nov/2025 13:16:23] "POST / HTTP/1.1" 200 -
+2025-11-18 13:16:31,246 - INFO - [crypto_api.backend] User=None | Курс AAVE/RUB: 13897.9000
+2025-11-18 13:16:31,468 - INFO - 127.0.0.1 - - [18/Nov/2025 13:16:31] "POST / HTTP/1.1" 200 -
+2025-11-18 13:16:43,279 - INFO - [crypto_api.backend] User=None | Курс AAVE/USD: 171.3500
+2025-11-18 13:16:43,517 - INFO - 127.0.0.1 - - [18/Nov/2025 13:16:43] "POST / HTTP/1.1" 200 -
