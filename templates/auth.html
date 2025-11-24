@@ -1,10 +1,9 @@
-<!-- templates/auth.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Авторизация через Telegram</title>
+    <title>Авторизация - Crypto App</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .auth-container {
@@ -20,27 +19,11 @@
             color: #0088cc;
             margin-bottom: 20px;
         }
-        .phone-input {
-            direction: ltr;
-            text-align: left;
-        }
         .instructions {
             background: #f8f9fa;
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
-        }
-        .example-number {
-            font-family: monospace;
-            background: #e9ecef;
-            padding: 2px 6px;
-            border-radius: 3px;
-        }
-        .code-input {
-            font-size: 1.2rem;
-            text-align: center;
-            letter-spacing: 3px;
-            font-weight: bold;
         }
         .divider {
             text-align: center;
@@ -64,6 +47,12 @@
     </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">💰 Crypto Rates</a>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="auth-container">
             <!-- Заголовок с иконкой Telegram -->
@@ -74,17 +63,6 @@
                     </svg>
                 </div>
                 <h2 class="mb-4">Авторизация через Telegram</h2>
-            </div>
-
-            <!-- Блок с инструкциями -->
-            <div class="instructions">
-                <h6>Как это работает:</h6>
-                <ul class="mb-0 small">
-                    <li>Введите номер телефона, привязанный к вашему Telegram аккаунту</li>
-                    <li>Нажмите "Отправить код в Telegram"</li>
-                    <li>Получите код в Telegram и введите его ниже</li>
-                    <li>Нажмите "Подтвердить код" для завершения авторизации</li>
-                </ul>
             </div>
 
             <!-- Flash сообщения -->
@@ -99,92 +77,137 @@
                 {% endif %}
             {% endwith %}
 
-            <!-- Форма ввода номера телефона -->
-            <form method="POST" action="{{ url_for('auth') }}">
-                <div class="mb-3">
-                    <label for="phone_number" class="form-label">Номер телефона</label>
-                    <div class="input-group">
-                        <span class="input-group-text">+</span>
-                        <input type="tel" 
-                               class="form-control phone-input" 
-                               id="phone_number" 
-                               name="phone_number" 
-                               placeholder="79161234567" 
-                               pattern="[0-9]{1,15}"
-                               required
-                               value="{{ request.form.phone_number if request.form }}">
-                    </div>
-                    <div class="form-text">
-                        Введите номер в международном формате без знака +. 
-                        Пример: <span class="example-number">79161234567</span> для России
-                    </div>
-                </div>
+            <!-- Блок с инструкциями -->
+            <div class="instructions">
+                <h6>Как авторизоваться:</h6>
+                <ul class="mb-0 small">
+                    <li>Нажмите на кнопку "Авторизация через Telegram" ниже</li>
+                    <li>Разрешите доступ к вашему Telegram аккаунту</li>
+                    <li>После успешной авторизации вы будете перенаправлены на главную страницу</li>
+                </ul>
+            </div>
 
-                <div class="d-grid gap-2 mb-4">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="white" style="margin-right: 8px;">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.78 5.42-.9 6.8-.06.67-.36.89-.89.56-2.45-1.83-3.57-2.98-5.79-4.78-.54-.45-.92-.68-.89-1.07.03-.39.43-.56.98-.4 3.87 1.56 5.57 2.47 8.39 4.01.38.21.67.1.77-.32.23-.85.78-3.57.9-5.08.07-.85-.25-1.18-.82-1.18-.27 0-.58.05-.92.12-1.37.45-7.92 3.14-8.07 3.19-.38.13-.74.19-1.08.19-.54 0-.8-.26-.8-.67 0-.34.23-.73.68-1.05 4.78-3.28 7.74-5.14 9.14-5.98 2.08-1.23 2.52-1.44 2.82-1.44.2 0 .65.04.94.31.29.27.28.8.25 1.13z"/>
-                        </svg>
-                        Отправить код в Telegram
-                    </button>
+            <!-- Контейнер для Telegram Widget -->
+            <div class="text-center mb-4">
+                <div id="telegram-widget-container">
+                    <script async src="https://telegram.org/js/telegram-widget.js?22"
+                            data-telegram-login="{{ bot_username.replace('@', '') }}"
+                            data-size="large"
+                            data-onauth="onTelegramAuth(user)"
+                            data-request-access="write">
+                    </script>
                 </div>
-            </form>
+            </div>
 
             <!-- Разделитель -->
             <div class="divider">
                 <span class="divider-text">или</span>
             </div>
 
-            <!-- Форма ввода кода подтверждения -->
-            <form method="POST" action="{{ url_for('verify_code') }}">
-                <div class="mb-3">
-                    <label for="verification_code" class="form-label">Уже получили код?</label>
-                    <input type="text" 
-                           class="form-control code-input" 
-                           id="verification_code" 
-                           name="verification_code" 
-                           placeholder="123456" 
-                           maxlength="6"
-                           pattern="[0-9]{6}"
-                           required>
-                    <div class="form-text">
-                        Введите 6-значный код из Telegram
-                    </div>
-                </div>
-
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-success btn-lg">
-                        ✅ Подтвердить код
-                    </button>
-                    
-                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
-                        ← Назад к курсам
-                    </a>
-                </div>
-            </form>
+            <!-- Альтернативные способы -->
+            <div class="text-center">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                    ← Вернуться на главную
+                </a>
+            </div>
 
             <!-- Дополнительная информация -->
-            <div class="mt-4 text-center">
-                <small class="text-muted">
-                    Авторизация необходима для доступа к расширенным функциям и персонализированным уведомлениям
-                </small>
+            <div class="mt-4">
+                <div class="alert alert-info">
+                    <h6>💡 Зачем нужна авторизация?</h6>
+                    <ul class="mb-0 small">
+                        <li>Персонализированная история запросов</li>
+                        <li>Быстрый доступ к избранным парам</li>
+                        <li>Уведомления о изменениях курсов (в будущем)</li>
+                        <li>Синхронизация настроек между устройствами</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        // Автоматическое форматирование номера телефона
-        document.getElementById('phone_number').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            e.target.value = value;
-        });
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">Crypto Rates App &copy; 2024 | Real-time cryptocurrency rates</p>
+        </div>
+    </footer>
 
-        // Автоматический ввод кода
-        document.getElementById('verification_code').addEventListener('input', function(e) {
-            this.value = this.value.replace(/\D/g, '').substring(0, 6);
-        });
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Функция для обработки авторизации Telegram
+        function onTelegramAuth(user) {
+            console.log('Telegram auth callback received:', user);
+
+            const widgetContainer = document.getElementById('telegram-widget-container');
+            if (widgetContainer) {
+                widgetContainer.innerHTML = '<div class="text-center">⏳ Обработка авторизации...</div>';
+            }
+
+            fetch('/telegram-auth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(user)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Показываем сообщение об успехе
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                    alertDiv.innerHTML = `
+                        ✅ Авторизация прошла успешно! Перенаправление на главную страницу...
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    document.querySelector('.auth-container').insertBefore(alertDiv, document.querySelector('.auth-container').firstChild);
+
+                    // Перенаправляем на главную страницу через 1 секунду
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    // Показываем сообщение об ошибке
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                    alertDiv.innerHTML = `
+                        ❌ Ошибка авторизации: ${data.error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    document.querySelector('.auth-container').insertBefore(alertDiv, document.querySelector('.auth-container').firstChild);
+
+                    // Восстанавливаем виджет
+                    restoreTelegramWidget();
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    ❌ Произошла ошибка при авторизации. Попробуйте еще раз.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.auth-container').insertBefore(alertDiv, document.querySelector('.auth-container').firstChild);
+
+                restoreTelegramWidget();
+            });
+        }
+
+        function restoreTelegramWidget() {
+            const widgetContainer = document.getElementById('telegram-widget-container');
+            if (widgetContainer) {
+                widgetContainer.innerHTML = `
+                    <script async src="https://telegram.org/js/telegram-widget.js?22"
+                            data-telegram-login="{{ bot_username.replace('@', '') }}"
+                            data-size="large"
+                            data-onauth="onTelegramAuth(user)"
+                            data-request-access="write">
+                    <\/script>
+                `;
+            }
+        }
 
         // Автоматическое скрытие alert через 5 секунд
         document.addEventListener('DOMContentLoaded', function() {

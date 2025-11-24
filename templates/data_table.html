@@ -1,11 +1,11 @@
-# Шаблон templates/data_table.html
-"""
+<!-- templates/data_table.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }} | Crypto App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -13,10 +13,15 @@
             margin: 0;
             padding: 20px;
             color: #333;
+            background-color: #f8f9fa;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         h1 {
             color: #2c3e50;
@@ -50,6 +55,9 @@
         }
         .nav-links {
             margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
         }
         .nav-links a {
             display: inline-block;
@@ -59,6 +67,7 @@
             text-decoration: none;
             border-radius: 4px;
             margin-right: 10px;
+            margin-bottom: 5px;
         }
         .nav-links a:hover {
             background-color: #2980b9;
@@ -75,6 +84,25 @@
             color: #e74c3c;
             font-weight: bold;
         }
+        .status-pending {
+            color: #f39c12;
+            font-weight: bold;
+        }
+        .status-processing {
+            color: #3498db;
+            font-weight: bold;
+        }
+        .status-finished {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        .status-error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
     </style>
 </head>
 <body>
@@ -82,47 +110,74 @@
         <h1>{{ title }}</h1>
 
         {% if data %}
-            <table>
-                <thead>
-                    <tr>
-                        {% for column in columns %}
-                            <th>{{ column|replace('_', ' ')|title }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in data %}
+            <div class="table-responsive">
+                <table>
+                    <thead>
                         <tr>
                             {% for column in columns %}
-                                <td>
-                                    {% if column == 'level' %}
-                                        <span class="level-{{ row[column] }}">{{ row[column]|upper }}</span>
-                                    {% elif column == 'rate' %}
-                                        {{ "%.4f"|format(row[column]) }}
-                                    {% elif column == 'date_time' %}
-                                        {{ row[column] or 'N/A' }}
-                                    {% else %}
-                                        {{ row[column] or '' }}
-                                    {% endif %}
-                                </td>
+                                <th>{{ column|replace('_', ' ')|title }}</th>
                             {% endfor %}
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for row in data %}
+                            <tr>
+                                {% for column in columns %}
+                                    <td>
+                                        {% if column == 'level' %}
+                                            <span class="level-{{ row[column] }}">{{ row[column]|upper }}</span>
+                                        {% elif column == 'status' %}
+                                            <span class="status-{{ row[column] }}">{{ row[column]|upper }}</span>
+                                        {% elif column == 'rate' %}
+                                            {% if row[column] != 'N/A' %}
+                                                {{ "%.4f"|format(row[column]) }}
+                                            {% else %}
+                                                {{ row[column] }}
+                                            {% endif %}
+                                        {% elif column == 'date_time' or column == 'created_at' or column == 'finished_at' or column == 'last_login' %}
+                                            {{ row[column] or 'N/A' }}
+                                        {% elif column == 'is_active' %}
+                                            {% if row[column] == 'Да' %}
+                                                <span class="text-success">✅ {{ row[column] }}</span>
+                                            {% else %}
+                                                <span class="text-danger">❌ {{ row[column] }}</span>
+                                            {% endif %}
+                                        {% else %}
+                                            {{ row[column] or '' }}
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% else %}
-            <p>Нет данных для отображения</p>
+            <div class="alert alert-info">
+                <h4>📊 Нет данных для отображения</h4>
+                <p>В таблице пока нет записей.</p>
+            </div>
         {% endif %}
 
         <div class="nav-links">
-            <a href="/">На главную</a>
+            <a href="/">🏠 На главную</a>
             {% if title == 'Курсы криптовалют' %}
-                <a href="/log_table">Просмотреть логи</a>
+                <a href="/requests_table">📋 Очередь запросов</a>
+                <a href="/log_table">📝 Логи приложения</a>
+            {% elif title == 'Очередь запросов' %}
+                <a href="/crypto_table">💹 Таблица курсов</a>
+                <a href="/log_table">📝 Логи приложения</a>
+            {% elif title == 'Логи приложения' %}
+                <a href="/crypto_table">💹 Таблица курсов</a>
+                <a href="/requests_table">📋 Очередь запросов</a>
             {% else %}
-                <a href="/crypto_table">Просмотреть курсы</a>
+                <a href="/crypto_table">💹 Таблица курсов</a>
+                <a href="/requests_table">📋 Очередь запросов</a>
+                <a href="/log_table">📝 Логи приложения</a>
             {% endif %}
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-"""

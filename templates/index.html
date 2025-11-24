@@ -1,4 +1,3 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -29,10 +28,23 @@
             font-weight: bold;
         }
         .rate-display {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
             margin: 20px 0;
+            color: white;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .rate-placeholder {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            color: #6c757d;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 2px dashed #dee2e6;
         }
         .db-status {
             font-size: 0.8rem;
@@ -66,6 +78,67 @@
             display: flex;
             align-items: center;
         }
+        .queue-status {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .history-item {
+            border-left: 4px solid #007bff;
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 0 8px 8px 0;
+        }
+        .status-pending {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .status-processing {
+            color: #17a2b8;
+            font-weight: bold;
+        }
+        .status-finished {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        .crypto-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .quick-action-btn {
+            transition: all 0.3s ease;
+        }
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .request-id {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .auto-refresh-badge {
+            background: #17a2b8;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -73,17 +146,17 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('index') }}">
-                📊 Crypto Rates
+                💰 Crypto Rates
             </a>
-            
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">Курсы</a>
+                        <a class="nav-link active" href="{{ url_for('index') }}">Курсы</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('chart') }}">Графики</a>
@@ -95,19 +168,22 @@
                         <a class="nav-link" href="{{ url_for('show_crypto_table') }}">Таблица курсов</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('show_requests_table') }}">Очередь запросов</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('show_users_table') }}">Пользователи</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('show_log_table') }}">Логи</a>
                     </li>
                 </ul>
-                
+
                 <div class="d-flex align-items-center gap-3">
                     <!-- Статус БД -->
                     <span class="db-status {{ 'db-connected' if db_connected else 'db-disconnected' }}">
                         🗄️ БД: {{ 'Подключена' if db_connected else 'Отключена' }}
                     </span>
-                    
+
                     <!-- Информация о пользователе или кнопка авторизации -->
                     {% if user %}
                         <div class="user-info">
@@ -125,14 +201,14 @@
                     {% else %}
                         <!-- Контейнер для Telegram Widget -->
                         <div id="telegram-widget-container">
-                            <script async src="https://telegram.org/js/telegram-widget.js?22" 
-                                    data-telegram-login="{{ bot_username.replace('@', '') }}" 
-                                    data-size="medium" 
-                                    data-onauth="onTelegramAuth(user)" 
+                            <script async src="https://telegram.org/js/telegram-widget.js?22"
+                                    data-telegram-login="{{ bot_username.replace('@', '') }}"
+                                    data-size="medium"
+                                    data-onauth="onTelegramAuth(user)"
                                     data-request-access="write">
                             </script>
                         </div>
-                        
+
                         <!-- Fallback кнопка (показывается если виджет не загрузился) -->
                         <div id="fallback-auth" style="display: none;">
                             <a href="{{ url_for('auth') }}" class="telegram-btn text-decoration-none">
@@ -161,57 +237,335 @@
             {% endif %}
         {% endwith %}
 
-        <h1 class="mb-4">Курсы криптовалют</h1>
+        <h1 class="mb-4">💰 Конвертер криптовалют</h1>
+
+        <!-- Статус очереди -->
+        {% if pending_requests_count > 0 or processing_requests_count > 0 %}
+        <div class="queue-status">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm text-warning me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div>
+                        <strong>⏳ Статус обработки:</strong>
+                        {% if pending_requests_count > 0 %}
+                            <span class="text-warning">В очереди: {{ pending_requests_count }}</span>
+                        {% endif %}
+                        {% if processing_requests_count > 0 %}
+                            <span class="text-info">В обработке: {{ processing_requests_count }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <span class="badge auto-refresh-badge">🔄 Автообновление</span>
+                    <small class="text-muted">Статус обновляется автоматически</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Форма выбора криптовалюты и валюты -->
-        <div class="card">
-            <div class="card-body">
-                <form method="POST" action="{{ url_for('index') }}">
-                    <div class="row g-3">
-                        <div class="col-md-5">
-                            <label for="crypto" class="form-label">Криптовалюта</label>
-                            <select class="form-select" id="crypto" name="crypto" required>
-                                <option value="">Выберите криптовалюту...</option>
-                                {% for crypto in cryptos %}
-                                    <option value="{{ crypto }}" {{ 'selected' if request.form.get('crypto') == crypto }}>
-                                        {{ crypto.upper() }}
-                                    </option>
-                                {% endfor %}
-                            </select>
+        <div class="form-container">
+            <div class="row">
+                <div class="col-md-8">
+                    <h4 class="mb-4">📊 Получить курс криптовалюты</h4>
+                    <form method="POST" action="{{ url_for('index') }}">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="crypto" class="form-label fw-bold">Криптовалюта:</label>
+                                <select class="form-select form-select-lg" id="crypto" name="crypto" required>
+                                    <option value="">Выберите криптовалюту...</option>
+                                    {% for crypto in cryptos %}
+                                        <option value="{{ crypto }}">
+                                            {% if current_crypto == crypto or request.form.get('crypto') == crypto %}selected{% endif %}>
+                                            {{ crypto.upper() }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Популярные: Bitcoin, Ethereum, Binance Coin</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="currency" class="form-label fw-bold">Валюта:</label>
+                                <select class="form-select form-select-lg" id="currency" name="currency" required>
+                                    <option value="">Выберите валюту...</option>
+                                    {% for currency in currencies %}
+                                        <option value="{{ currency }}">
+                                            {% if current_currency == currency or request.form.get('currency') == currency %}selected{% endif %}>
+                                            {{ currency.upper() }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">USD, EUR, RUB, GBP, JPY, CNY</div>
+                            </div>
+
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">
+                                    📈 Получить курс
+                                </button>
+                            </div>
                         </div>
-                        
-                        <div class="col-md-5">
-                            <label for="currency" class="form-label">Валюта</label>
-                            <select class="form-select" id="currency" name="currency" required>
-                                <option value="">Выберите валюту...</option>
-                                {% for currency in currencies %}
-                                    <option value="{{ currency }}" {{ 'selected' if request.form.get('currency') == currency }}>
-                                        {{ currency.upper() }}
-                                    </option>
-                                {% endfor %}
-                            </select>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                💡 Запросы обрабатываются в фоновом режиме. Статус обновляется автоматически.
+                            </small>
                         </div>
-                        
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100">
-                                Получить курс
-                            </button>
-                        </div>
+                    </form>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="crypto-icon">💰</div>
+                        <h5>Реальный курс</h5>
+                        <p class="text-muted">Актуальные данные с CoinGecko API</p>
+                        {% if pending_requests_count > 0 or processing_requests_count > 0 %}
+                            <div class="mt-3">
+                                <span class="badge bg-warning">Активные запросы: {{ pending_requests_count + processing_requests_count }}</span>
+                            </div>
+                        {% endif %}
                     </div>
-                </form>
+                </div>
             </div>
         </div>
 
-        <!-- Отображение курса -->
-        {% if rate %}
-            <div class="rate-display mt-4">
-                <h3 class="text-success">
-                    💰 Курс: {{ request.form.get('crypto', '').upper() }}/{{ request.form.get('currency', '').upper() }}
+        <!-- Отображение текущего курса -->
+        {% if current_rate and current_crypto and current_currency %}
+            <div class="rate-display" id="current-rate-display">
+                <h3 class="text-white">
+                    💰 Текущий курс
                 </h3>
-                <h2 class="display-4 fw-bold text-primary">{{ "%.4f"|format(rate) }}</h2>
-                <p class="text-muted">Данные предоставлены CoinGecko API</p>
+                <h2 class="display-4 fw-bold text-white mb-3" id="current-rate-value">{{ "%.4f"|format(current_rate) }}</h2>
+                <div class="row justify-content-center">
+                    <div class="col-auto">
+                        <span class="badge bg-light text-dark fs-6" id="current-pair">{{ current_crypto.upper() }}/{{ current_currency.upper() }}</span>
+                    </div>
+                </div>
+                <p class="text-white-50 mt-3 mb-0">
+                    Данные предоставлены CoinGecko API
+                    <br>
+                    <small>Обновлено: <span id="last-update-time" data-timestamp="{{ requests_history[0].finished_at if requests_history and requests_history[0].finished_at else '' }}">
+                        {% if requests_history and requests_history[0].finished_at %}
+                            {{ requests_history[0].finished_at|int|string }}
+                        {% else %}
+                            Только что
+                        {% endif %}
+                    </span></small>
+                </p>
+            </div>
+        {% else %}
+            <!-- Плейсхолдер когда нет курса -->
+            <div class="rate-placeholder" id="rate-placeholder">
+                <h3 class="text-muted">
+                    💰 Текущий курс
+                </h3>
+                <h2 class="display-4 fw-bold text-muted mb-3">--.--</h2>
+                <div class="row justify-content-center">
+                    <div class="col-auto">
+                        <span class="badge bg-secondary fs-6" id="placeholder-pair">
+                            {% if current_crypto and current_currency %}
+                                {{ current_crypto.upper() }}/{{ current_currency.upper() }}
+                            {% else %}
+                                CRYPTO/CURRENCY
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <p class="text-muted mt-3 mb-0" id="placeholder-message">
+                    {% if current_crypto and current_currency %}
+                        ⏳ Ожидание данных от API...
+                    {% else %}
+                        Выберите криптовалюту и валюту для получения курса
+                    {% endif %}
+                </p>
             </div>
         {% endif %}
+
+        <!-- Быстрый доступ к популярным парам -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">🚀 Популярные пары</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-md-3 col-6">
+                                <button class="btn btn-outline-primary w-100 quick-action-btn" onclick="selectPair('bitcoin', 'usd')">
+                                    ₿ Bitcoin / USD
+                                </button>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <button class="btn btn-outline-primary w-100 quick-action-btn" onclick="selectPair('ethereum', 'usd')">
+                                    � Ethereum / USD
+                                </button>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <button class="btn btn-outline-primary w-100 quick-action-btn" onclick="selectPair('binancecoin', 'usd')">
+                                    ⎈ BNB / USD
+                                </button>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <button class="btn btn-outline-primary w-100 quick-action-btn" onclick="selectPair('bitcoin', 'rub')">
+                                    ₿ Bitcoin / RUB
+                                </button>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <button class="btn btn-outline-success w-100 quick-action-btn" onclick="selectPair('ethereum', 'eur')">
+                                    � Ethereum / EUR
+                                </button>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <button class="btn btn-outline-success w-100 quick-action-btn" onclick="selectPair('cardano', 'usd')">
+                                    ₳ Cardano / USD
+                                </button>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <button class="btn btn-outline-success w-100 quick-action-btn" onclick="selectPair('solana', 'usd')">
+                                    ◎ Solana / USD
+                                </button>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <button class="btn btn-outline-success w-100 quick-action-btn" onclick="selectPair('dogecoin', 'usd')">
+                                    Ð Dogecoin / USD
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- История запросов -->
+        {% if requests_history %}
+        <div class="card mt-5">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">📋 История ваших запросов</h5>
+                <span class="badge bg-light text-dark" id="active-requests-count">
+                    Активных: {{ pending_requests_count + processing_requests_count }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Криптовалюта</th>
+                                <th>Валюта</th>
+                                <th>Курс</th>
+                                <th>Статус</th>
+                                <th>Время запроса</th>
+                                <th>Завершено</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requests-table-body">
+                            {% for req in requests_history %}
+                            <tr data-request-id="{{ req.id }}">
+                                <td>
+                                    <small class="request-id">#{{ req.id }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ req.crypto.upper() }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ req.currency.upper() }}</span>
+                                </td>
+                                <td class="request-rate">
+                                    {% if req.rate %}
+                                        <strong class="text-primary">{{ "%.4f"|format(req.rate) }}</strong>
+                                    {% else %}
+                                        <span class="text-muted">--</span>
+                                    {% endif %}
+                                </td>
+                                <td class="request-status">
+                                    {% if req.status == 'pending' %}
+                                        <span class="status-pending">⏳ Ожидание</span>
+                                    {% elif req.status == 'processing' %}
+                                        <span class="status-processing">⚡ Обработка</span>
+                                    {% elif req.status == 'finished' %}
+                                        <span class="status-finished">✅ Завершено</span>
+                                    {% elif req.status == 'error' %}
+                                        <span class="status-error">❌ Ошибка</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted request-created" data-timestamp="{{ req.created_at }}">
+                                        {{ req.created_at|int|string }}
+                                    </small>
+                                </td>
+                                <td class="request-finished">
+                                    {% if req.finished_at %}
+                                        <small class="text-muted" data-timestamp="{{ req.finished_at }}">
+                                            {{ req.finished_at|int|string }}
+                                        </small>
+                                    {% else %}
+                                        <span class="text-muted">--</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Информация о системе -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">💡 Как это работает</h6>
+                    </div>
+                    <div class="card-body">
+                        <ol class="small">
+                            <li><strong>Выберите криптовалюту и валюту</strong> из выпадающих списков</li>
+                            <li><strong>Нажмите "Получить курс"</strong> для отправки запроса</li>
+                            <li><strong>Запрос добавляется в очередь</strong> на обработку</li>
+                            <li><strong>Воркер обрабатывает запрос</strong> и получает данные с CoinGecko API</li>
+                            <li><strong>Статус обновляется автоматически</strong> без перезагрузки страницы</li>
+                        </ol>
+                        <div class="alert alert-info small mb-0">
+                            <strong>💡 Автообновление:</strong> Страница автоматически отслеживает статус активных запросов
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">📊 Статистика системы</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="p-3">
+                                    <h4 class="text-primary" id="active-requests">{{ pending_requests_count + processing_requests_count }}</h4>
+                                    <small class="text-muted">Активных запросов</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3">
+                                    <h4 class="text-success" id="total-requests">{{ requests_history|length }}</h4>
+                                    <small class="text-muted">Всего запросов</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="progress mb-2">
+                                <div class="progress-bar bg-warning" style="width: {{ (pending_requests_count / (pending_requests_count + processing_requests_count + 1)) * 100 }}%">
+                                    Очередь: {{ pending_requests_count }}
+                                </div>
+                                <div class="progress-bar bg-info" style="width: {{ (processing_requests_count / (pending_requests_count + processing_requests_count + 1)) * 100 }}%">
+                                    Обработка: {{ processing_requests_count }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Управление БД (только для админов) -->
         {% if not db_connected %}
@@ -227,196 +581,361 @@
         {% else %}
             <div class="card mt-4">
                 <div class="card-body">
-                    <h5 class="card-title">Управление базой данных</h5>
+                    <h5 class="card-title">Управление системой</h5>
                     <form method="POST" action="{{ url_for('disconnect_db') }}" class="d-inline">
                         <button type="submit" class="btn btn-warning btn-sm">Отключить БД</button>
                     </form>
-                    <a href="{{ url_for('show_crypto_table') }}" class="btn btn-outline-primary btn-sm">Просмотр данных</a>
+                    <a href="{{ url_for('show_crypto_table') }}" class="btn btn-outline-primary btn-sm">Просмотр курсов</a>
+                    <a href="{{ url_for('show_requests_table') }}" class="btn btn-outline-info btn-sm">Очередь запросов</a>
                     <a href="{{ url_for('show_log_table') }}" class="btn btn-outline-secondary btn-sm">Просмотр логов</a>
                 </div>
             </div>
         {% endif %}
-
-        <!-- Информация о функциях -->
-        <div class="row mt-5">
-            <div class="col-md-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h3>📈</h3>
-                        <h5 class="card-title">Графики</h5>
-                        <p class="card-text">Анализируйте динамику курсов с помощью интерактивных графиков</p>
-                        <a href="{{ url_for('chart') }}" class="btn btn-outline-primary">Перейти к графикам</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h3>🔐</h3>
-                        <h5 class="card-title">Авторизация</h5>
-                        <p class="card-text">Войдите через Telegram для доступа к персонализированным функциям</p>
-                        {% if not user %}
-                            <div id="telegram-widget-container-bottom">
-                                <script async src="https://telegram.org/js/telegram-widget.js?22" 
-                                        data-telegram-login="{{ bot_username.replace('@', '') }}" 
-                                        data-size="large" 
-                                        data-onauth="onTelegramAuth(user)" 
-                                        data-request-access="write">
-                                </script>
-                            </div>
-                        {% else %}
-                            <p class="text-success">✅ Вы авторизованы как {{ user.first_name }}</p>
-                            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">Выйти</a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h3>📊</h3>
-                        <h5 class="card-title">История данных</h5>
-                        <p class="card-text">Просматривайте исторические данные и логи приложения</p>
-                        <a href="{{ url_for('show_crypto_table') }}" class="btn btn-outline-primary">Таблица курсов</a>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <footer class="bg-dark text-light py-4 mt-5">
         <div class="container text-center">
-            <p class="mb-0">Crypto Rates App &copy; 2024</p>
+            <p class="mb-0">Crypto Rates App &copy; 2024 | Real-time cryptocurrency rates</p>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
-        // Функция для обработки авторизации Telegram
-        function onTelegramAuth(user) {
-            console.log('Telegram auth callback received:', user);
-            
-            // Показываем загрузку
-            const widgetContainer = document.getElementById('telegram-widget-container');
-            const widgetContainerBottom = document.getElementById('telegram-widget-container-bottom');
-            if (widgetContainer) {
-                widgetContainer.innerHTML = '<div class="text-light">⏳ Обработка...</div>';
+    // Функция для форматирования timestamp
+    function formatTimestamp(timestamp) {
+        if (!timestamp) return '--';
+        const date = new Date(parseInt(timestamp) * 1000);
+        return date.toLocaleString('ru-RU');
+    }
+
+    // Функция для быстрого выбора пары
+    function selectPair(crypto, currency) {
+        document.getElementById('crypto').value = crypto;
+        document.getElementById('currency').value = currency;
+        document.querySelector('form').submit();
+    }
+
+    // Применяем форматирование ко всем элементам с data-timestamp
+    document.addEventListener('DOMContentLoaded', function() {
+        const timestampElements = document.querySelectorAll('[data-timestamp]');
+        timestampElements.forEach(function(element) {
+            const timestamp = element.getAttribute('data-timestamp');
+            if (timestamp && timestamp !== 'None') {
+                element.textContent = formatTimestamp(timestamp);
             }
-            if (widgetContainerBottom) {
-                widgetContainerBottom.innerHTML = '<div class="text-dark">⏳ Обработка авторизации...</div>';
+        });
+    });
+
+    // Функция для обработки авторизации Telegram
+    function onTelegramAuth(user) {
+        console.log('Telegram auth callback received:', user);
+
+        const widgetContainer = document.getElementById('telegram-widget-container');
+        if (widgetContainer) {
+            widgetContainer.innerHTML = '<div class="text-light">⏳ Обработка...</div>';
+        }
+
+        fetch('/telegram-auth', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(user)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('success', 'Авторизация прошла успешно!');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showAlert('error', 'Ошибка авторизации: ' + data.error);
+                restoreTelegramWidget();
             }
-            
-            // Отправляем данные пользователя на сервер
-            fetch('/telegram-auth', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(user)
-            })
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            showAlert('error', 'Произошла ошибка при авторизации');
+            restoreTelegramWidget();
+        });
+    }
+
+    function restoreTelegramWidget() {
+        const widgetContainer = document.getElementById('telegram-widget-container');
+        if (widgetContainer) {
+            widgetContainer.innerHTML = `
+                <script async src="https://telegram.org/js/telegram-widget.js?22"
+                        data-telegram-login="{{ bot_username.replace('@', '') }}"
+                        data-size="medium"
+                        data-onauth="onTelegramAuth(user)"
+                        data-request-access="write">
+                <\/script>
+            `;
+        }
+    }
+
+    function showAlert(type, message) {
+        const existingAlerts = document.querySelectorAll('.alert');
+        existingAlerts.forEach(alert => alert.remove());
+
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        const container = document.querySelector('.container');
+        if (container) {
+            container.insertBefore(alertDiv, container.firstChild);
+        }
+
+        setTimeout(() => {
+            if (alertDiv.parentElement) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+
+    // ========== ОСНОВНОЙ КОД ДЛЯ ОТСЛЕЖИВАНИЯ ЗАПРОСОВ ==========
+
+    let refreshInterval;
+
+    // Функция для отслеживания статуса активных запросов
+    function trackPendingRequests() {
+        const pendingItems = document.querySelectorAll('.status-pending, .status-processing');
+
+        console.log(`Found ${pendingItems.length} active requests to track`);
+
+        if (pendingItems.length === 0) {
+            updateActiveRequestsCount(0);
+            stopAutoRefresh();
+            return;
+        }
+
+        updateActiveRequestsCount(pendingItems.length);
+        startAutoRefresh();
+
+        // Для каждого активного запроса проверяем статус
+        pendingItems.forEach(item => {
+            const row = item.closest('tr');
+            const requestId = row.dataset.requestId;
+
+            if (requestId) {
+                console.log(`Tracking request ID: ${requestId}`);
+                checkRequestStatus(requestId, row);
+            }
+        });
+    }
+
+    // Функция проверки статуса одного запроса
+    function checkRequestStatus(requestId, rowElement) {
+        console.log(`Checking status for request: ${requestId}`);
+
+        fetch(`/request-status/${requestId}`)
             .then(response => {
-                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 return response.json();
             })
             .then(data => {
-                console.log('Response data:', data);
+                console.log(`Request ${requestId} status:`, data);
+
                 if (data.success) {
-                    showAlert('success', 'Авторизация прошла успешно!');
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
+                    updateRequestRow(rowElement, data);
+
+                    // Если запрос завершен успешно, обновляем основной курс
+                    if (data.status === 'finished' && data.rate) {
+                        console.log(`Request ${requestId} finished with rate: ${data.rate}`);
+                        updateCurrentRateDisplay(data.rate, data.crypto, data.currency);
+                        showAlert('success', `Курс ${data.crypto.toUpperCase()}/${data.currency.toUpperCase()} получен: ${parseFloat(data.rate).toFixed(4)}`);
+                    }
+
+                    // Если запрос все еще в обработке, продолжаем отслеживание
+                    if (data.status === 'processing' || data.status === 'pending') {
+                        console.log(`Request ${requestId} still processing, will check again in 2s`);
+                        setTimeout(() => checkRequestStatus(requestId, rowElement), 2000);
+                    }
                 } else {
-                    showAlert('error', 'Ошибка авторизации: ' + data.error);
-                    // Восстанавливаем виджет при ошибке
-                    restoreTelegramWidget();
+                    console.error('Error in response:', data.error);
+                    if (data.error && data.error.includes('not found')) {
+                        // Запрос не найден, возможно был удален
+                        updateRequestRow(rowElement, {status: 'error', error: 'Request not found'});
+                    }
                 }
             })
             .catch(error => {
-                console.error('Fetch error:', error);
-                showAlert('error', 'Произошла ошибка при авторизации');
-                // Восстанавливаем виджет при ошибке
-                restoreTelegramWidget();
+                console.error('Error checking request status:', error);
+                // Повторяем попытку через 3 секунды при ошибке сети
+                setTimeout(() => checkRequestStatus(requestId, rowElement), 3000);
             });
-        }
-        
-        function restoreTelegramWidget() {
-            const widgetContainer = document.getElementById('telegram-widget-container');
-            const widgetContainerBottom = document.getElementById('telegram-widget-container-bottom');
-            
-            if (widgetContainer) {
-                widgetContainer.innerHTML = `
-                    <script async src="https://telegram.org/js/telegram-widget.js?22" 
-                            data-telegram-login="{{ bot_username.replace('@', '') }}" 
-                            data-size="medium" 
-                            data-onauth="onTelegramAuth(user)" 
-                            data-request-access="write">
-                    <\/script>
-                `;
-            }
-            
-            if (widgetContainerBottom) {
-                widgetContainerBottom.innerHTML = `
-                    <script async src="https://telegram.org/js/telegram-widget.js?22" 
-                            data-telegram-login="{{ bot_username.replace('@', '') }}" 
-                            data-size="large" 
-                            data-onauth="onTelegramAuth(user)" 
-                            data-request-access="write">
-                    <\/script>
-                `;
-            }
-        }
-        
-        function showAlert(type, message) {
-            // Удаляем существующие алерты
-            const existingAlerts = document.querySelectorAll('.alert');
-            existingAlerts.forEach(alert => alert.remove());
-            
-            // Создаем новый alert
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            // Добавляем alert в начало контейнера
-            const container = document.querySelector('.container');
-            if (container) {
-                container.insertBefore(alertDiv, container.firstChild);
-            }
-            
-            // Автоматически скрываем через 5 секунд
-            setTimeout(() => {
-                if (alertDiv.parentElement) {
-                    alertDiv.remove();
-                }
-            }, 5000);
+    }
+
+    // Функция обновления строки в таблице
+    function updateRequestRow(row, data) {
+        const statusCell = row.querySelector('.request-status');
+        const rateCell = row.querySelector('.request-rate');
+        const finishedCell = row.querySelector('.request-finished');
+
+        if (statusCell) {
+            statusCell.innerHTML = getStatusBadge(data.status);
         }
 
-        // Проверяем загрузку виджета
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Telegram Widget should be loaded');
-            
-            // Показываем fallback кнопку если виджет не загрузился за 3 секунды
-            setTimeout(() => {
-                const widgetContainer = document.getElementById('telegram-widget-container');
-                const fallbackAuth = document.getElementById('fallback-auth');
-                if (widgetContainer && widgetContainer.children.length === 0 && fallbackAuth) {
-                    widgetContainer.style.display = 'none';
-                    fallbackAuth.style.display = 'block';
-                }
-            }, 3000);
-            
-            // Автоматическое скрытие alert через 5 секунд
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                setTimeout(function() {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
-                }, 5000);
-            });
+        if (rateCell) {
+            if (data.rate) {
+                rateCell.innerHTML = `<strong class="text-primary">${parseFloat(data.rate).toFixed(4)}</strong>`;
+            } else if (data.error) {
+                rateCell.innerHTML = `<span class="text-danger">${data.error}</span>`;
+            } else {
+                rateCell.innerHTML = `<span class="text-muted">--</span>`;
+            }
+        }
+
+        // Обновляем время завершения если есть
+        if (data.finished_at && finishedCell) {
+            finishedCell.textContent = formatTimestamp(data.finished_at);
+            finishedCell.setAttribute('data-timestamp', data.finished_at);
+        }
+    }
+
+    // Функция обновления основного отображения курса
+    function updateCurrentRateDisplay(rate, crypto, currency) {
+        console.log('Updating current rate display:', rate, crypto, currency);
+
+        const rateDisplay = document.getElementById('current-rate-display');
+        const placeholder = document.getElementById('rate-placeholder');
+
+        if (rateDisplay) {
+            // Если основной блок уже отображается - обновляем его
+            document.getElementById('current-rate-value').textContent = parseFloat(rate).toFixed(4);
+            document.getElementById('current-pair').textContent = `${crypto.toUpperCase()}/${currency.toUpperCase()}`;
+            document.getElementById('last-update-time').textContent = 'Только что';
+            rateDisplay.style.display = 'block';
+
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+        } else if (placeholder) {
+            // Если отображается плейсхолдер - превращаем его в основной блок
+            placeholder.innerHTML = `
+                <h3 class="text-white">💰 Текущий курс</h3>
+                <h2 class="display-4 fw-bold text-white mb-3">${parseFloat(rate).toFixed(4)}</h2>
+                <div class="row justify-content-center">
+                    <div class="col-auto">
+                        <span class="badge bg-light text-dark fs-6">${crypto.toUpperCase()}/${currency.toUpperCase()}</span>
+                    </div>
+                </div>
+                <p class="text-white-50 mt-3 mb-0">
+                    Данные предоставлены CoinGecko API
+                    <br>
+                    <small>Обновлено: <span>Только что</span></small>
+                </p>
+            `;
+            placeholder.className = 'rate-display';
+            placeholder.id = 'current-rate-display';
+        }
+
+        // Обновляем счетчик активных запросов
+        updateActiveRequestsCount(0);
+    }
+
+    // Функция для получения HTML бейджа статуса
+    function getStatusBadge(status) {
+        const badges = {
+            'pending': '<span class="status-pending">⏳ Ожидание</span>',
+            'processing': '<span class="status-processing">⚡ Обработка</span>',
+            'finished': '<span class="status-finished">✅ Завершено</span>',
+            'error': '<span class="status-error">❌ Ошибка</span>'
+        };
+        return badges[status] || '<span class="text-muted">Неизвестно</span>';
+    }
+
+    // Функция обновления счетчика активных запросов
+    function updateActiveRequestsCount(count) {
+        const countElement = document.getElementById('active-requests-count');
+        const statsElement = document.getElementById('active-requests');
+
+        if (countElement) {
+            countElement.textContent = `Активных: ${count}`;
+        }
+        if (statsElement) {
+            statsElement.textContent = count;
+        }
+
+        // Скрываем/показываем баннер автообновления
+        const queueStatus = document.querySelector('.queue-status');
+        if (queueStatus) {
+            queueStatus.style.display = count > 0 ? 'block' : 'none';
+        }
+    }
+
+    // Функции для управления автообновлением
+    function startAutoRefresh() {
+        if (!refreshInterval) {
+            refreshInterval = setInterval(trackPendingRequests, 3000);
+            console.log('Auto-refresh started');
+        }
+    }
+
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+            console.log('Auto-refresh stopped');
+        }
+    }
+
+    // Проверяем наличие активных запросов при загрузке
+    function checkInitialRequests() {
+        const hasActiveRequests = document.querySelectorAll('.status-pending, .status-processing').length > 0;
+        console.log(`Initial check: ${hasActiveRequests ? 'Active requests found' : 'No active requests'}`);
+
+        if (hasActiveRequests) {
+            console.log('Active requests found, starting tracker...');
+            startAutoRefresh();
+        }
+    }
+
+    // Запускаем отслеживание при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Page loaded, initializing request tracker...');
+
+        // Показываем fallback кнопку если виджет не загрузился за 3 секунды
+        setTimeout(() => {
+            const widgetContainer = document.getElementById('telegram-widget-container');
+            const fallbackAuth = document.getElementById('fallback-auth');
+            if (widgetContainer && widgetContainer.children.length === 0 && fallbackAuth) {
+                widgetContainer.style.display = 'none';
+                fallbackAuth.style.display = 'block';
+            }
+        }, 3000);
+
+        // Автоматическое скрытие alert через 5 секунд
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            setTimeout(function() {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
         });
-    </script>
+
+        // Запускаем проверку активных запросов
+        setTimeout(() => {
+            trackPendingRequests();
+            checkInitialRequests();
+        }, 1000);
+
+        // Также запускаем общее отслеживание каждые 5 секунд
+        setInterval(trackPendingRequests, 5000);
+    });
+
+    // Останавливаем автообновление при закрытии страницы
+    window.addEventListener('beforeunload', function() {
+        stopAutoRefresh();
+    });
+</script>
 </body>
 </html>
