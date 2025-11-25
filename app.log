@@ -519,88 +519,275 @@
 2025-10-08 13:45:32,489 - INFO - 127.0.0.1 - - [08/Oct/2025 13:45:32] "GET / HTTP/1.1" 200 -
 2025-10-08 13:45:56,287 - INFO - 127.0.0.1 - - [08/Oct/2025 13:45:56] "GET / HTTP/1.1" 200 -
 2025-10-08 13:46:10,816 - INFO - 127.0.0.1 - - [08/Oct/2025 13:46:10] "GET / HTTP/1.1" 200 -
-2025-11-18 12:16:44,061 - INFO - Starting async full crypto list loading...
-2025-11-18 12:16:44,109 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
-2025-11-18 12:16:45,768 - INFO - [crypto_api.backend] User=None | База данных инициализирована
-2025-11-18 12:16:46,007 - INFO - [crypto_api.backend] User=None | Приложение запущено
-2025-11-18 12:16:46,727 - INFO - Full crypto list loaded: 19430 items
-2025-11-18 12:16:46,788 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-11-24 21:40:15,324 - INFO - Starting async full crypto list loading...
+2025-11-24 21:40:15,422 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 21:40:15,832 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 21:40:15,904 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 21:40:16,120 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:5000
-2025-11-18 12:16:46,788 - INFO - [33mPress CTRL+C to quit[0m
-2025-11-18 12:16:46,789 - INFO -  * Restarting with stat
-2025-11-18 12:16:48,208 - INFO - Starting async full crypto list loading...
-2025-11-18 12:16:48,257 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
-2025-11-18 12:16:48,566 - INFO - [crypto_api.backend] User=None | База данных инициализирована
-2025-11-18 12:16:48,623 - INFO - [crypto_api.backend] User=None | Приложение запущено
-2025-11-18 12:16:50,850 - INFO - Full crypto list loaded: 19430 items
-2025-11-18 12:16:50,858 - WARNING -  * Debugger is active!
-2025-11-18 12:16:50,859 - INFO -  * Debugger PIN: 678-835-787
-2025-11-18 12:17:21,180 - INFO - 127.0.0.1 - - [18/Nov/2025 12:17:21] "GET / HTTP/1.1" 200 -
-2025-11-18 12:17:21,826 - INFO - 127.0.0.1 - - [18/Nov/2025 12:17:21] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
-2025-11-18 12:17:38,703 - INFO - [crypto_api.backend] User=None | Курс ETHEREUM/RUB: 246893.0000
-2025-11-18 12:17:38,955 - INFO - 127.0.0.1 - - [18/Nov/2025 12:17:38] "POST / HTTP/1.1" 200 -
-2025-11-18 12:22:10,310 - INFO - Starting async full crypto list loading...
-2025-11-18 12:22:10,358 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
-2025-11-18 12:22:12,309 - INFO - [crypto_api.backend] User=None | База данных инициализирована
-2025-11-18 12:22:12,466 - INFO - [crypto_api.backend] User=None | Приложение запущено
-2025-11-18 12:22:12,984 - INFO - Full crypto list loaded: 19430 items
-2025-11-18 12:22:13,004 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://192.168.1.18:5000
+2025-11-24 21:40:16,120 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-24 21:40:16,123 - INFO -  * Restarting with stat
+2025-11-24 21:40:18,809 - INFO - Starting async full crypto list loading...
+2025-11-24 21:40:18,892 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 21:40:19,287 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 21:40:19,358 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 21:40:19,469 - WARNING -  * Debugger is active!
+2025-11-24 21:40:19,475 - INFO -  * Debugger PIN: 459-658-001
+2025-11-24 21:40:20,193 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 21:40:22,753 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 21:40:32,543 - INFO - Starting async full crypto list loading...
+2025-11-24 21:40:32,627 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 21:40:33,020 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 21:40:33,092 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 21:40:33,166 - INFO - Worker: Инициализировано подключение к базе данных
+2025-11-24 21:40:33,166 - INFO - Worker: Запуск воркера обработки запросов
+2025-11-24 21:40:36,996 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 21:40:58,195 - INFO - 127.0.0.1 - - [24/Nov/2025 21:40:58] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-11-24 21:40:58,294 - INFO - 127.0.0.1 - - [24/Nov/2025 21:40:58] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+2025-11-24 21:40:58,324 - INFO - 127.0.0.1 - - [24/Nov/2025 21:40:58] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+2025-11-24 21:40:58,402 - INFO - 127.0.0.1 - - [24/Nov/2025 21:40:58] "GET /?__debugger__=yes&cmd=resource&f=console.png&s=d1TqtC8Pfsr2FqIPLGKo HTTP/1.1" 200 -
+2025-11-24 21:40:58,418 - INFO - 127.0.0.1 - - [24/Nov/2025 21:40:58] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+2025-11-24 21:59:10,906 - ERROR - Worker: Ошибка получения processing запроса: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'kalmyk3j.beget.tech' ([Errno 11001] getaddrinfo failed)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-24 21:59:10,909 - ERROR - Worker: Error cleaning up old requests: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'kalmyk3j.beget.tech' ([Errno 11001] getaddrinfo failed)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-24 22:03:49,133 - ERROR - Worker: Ошибка получения processing запроса: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'kalmyk3j.beget.tech' ([Errno 11001] getaddrinfo failed)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-24 22:03:49,136 - ERROR - Worker: Error cleaning up old requests: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'kalmyk3j.beget.tech' ([Errno 11001] getaddrinfo failed)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-24 22:05:09,232 - INFO -  * Detected change in 'C:\\Users\\tovro\\PycharmProjects\\crypto_app\\app.py', reloading
+2025-11-24 22:05:09,726 - INFO -  * Restarting with stat
+2025-11-24 22:05:12,106 - INFO - Starting async full crypto list loading...
+2025-11-24 22:05:12,178 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 22:05:12,562 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 22:05:12,632 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 22:05:12,732 - WARNING -  * Debugger is active!
+2025-11-24 22:05:12,737 - INFO -  * Debugger PIN: 459-658-001
+2025-11-24 22:05:16,161 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 22:10:32,438 - INFO - Starting async full crypto list loading...
+2025-11-24 22:10:32,514 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 22:10:32,900 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 22:10:32,976 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 22:10:33,083 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:5000
-2025-11-18 12:22:13,004 - INFO - [33mPress CTRL+C to quit[0m
-2025-11-18 12:22:13,005 - INFO -  * Restarting with stat
-2025-11-18 12:22:14,428 - INFO - Starting async full crypto list loading...
-2025-11-18 12:22:14,478 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
-2025-11-18 12:22:14,800 - INFO - [crypto_api.backend] User=None | База данных инициализирована
-2025-11-18 12:22:14,861 - INFO - [crypto_api.backend] User=None | Приложение запущено
-2025-11-18 12:22:17,149 - INFO - Full crypto list loaded: 19430 items
-2025-11-18 12:22:17,154 - WARNING -  * Debugger is active!
-2025-11-18 12:22:17,156 - INFO -  * Debugger PIN: 678-835-787
-2025-11-18 12:22:33,438 - INFO - 127.0.0.1 - - [18/Nov/2025 12:22:33] "GET / HTTP/1.1" 200 -
-2025-11-18 12:22:44,374 - INFO - [crypto_api.backend] User=None | Курс ETHEREUM/GBP: 2314.2000
-2025-11-18 12:22:44,596 - INFO - 127.0.0.1 - - [18/Nov/2025 12:22:44] "POST / HTTP/1.1" 200 -
-2025-11-18 12:22:47,706 - INFO - 127.0.0.1 - - [18/Nov/2025 12:22:47] "GET /crypto_table HTTP/1.1" 200 -
-2025-11-18 12:22:55,774 - INFO - 127.0.0.1 - - [18/Nov/2025 12:22:55] "GET / HTTP/1.1" 200 -
-2025-11-18 12:22:59,022 - INFO - 127.0.0.1 - - [18/Nov/2025 12:22:59] "GET /log_table HTTP/1.1" 200 -
-2025-11-18 12:23:05,470 - INFO - 127.0.0.1 - - [18/Nov/2025 12:23:05] "GET / HTTP/1.1" 200 -
-2025-11-18 12:50:38,797 - INFO - Starting async full crypto list loading...
-2025-11-18 12:50:38,843 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
-2025-11-18 12:50:40,860 - INFO - [crypto_api.backend] User=None | База данных инициализирована
-2025-11-18 12:50:41,084 - INFO - [crypto_api.backend] User=None | Приложение запущено
-2025-11-18 12:50:41,498 - INFO - Full crypto list loaded: 19412 items
-2025-11-18 12:50:41,519 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://192.168.1.18:5000
+2025-11-24 22:10:33,083 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-24 22:10:33,086 - INFO -  * Restarting with stat
+2025-11-24 22:10:35,673 - INFO - Starting async full crypto list loading...
+2025-11-24 22:10:35,756 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 22:10:36,137 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 22:10:36,206 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 22:10:36,308 - WARNING -  * Debugger is active!
+2025-11-24 22:10:36,313 - INFO -  * Debugger PIN: 459-658-001
+2025-11-24 22:10:36,838 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 22:10:39,830 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 22:10:45,985 - INFO - Starting async full crypto list loading...
+2025-11-24 22:10:46,067 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 22:10:46,671 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 22:10:46,857 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 22:10:46,925 - INFO - Worker: Инициализировано подключение к базе данных
+2025-11-24 22:10:46,926 - INFO - Worker: Запуск воркера обработки запросов
+2025-11-24 22:10:50,730 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 22:10:58,438 - INFO - 127.0.0.1 - - [24/Nov/2025 22:10:58] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-11-24 22:10:58,541 - INFO - 127.0.0.1 - - [24/Nov/2025 22:10:58] "[36mGET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-11-24 22:10:58,549 - INFO - 127.0.0.1 - - [24/Nov/2025 22:10:58] "[36mGET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-11-24 22:10:58,577 - INFO - 127.0.0.1 - - [24/Nov/2025 22:10:58] "GET /?__debugger__=yes&cmd=resource&f=console.png&s=4Mi195V2Q1czaCSd0CeY HTTP/1.1" 200 -
+2025-11-24 22:15:30,474 - INFO -  * Detected change in 'C:\\Users\\tovro\\PycharmProjects\\crypto_app\\app.py', reloading
+2025-11-24 22:15:30,954 - INFO -  * Restarting with stat
+2025-11-24 22:15:34,078 - INFO - Starting async full crypto list loading...
+2025-11-24 22:15:34,170 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 22:15:34,582 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 22:15:34,652 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 22:15:34,762 - WARNING -  * Debugger is active!
+2025-11-24 22:15:34,767 - INFO -  * Debugger PIN: 459-658-001
+2025-11-24 22:15:39,249 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 22:18:03,283 - INFO - Starting async full crypto list loading...
+2025-11-24 22:18:03,360 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 22:18:03,744 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 22:18:03,814 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 22:18:03,921 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:5000
-2025-11-18 12:50:41,519 - INFO - [33mPress CTRL+C to quit[0m
-2025-11-18 12:50:41,520 - INFO -  * Restarting with stat
-2025-11-18 12:50:42,937 - INFO - Starting async full crypto list loading...
-2025-11-18 12:50:42,983 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
-2025-11-18 12:50:43,288 - INFO - [crypto_api.backend] User=None | База данных инициализирована
-2025-11-18 12:50:43,344 - INFO - [crypto_api.backend] User=None | Приложение запущено
-2025-11-18 12:50:45,615 - INFO - Full crypto list loaded: 19412 items
-2025-11-18 12:50:45,622 - WARNING -  * Debugger is active!
-2025-11-18 12:50:45,624 - INFO -  * Debugger PIN: 678-835-787
-2025-11-18 12:51:04,094 - INFO - 127.0.0.1 - - [18/Nov/2025 12:51:04] "GET / HTTP/1.1" 200 -
-2025-11-18 12:51:13,099 - INFO - 127.0.0.1 - - [18/Nov/2025 12:51:13] "[32mGET /users_table HTTP/1.1[0m" 302 -
-2025-11-18 12:51:13,308 - INFO - 127.0.0.1 - - [18/Nov/2025 12:51:13] "GET / HTTP/1.1" 200 -
-2025-11-18 13:15:50,613 - INFO - Starting async full crypto list loading...
-2025-11-18 13:15:50,667 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
-2025-11-18 13:15:52,508 - INFO - [crypto_api.backend] User=None | База данных инициализирована
-2025-11-18 13:15:52,730 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
-2025-11-18 13:15:53,332 - INFO - Full crypto list loaded: 19411 items
-2025-11-18 13:15:53,355 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://192.168.1.18:5000
+2025-11-24 22:18:03,921 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-24 22:18:03,923 - INFO -  * Restarting with stat
+2025-11-24 22:18:06,517 - INFO - Starting async full crypto list loading...
+2025-11-24 22:18:06,603 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 22:18:06,982 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 22:18:07,051 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 22:18:07,154 - WARNING -  * Debugger is active!
+2025-11-24 22:18:07,159 - INFO -  * Debugger PIN: 459-658-001
+2025-11-24 22:18:07,818 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 22:18:10,794 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 22:18:19,422 - INFO - Starting async full crypto list loading...
+2025-11-24 22:18:19,494 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 22:18:19,873 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 22:18:19,939 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 22:18:20,007 - INFO - Worker: Инициализировано подключение к базе данных
+2025-11-24 22:18:20,007 - INFO - Worker: Запуск воркера обработки запросов
+2025-11-24 22:18:23,741 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 22:18:57,767 - INFO - 127.0.0.1 - - [24/Nov/2025 22:18:57] "GET / HTTP/1.1" 200 -
+2025-11-24 22:18:59,980 - INFO - 127.0.0.1 - - [24/Nov/2025 22:18:59] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-24 22:19:22,420 - INFO - [crypto_api.backend] User=0 | Created crypto request 39 for bitcoin/usd
+2025-11-24 22:19:22,476 - INFO - [crypto_api.backend] User=None | Request created for bitcoin/usd (ID: 39)
+2025-11-24 22:19:23,041 - INFO - 127.0.0.1 - - [24/Nov/2025 22:19:23] "POST / HTTP/1.1" 200 -
+2025-11-24 22:19:27,139 - INFO - Worker: Found processing request: ID=39, bitcoin/usd
+2025-11-24 22:19:27,177 - INFO - Worker: Processing request 39 for bitcoin/usd
+2025-11-24 22:19:27,178 - INFO - Worker: Calling API for bitcoin/usd
+2025-11-24 22:19:28,310 - INFO - Worker: Successfully processed request 39 for bitcoin/usd: 88665
+2025-11-24 22:19:33,989 - INFO - 127.0.0.1 - - [24/Nov/2025 22:19:33] "[32mGET /requests_table HTTP/1.1[0m" 302 -
+2025-11-24 22:19:34,392 - INFO - 127.0.0.1 - - [24/Nov/2025 22:19:34] "GET / HTTP/1.1" 200 -
+2025-11-24 22:19:37,441 - INFO - 127.0.0.1 - - [24/Nov/2025 22:19:37] "[32mGET /users_table HTTP/1.1[0m" 302 -
+2025-11-24 22:19:37,841 - INFO - 127.0.0.1 - - [24/Nov/2025 22:19:37] "GET / HTTP/1.1" 200 -
+2025-11-24 22:19:49,549 - INFO - 127.0.0.1 - - [24/Nov/2025 22:19:49] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-24 22:19:55,546 - INFO - 127.0.0.1 - - [24/Nov/2025 22:19:55] "GET /log_table HTTP/1.1" 200 -
+2025-11-24 22:20:14,874 - INFO - [crypto_api.backend] User=0 | Created crypto request 40 for ripple/usd
+2025-11-24 22:20:14,927 - INFO - [crypto_api.backend] User=None | Request created for ripple/usd (ID: 40)
+2025-11-24 22:20:15,442 - INFO - 127.0.0.1 - - [24/Nov/2025 22:20:15] "POST / HTTP/1.1" 200 -
+2025-11-24 22:20:19,928 - INFO - Worker: Found processing request: ID=40, ripple/usd
+2025-11-24 22:20:19,966 - INFO - Worker: Processing request 40 for ripple/usd
+2025-11-24 22:20:19,967 - INFO - Worker: Calling API for ripple/usd
+2025-11-24 22:20:21,328 - INFO - Worker: Successfully processed request 40 for ripple/usd: 2.22
+2025-11-24 22:20:36,085 - INFO - 127.0.0.1 - - [24/Nov/2025 22:20:36] "GET / HTTP/1.1" 200 -
+2025-11-24 22:20:38,173 - INFO - 127.0.0.1 - - [24/Nov/2025 22:20:38] "GET /chart HTTP/1.1" 200 -
+2025-11-24 22:20:44,476 - INFO - [crypto_api.backend] User=None | Сгенерирован график для bitcoin/usd за 7 дней
+2025-11-24 22:20:44,645 - INFO - 127.0.0.1 - - [24/Nov/2025 22:20:44] "POST /chart HTTP/1.1" 200 -
+2025-11-24 22:20:52,917 - INFO - 127.0.0.1 - - [24/Nov/2025 22:20:52] "GET / HTTP/1.1" 200 -
+2025-11-24 22:20:55,591 - INFO - 127.0.0.1 - - [24/Nov/2025 22:20:55] "GET /candlestick HTTP/1.1" 200 -
+2025-11-24 22:21:09,028 - INFO - [crypto_api.backend] User=None | Сгенерирован свечной график для ethereum/cny за 1 дней
+2025-11-24 22:21:09,428 - INFO - 127.0.0.1 - - [24/Nov/2025 22:21:09] "POST /candlestick HTTP/1.1" 200 -
+2025-11-24 22:21:21,532 - INFO - 127.0.0.1 - - [24/Nov/2025 22:21:21] "GET / HTTP/1.1" 200 -
+2025-11-24 22:31:48,887 - INFO - Starting async full crypto list loading...
+2025-11-24 22:31:48,960 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 22:31:49,371 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 22:31:49,442 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 22:31:49,547 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:5000
-2025-11-18 13:15:53,355 - INFO - [33mPress CTRL+C to quit[0m
-2025-11-18 13:15:53,356 - INFO -  * Restarting with stat
-2025-11-18 13:15:54,962 - INFO - Starting async full crypto list loading...
-2025-11-18 13:15:55,017 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
-2025-11-18 13:15:55,323 - INFO - [crypto_api.backend] User=None | База данных инициализирована
-2025-11-18 13:15:55,379 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
-2025-11-18 13:15:57,608 - INFO - Full crypto list loaded: 19411 items
-2025-11-18 13:15:57,617 - WARNING -  * Debugger is active!
-2025-11-18 13:15:57,618 - INFO -  * Debugger PIN: 678-835-787
-2025-11-18 13:16:08,122 - INFO - 127.0.0.1 - - [18/Nov/2025 13:16:08] "GET / HTTP/1.1" 200 -
-2025-11-18 13:16:23,476 - INFO - [crypto_api.backend] User=None | Курс AAVE/CNY: 1218.3000
-2025-11-18 13:16:23,723 - INFO - 127.0.0.1 - - [18/Nov/2025 13:16:23] "POST / HTTP/1.1" 200 -
-2025-11-18 13:16:31,246 - INFO - [crypto_api.backend] User=None | Курс AAVE/RUB: 13897.9000
-2025-11-18 13:16:31,468 - INFO - 127.0.0.1 - - [18/Nov/2025 13:16:31] "POST / HTTP/1.1" 200 -
-2025-11-18 13:16:43,279 - INFO - [crypto_api.backend] User=None | Курс AAVE/USD: 171.3500
-2025-11-18 13:16:43,517 - INFO - 127.0.0.1 - - [18/Nov/2025 13:16:43] "POST / HTTP/1.1" 200 -
+ * Running on http://192.168.1.18:5000
+2025-11-24 22:31:49,547 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-24 22:31:49,549 - INFO -  * Restarting with stat
+2025-11-24 22:31:52,103 - INFO - Starting async full crypto list loading...
+2025-11-24 22:31:52,189 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 22:31:52,577 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 22:31:52,647 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 22:31:52,754 - WARNING -  * Debugger is active!
+2025-11-24 22:31:52,759 - INFO -  * Debugger PIN: 459-658-001
+2025-11-24 22:31:53,461 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 22:31:56,480 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 22:32:02,157 - INFO - Starting async full crypto list loading...
+2025-11-24 22:32:02,232 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 22:32:02,626 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 22:32:02,699 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 22:32:02,773 - INFO - Worker: Инициализировано подключение к базе данных
+2025-11-24 22:32:02,773 - INFO - Worker: Запуск воркера обработки запросов
+2025-11-24 22:32:06,615 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 22:32:34,181 - INFO - 127.0.0.1 - - [24/Nov/2025 22:32:34] "GET / HTTP/1.1" 200 -
+2025-11-24 22:32:35,999 - INFO - 127.0.0.1 - - [24/Nov/2025 22:32:35] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-24 22:32:45,421 - INFO - [crypto_api.backend] User=0 | Created crypto request 41 for binancecoin/usd
+2025-11-24 22:32:45,475 - INFO - [crypto_api.backend] User=None | Request created for binancecoin/usd (ID: 41)
+2025-11-24 22:32:46,062 - INFO - 127.0.0.1 - - [24/Nov/2025 22:32:46] "POST / HTTP/1.1" 200 -
+2025-11-24 22:32:49,368 - INFO - Worker: Found processing request: ID=41, binancecoin/usd
+2025-11-24 22:32:49,408 - INFO - Worker: Processing request 41 for binancecoin/usd
+2025-11-24 22:32:49,408 - INFO - Worker: Calling API for binancecoin/usd
+2025-11-24 22:32:50,659 - INFO - Worker: Successfully processed request 41 for binancecoin/usd: 868.63
+2025-11-24 22:34:58,050 - INFO - 127.0.0.1 - - [24/Nov/2025 22:34:58] "[32mGET /requests_table HTTP/1.1[0m" 302 -
+2025-11-24 22:34:58,459 - INFO - 127.0.0.1 - - [24/Nov/2025 22:34:58] "GET / HTTP/1.1" 200 -
+2025-11-24 22:45:01,734 - INFO - Starting async full crypto list loading...
+2025-11-24 22:45:01,810 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 22:45:02,216 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 22:45:02,283 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 22:45:02,387 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.18:5000
+2025-11-24 22:45:02,387 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-24 22:45:02,390 - INFO -  * Restarting with stat
+2025-11-24 22:45:04,951 - INFO - Starting async full crypto list loading...
+2025-11-24 22:45:05,036 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 22:45:05,430 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 22:45:05,501 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 22:45:05,604 - WARNING -  * Debugger is active!
+2025-11-24 22:45:05,609 - INFO -  * Debugger PIN: 459-658-001
+2025-11-24 22:45:06,230 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 22:45:09,438 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 22:45:20,963 - INFO - Starting async full crypto list loading...
+2025-11-24 22:45:21,034 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-24 22:45:21,433 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-24 22:45:21,502 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-24 22:45:21,575 - INFO - Worker: Инициализировано подключение к базе данных
+2025-11-24 22:45:21,575 - INFO - Worker: Запуск воркера обработки запросов
+2025-11-24 22:45:25,256 - INFO - Full crypto list loaded: 19387 items
+2025-11-24 22:45:40,518 - INFO - 127.0.0.1 - - [24/Nov/2025 22:45:40] "GET / HTTP/1.1" 200 -
+2025-11-24 22:46:01,349 - INFO - [crypto_api.backend] User=0 | Created crypto request 42 for ethereum/eur
+2025-11-24 22:46:01,408 - INFO - [crypto_api.backend] User=None | Request created for ethereum/eur (ID: 42)
+2025-11-24 22:46:01,985 - INFO - 127.0.0.1 - - [24/Nov/2025 22:46:01] "POST / HTTP/1.1" 200 -
+2025-11-24 22:46:02,987 - INFO - Worker: Found processing request: ID=42, ethereum/eur
+2025-11-24 22:46:03,023 - INFO - Worker: Processing request 42 for ethereum/eur
+2025-11-24 22:46:03,024 - INFO - Worker: Calling API for ethereum/eur
+2025-11-24 22:46:04,184 - INFO - Worker: Successfully processed request 42 for ethereum/eur: 2566.02
+2025-11-24 22:46:08,218 - INFO - 127.0.0.1 - - [24/Nov/2025 22:46:08] "GET /requests_table HTTP/1.1" 200 -
+2025-11-24 22:46:23,558 - INFO - 127.0.0.1 - - [24/Nov/2025 22:46:23] "GET / HTTP/1.1" 200 -
+2025-11-24 22:46:28,051 - INFO - [crypto_api.backend] User=0 | Created crypto request 43 for ethereum/usd
+2025-11-24 22:46:28,104 - INFO - [crypto_api.backend] User=None | Request created for ethereum/usd (ID: 43)
+2025-11-24 22:46:28,654 - INFO - 127.0.0.1 - - [24/Nov/2025 22:46:28] "POST / HTTP/1.1" 200 -
+2025-11-24 22:46:30,060 - INFO - Worker: Found processing request: ID=43, ethereum/usd
+2025-11-24 22:46:30,098 - INFO - Worker: Processing request 43 for ethereum/usd
+2025-11-24 22:46:30,098 - INFO - Worker: Calling API for ethereum/usd
+2025-11-24 22:46:31,198 - INFO - Worker: Successfully processed request 43 for ethereum/usd: 2957.97
+2025-11-24 22:46:36,487 - INFO - 127.0.0.1 - - [24/Nov/2025 22:46:36] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-24 22:46:45,220 - INFO - 127.0.0.1 - - [24/Nov/2025 22:46:45] "GET / HTTP/1.1" 200 -
+2025-11-24 22:46:53,185 - INFO - [crypto_api.backend] User=0 | Created crypto request 44 for bitcoin/rub
+2025-11-24 22:46:53,240 - INFO - [crypto_api.backend] User=None | Request created for bitcoin/rub (ID: 44)
+2025-11-24 22:46:53,810 - INFO - 127.0.0.1 - - [24/Nov/2025 22:46:53] "POST / HTTP/1.1" 200 -
+2025-11-24 22:46:57,065 - INFO - Worker: Found processing request: ID=44, bitcoin/rub
+2025-11-24 22:46:57,102 - INFO - Worker: Processing request 44 for bitcoin/rub
+2025-11-24 22:46:57,103 - INFO - Worker: Calling API for bitcoin/rub
+2025-11-24 22:46:58,428 - INFO - Worker: Successfully processed request 44 for bitcoin/rub: 6939988
+2025-11-24 22:47:05,863 - INFO - 127.0.0.1 - - [24/Nov/2025 22:47:05] "GET /requests_table HTTP/1.1" 200 -
+2025-11-24 22:47:10,255 - INFO - 127.0.0.1 - - [24/Nov/2025 22:47:10] "GET / HTTP/1.1" 200 -
+2025-11-24 22:47:14,845 - INFO - 127.0.0.1 - - [24/Nov/2025 22:47:14] "[32mGET /users_table HTTP/1.1[0m" 302 -
+2025-11-24 22:47:15,506 - INFO - 127.0.0.1 - - [24/Nov/2025 22:47:15] "GET / HTTP/1.1" 200 -
+2025-11-24 22:47:20,543 - INFO - 127.0.0.1 - - [24/Nov/2025 22:47:20] "GET /log_table HTTP/1.1" 200 -
+2025-11-24 22:47:25,234 - INFO - 127.0.0.1 - - [24/Nov/2025 22:47:25] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-24 23:11:07,463 - INFO - 127.0.0.1 - - [24/Nov/2025 23:11:07] "GET /chart HTTP/1.1" 200 -
+2025-11-24 23:11:12,961 - INFO - [crypto_api.backend] User=None | Сгенерирован график для bitcoin/usd за 7 дней
+2025-11-24 23:11:13,243 - INFO - 127.0.0.1 - - [24/Nov/2025 23:11:13] "POST /chart HTTP/1.1" 200 -
+2025-11-24 23:11:19,707 - INFO - 127.0.0.1 - - [24/Nov/2025 23:11:19] "GET / HTTP/1.1" 200 -
+2025-11-24 23:11:35,572 - INFO - [crypto_api.backend] User=0 | Created crypto request 45 for ethereum/usd
+2025-11-24 23:11:35,626 - INFO - [crypto_api.backend] User=None | Request created for ethereum/usd (ID: 45)
+2025-11-24 23:11:36,161 - INFO - 127.0.0.1 - - [24/Nov/2025 23:11:36] "POST / HTTP/1.1" 200 -
+2025-11-24 23:11:38,710 - INFO - Worker: Found processing request: ID=45, ethereum/usd
+2025-11-24 23:11:38,747 - INFO - Worker: Processing request 45 for ethereum/usd
+2025-11-24 23:11:38,747 - INFO - Worker: Calling API for ethereum/usd
+2025-11-24 23:11:39,931 - INFO - Worker: Successfully processed request 45 for ethereum/usd: 2961.68
+2025-11-24 23:12:26,392 - INFO - Worker: Found processing request: ID=46, cardano/cny
+2025-11-24 23:12:26,410 - INFO - [crypto_api.backend] User=0 | Created crypto request 46 for cardano/cny
+2025-11-24 23:12:26,428 - INFO - Worker: Processing request 46 for cardano/cny
+2025-11-24 23:12:26,428 - INFO - Worker: Calling API for cardano/cny
+2025-11-24 23:12:26,464 - INFO - [crypto_api.backend] User=None | Request created for cardano/cny (ID: 46)
+2025-11-24 23:12:26,921 - INFO - 127.0.0.1 - - [24/Nov/2025 23:12:26] "POST / HTTP/1.1" 200 -
+2025-11-24 23:12:27,815 - INFO - Worker: Successfully processed request 46 for cardano/cny: 3.05
+2025-11-24 23:12:34,256 - INFO - 127.0.0.1 - - [24/Nov/2025 23:12:34] "GET /requests_table HTTP/1.1" 200 -
+2025-11-24 23:12:47,951 - INFO - 127.0.0.1 - - [24/Nov/2025 23:12:47] "GET / HTTP/1.1" 200 -
+2025-11-24 23:12:58,419 - INFO - 127.0.0.1 - - [24/Nov/2025 23:12:58] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-24 23:14:40,534 - INFO - 127.0.0.1 - - [24/Nov/2025 23:14:40] "GET /requests_table HTTP/1.1" 200 -
+2025-11-24 23:14:51,346 - INFO - 127.0.0.1 - - [24/Nov/2025 23:14:51] "GET /log_table HTTP/1.1" 200 -
+2025-11-24 23:14:59,150 - INFO - 127.0.0.1 - - [24/Nov/2025 23:14:59] "GET / HTTP/1.1" 200 -
+2025-11-24 23:15:31,536 - INFO - [crypto_api.backend] User=0 | Created crypto request 47 for bitcoin/jpy
+2025-11-24 23:15:31,593 - INFO - [crypto_api.backend] User=None | Request created for bitcoin/jpy (ID: 47)
+2025-11-24 23:15:32,137 - INFO - 127.0.0.1 - - [24/Nov/2025 23:15:32] "POST / HTTP/1.1" 200 -
+2025-11-24 23:15:33,270 - INFO - Worker: Found processing request: ID=47, bitcoin/jpy
+2025-11-24 23:15:33,310 - INFO - Worker: Processing request 47 for bitcoin/jpy
+2025-11-24 23:15:33,311 - INFO - Worker: Calling API for bitcoin/jpy
+2025-11-24 23:15:34,654 - INFO - Worker: Successfully processed request 47 for bitcoin/jpy: 13904626
+2025-11-24 23:16:13,074 - INFO - [crypto_api.backend] User=0 | Created crypto request 48 for ripple/usd
+2025-11-24 23:16:13,132 - INFO - [crypto_api.backend] User=None | Request created for ripple/usd (ID: 48)
+2025-11-24 23:16:13,672 - INFO - 127.0.0.1 - - [24/Nov/2025 23:16:13] "POST / HTTP/1.1" 200 -
+2025-11-24 23:16:15,948 - INFO - Worker: Found processing request: ID=48, ripple/usd
+2025-11-24 23:16:15,984 - INFO - Worker: Processing request 48 for ripple/usd
+2025-11-24 23:16:15,985 - INFO - Worker: Calling API for ripple/usd
+2025-11-24 23:16:17,280 - INFO - Worker: Successfully processed request 48 for ripple/usd: 2.26

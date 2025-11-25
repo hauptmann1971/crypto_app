@@ -27,7 +27,7 @@
 <body>
     <div class="container mt-4">
         <h1 class="mb-4">📊 График курса криптовалют</h1>
-        
+
         <!-- Кнопка возврата -->
         <div class="mb-3">
             <a href="{{ url_for('index') }}" class="btn btn-secondary">← Назад к конвертеру</a>
@@ -41,133 +41,40 @@
                     <select class="form-select" id="crypto" name="crypto" required>
                         <option value="">Выберите криптовалюту</option>
                         {% for crypto in cryptos %}
-                            <option value="{{ crypto }}" {% if crypto == 'bitcoin' %}selected{% endif %}>
+                            <option value="{{ crypto }}" {% if crypto =='bitcoin' %}selected{% endif %}>
                                 {{ crypto }}
                             </option>
                         {% endfor %}
                     </select>
                 </div>
-                
+
                 <div class="col-md-4">
                     <label for="currency" class="form-label">Валюта:</label>
                     <select class="form-select" id="currency" name="currency" required>
                         <option value="">Выберите валюту</option>
                         {% for currency in currencies %}
-                            <option value="{{ currency }}" {% if currency == 'usd' %}selected{% endif %}>
+                            <option value="{{ currency }}" {% if currency =='usd' %}selected{% endif %}>
                                 {{ currency|upper }}
                             </option>
                         {% endfor %}
                     </select>
                 </div>
-                
+
                 <div class="col-md-4">
                     <label for="period" class="form-label">Период:</label>
                     <select class="form-select" id="period" name="period" required>
                         {% for period in periods %}
-                            <option value="{{ period.value }}" {% if period.value == '7' %}selected{% endif %}>
+                            <option value="{{ period.value }}" {% if period.value =='7' %}selected{% endif %}>
                                 {{ period.label }}
                             </option>
                         {% endfor %}
                     </select>
                 </div>
-                
+
                 <div class="col-12">
                     <button type="submit" class="btn btn-primary">Построить график</button>
                 </div>
             </form>
-        </div>
-
-        <!-- Быстрый доступ к популярным криптовалютам -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="card-title mb-0">🚀 Популярные криптовалюты</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex flex-wrap gap-2">
-                            <button class="btn btn-primary btn-sm" onclick="selectCrypto('bitcoin')">
-                                Bitcoin
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('ethereum')">
-                                Ethereum
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('binancecoin')">
-                                Binance Coin
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('ripple')">
-                                Ripple
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('cardano')">
-                                Cardano
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm" onclick="selectCrypto('solana')">
-                                Solana
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Быстрый доступ к валютам -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="card-title mb-0">💱 Популярные валюты</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex flex-wrap gap-2">
-                            <button class="btn btn-success btn-sm" onclick="selectCurrency('usd')">
-                                USD
-                            </button>
-                            <button class="btn btn-outline-success btn-sm" onclick="selectCurrency('eur')">
-                                EUR
-                            </button>
-                            <button class="btn btn-outline-success btn-sm" onclick="selectCurrency('gbp')">
-                                GBP
-                            </button>
-                            <button class="btn btn-outline-success btn-sm" onclick="selectCurrency('jpy')">
-                                JPY
-                            </button>
-                            <button class="btn btn-outline-success btn-sm" onclick="selectCurrency('rub')">
-                                RUB
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Быстрый доступ к периодам -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="card-title mb-0">📅 Популярные периоды</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex flex-wrap gap-2">
-                            <button class="btn btn-info btn-sm" onclick="selectPeriod('1')">
-                                1 день
-                            </button>
-                            <button class="btn btn-warning btn-sm" onclick="selectPeriod('7')">
-                                7 дней
-                            </button>
-                            <button class="btn btn-outline-info btn-sm" onclick="selectPeriod('30')">
-                                30 дней
-                            </button>
-                            <button class="btn btn-outline-info btn-sm" onclick="selectPeriod('90')">
-                                90 дней
-                            </button>
-                            <button class="btn btn-outline-info btn-sm" onclick="selectPeriod('365')">
-                                1 год
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Отображение графика или ошибки -->
@@ -225,32 +132,6 @@
                 bsAlert.close();
             });
         }, 5000);
-
-        // Показать уведомление о значениях по умолчанию при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            const cryptoSelect = document.getElementById('crypto');
-            const currencySelect = document.getElementById('currency');
-            const periodSelect = document.getElementById('period');
-            
-            if (cryptoSelect.value === 'bitcoin' && currencySelect.value === 'usd' && periodSelect.value === '7') {
-                console.log('Значения по умолчанию установлены: Bitcoin/USD/7 дней');
-            }
-        });
-
-        // Автоматически отправить форму при первом посещении, если значения по умолчанию
-        document.addEventListener('DOMContentLoaded', function() {
-            // Проверяем, что это первая загрузка (не после POST запроса)
-            const urlParams = new URLSearchParams(window.location.search);
-            if (!urlParams.has('submitted')) {
-                const cryptoSelect = document.getElementById('crypto');
-                const currencySelect = document.getElementById('currency');
-                const periodSelect = document.getElementById('period');
-                
-                // Если все значения по умолчанию, можно автоматически построить график
-                // Раскомментируйте следующую строку для автоматической отправки:
-                // document.querySelector('form').submit();
-            }
-        });
     </script>
 </body>
 </html>
