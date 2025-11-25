@@ -789,10 +789,11 @@ def get_request_status(request_id):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    current_rate = None
+    # current_rate больше не используется для отображения последнего завершённого
+    # current_rate = None
     current_crypto = None
     current_currency = None
-    current_request_id = None
+    current_request_id = None # ID текущего/последнего отправленного запроса
     requests_history = []
     pending_requests_count = 0
     processing_requests_count = 0
@@ -804,7 +805,6 @@ def index():
         user_from_db = get_user_from_db(user_session['id'])
         if user_from_db:
             update_user_last_login(user_session['id'])
-
         requests_history = get_user_requests_history(user_session['id'])
         pending_requests_count = get_pending_requests_count()
         processing_requests_count = get_processing_requests_count()
@@ -812,7 +812,6 @@ def index():
     if request.method == 'POST':
         crypto = request.form.get('crypto', 'bitcoin')
         currency = request.form.get('currency', 'usd')
-
         if not crypto or not currency:
             flash("Выберите криптовалюту и валюту", 'error')
             log_message("Не выбрана криптовалюта или валюта", 'warning',
@@ -821,21 +820,16 @@ def index():
 
         current_crypto = crypto
         current_currency = currency
-
         request_id = create_crypto_request(user_id, crypto, currency)
-
         if request_id > 0:
             session['last_request_id'] = request_id
             session['current_crypto'] = crypto
             session['current_currency'] = currency
             session.modified = True
-
-            flash(
-                f"Запрос на получение курса {crypto.upper()}/{currency.upper()} отправлен в обработку. ID: {request_id}",
-                'info')
+            flash(f"Запрос на получение курса {crypto.upper()}/{currency.upper()} отправлен в обработку. ID: {request_id}", 'info')
             log_message(f"Request created for {crypto}/{currency} (ID: {request_id})", 'info',
                         user_id=str(user_session['id']) if user_session else None)
-
+            current_request_id = request_id # ID текущего запроса для отображения
             pending_requests_count = get_pending_requests_count()
             processing_requests_count = get_processing_requests_count()
             if user_session:
@@ -844,18 +838,16 @@ def index():
             flash("Ошибка при создании запроса", 'error')
             log_message("Error creating request in queue", 'error',
                         user_id=str(user_session['id']) if user_session else None)
-
-    else:
-        current_crypto = session.get('current_crypto')
-        current_currency = session.get('current_currency')
-
-        if user_session and current_crypto and current_currency:
-            latest_request = get_latest_finished_request(user_session['id'])
-            if latest_request and latest_request.get('rate'):
-                current_rate = latest_request['rate']
-                current_crypto = latest_request['crypto']
-                current_currency = latest_request['currency']
-                current_request_id = latest_request['id']
+    else: # GET запрос
+        # --- ИЗМЕНЕНИЕ ---
+        # Не пытаемся получить последний завершённый курс
+        # current_rate = None
+        # current_crypto и current_currency могут быть из сессии для отображения в форме
+        current_crypto = session.get('current_crypto', 'bitcoin') # Значения по умолчанию
+        current_currency = session.get('current_currency', 'usd')
+        # current_request_id получаем из сессии - это ID последнего отправленного запроса
+        current_request_id = session.get('last_request_id') # Это ключевое изменение
+        # --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
     process_pending_requests()
 
@@ -864,16 +856,19 @@ def index():
                            cryptos=cryptos,
                            currencies=CURRENCIES,
                            periods=PERIODS,
-                           current_rate=current_rate,
+                           # current_rate=current_rate, # Больше не передаём
                            current_crypto=current_crypto,
                            current_currency=current_currency,
-                           current_request_id=current_request_id,
+                           current_request_id=current_request_id, # Передаём ID текущего/последнего отправленного запроса
                            db_connected=db_connection_active,
                            user=user_from_db,
                            requests_history=requests_history,
                            pending_requests_count=pending_requests_count,
                            processing_requests_count=processing_requests_count,
                            bot_username=Config.BOT_USERNAME)
+
+# ... (остальной код app.py без изменений) ...
+
 
 
 @app.route('/chart', methods=['GET', 'POST'])

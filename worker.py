@@ -3,9 +3,9 @@ import time
 import requests
 import json
 import logging
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Column, Integer, String, Float, Text, BigInteger, Boolean, and_
 from sqlalchemy.orm import sessionmaker
-from app import Base, CryptoRequest, CryptoRate, log_message
+from app import Base, CryptoRequest, CryptoRate, log_message # Импортируем CryptoRequest
 import os
 from dotenv import load_dotenv
 from contextlib import contextmanager
@@ -24,10 +24,8 @@ logging.basicConfig(
     ]
 )
 
-
 class Config:
     DB_URI = f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
-
 
 def get_crypto_rate(crypto: str, currency: str) -> Dict[str, any]:
     """Получает курс криптовалюты к валюте - ТОЛЬКО В WORKER"""
@@ -40,16 +38,12 @@ def get_crypto_rate(crypto: str, currency: str) -> Dict[str, any]:
                 'source': 'coingecko',
                 'timestamp': int(time.time())
             }
-
         # Защита от инъекций в URL
         safe_crypto = requests.utils.quote(crypto)
         safe_currency = requests.utils.quote(currency)
-
         url = f"https://api.coingecko.com/api/v3/simple/price?ids={safe_crypto}&vs_currencies={safe_currency}"
-
         logging.info(f"Worker: Calling API for {crypto}/{currency}")
         response = requests.get(url, timeout=15)
-
         if response.status_code != 200:
             return {
                 'success': False,
@@ -57,9 +51,7 @@ def get_crypto_rate(crypto: str, currency: str) -> Dict[str, any]:
                 'source': 'coingecko',
                 'timestamp': int(time.time())
             }
-
         data = response.json()
-
         # Проверка наличия данных
         if crypto not in data or currency not in data.get(crypto, {}):
             return {
@@ -68,14 +60,12 @@ def get_crypto_rate(crypto: str, currency: str) -> Dict[str, any]:
                 'source': 'coingecko',
                 'timestamp': int(time.time())
             }
-
         return {
             'success': True,
             'rate': data[crypto][currency],
             'source': 'coingecko',
             'timestamp': int(time.time())
         }
-
     except requests.RequestException as e:
         return {
             'success': False,
@@ -90,7 +80,6 @@ def get_crypto_rate(crypto: str, currency: str) -> Dict[str, any]:
             'source': 'coingecko',
             'timestamp': int(time.time())
         }
-
 
 class CryptoWorker:
     def __init__(self):
@@ -126,7 +115,6 @@ class CryptoWorker:
         """Контекстный менеджер для работы с сессией"""
         if not self.db_connection_active:
             raise RuntimeError("Соединение с базой данных отключено")
-
         db = self.SessionLocal()
         try:
             yield db
@@ -141,13 +129,29 @@ class CryptoWorker:
         """Получает самый старый processing запрос"""
         try:
             with self.get_db() as db:
+                # Сортировка по ID для более предсказуемого поведения при конкурентности
                 request = db.query(CryptoRequest).filter(
                     CryptoRequest.status == 'processing'
-                ).order_by(CryptoRequest.created_at.asc()).first()
+                ).order_by(CryptoRequest.id.asc()).first()
                 return request
         except Exception as e:
             logging.error(f"Worker: Ошибка получения processing запроса: {e}")
             return None
+
+    def has_duplicate_request(self, db, user_id: int, crypto: str, currency: str, current_request_id: int) -> bool:
+        """Проверяет, есть ли другие активные запросы для этого же пользователя и пары crypto/currency"""
+        try:
+            duplicate_request = db.query(CryptoRequest).filter(
+                CryptoRequest.user_id == user_id,
+                CryptoRequest.crypto == crypto,
+                CryptoRequest.currency == currency,
+                CryptoRequest.status.in_(['pending', 'processing']), # Проверяем активные
+                CryptoRequest.id != current_request_id # Исключаем текущий
+            ).first()
+            return duplicate_request is not None
+        except Exception as e:
+            logging.error(f"Worker: Ошибка проверки дубликата для запроса {current_request_id}: {e}")
+            return False # В случае ошибки предполагаем отсутствие дубликата, чтобы не блокировать обработку
 
     def process_request_with_api(self, request: CryptoRequest):
         """Обрабатывает один запрос с вызовом API"""
@@ -165,17 +169,26 @@ class CryptoWorker:
                 current_request = db.query(CryptoRequest).filter(
                     CryptoRequest.id == request.id
                 ).first()
-
                 if not current_request or current_request.status != 'processing':
-                    logging.info(f"Worker: Request {request.id} already processed, skipping")
+                    logging.info(f"Worker: Request {request.id} already processed or status changed, skipping")
                     return
+
+                # --- НОВАЯ ПРОВЕРКА НА ДУБЛИКАТ ---
+                if self.has_duplicate_request(db, current_request.user_id, current_request.crypto, current_request.currency, current_request.id):
+                     logging.info(f"Worker: Found duplicate active request for user {current_request.user_id} and {current_request.crypto}/{current_request.currency}. Skipping request {current_request.id}.")
+                     # Помечаем текущий запрос как ошибочный или дубликат
+                     current_request.status = 'error' # Или 'duplicate', если добавите такой статус
+                     current_request.response_data = json.dumps({'error': 'Duplicate request found, skipping.'})
+                     current_request.finished_at = int(time.time())
+                     db.commit()
+                     return
+                # --- КОНЕЦ НОВОЙ ПРОВЕРКИ ---
 
                 logging.info(
                     f"Worker: Processing request {current_request.id} for {current_request.crypto}/{current_request.currency}")
 
                 # ВЫЗЫВАЕМ API
                 rate_data = get_crypto_rate(current_request.crypto, current_request.currency)
-
                 if rate_data['success']:
                     # Сохраняем в основную таблицу курсов
                     rate_entry = CryptoRate(
@@ -186,12 +199,10 @@ class CryptoWorker:
                         timestamp=rate_data['timestamp']
                     )
                     db.add(rate_entry)
-
                     # Обновляем статус запроса
                     current_request.status = 'finished'
                     current_request.response_data = json.dumps(rate_data)
                     current_request.finished_at = int(time.time())
-
                     logging.info(
                         f"Worker: Successfully processed request {current_request.id} - {current_request.crypto}/{current_request.currency}: {rate_data['rate']}")
                 else:
@@ -202,7 +213,6 @@ class CryptoWorker:
 
                 db.commit()
                 self.last_api_call_time = time.time()
-
         except Exception as e:
             logging.error(f"Worker: Exception processing request {request.id}: {e}")
             try:
@@ -229,7 +239,6 @@ class CryptoWorker:
                     CryptoRequest.status.in_(['finished', 'error']),
                     CryptoRequest.created_at < one_day_ago
                 ).delete()
-
                 if deleted_count > 0:
                     db.commit()
                     logging.info(f"Worker: Cleaned up {deleted_count} old requests")
@@ -239,7 +248,6 @@ class CryptoWorker:
     def run(self):
         """Основной цикл воркера"""
         logging.info("Worker: Запуск воркера обработки запросов")
-
         try:
             while True:
                 try:
@@ -248,10 +256,8 @@ class CryptoWorker:
                         self.init_db_connection()
                         time.sleep(10)
                         continue
-
                     # Получаем самый старый processing запрос
                     request = self.get_oldest_processing_request()
-
                     if request:
                         logging.info(
                             f"Worker: Found processing request: ID={request.id}, {request.crypto}/{request.currency}")
@@ -260,19 +266,16 @@ class CryptoWorker:
                         # Нет запросов для обработки - очистка и пауза
                         self.cleanup_old_requests()
                         time.sleep(5)
-
                 except KeyboardInterrupt:
                     logging.info("Worker: Получен сигнал остановки")
                     break
                 except Exception as e:
                     logging.error(f"Worker: Ошибка в основном цикле: {e}")
                     time.sleep(10)
-
         except Exception as e:
             logging.error(f"Worker: Критическая ошибка: {e}")
         finally:
             logging.info("Worker: Остановка воркера")
-
 
 if __name__ == '__main__':
     worker = CryptoWorker()

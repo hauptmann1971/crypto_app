@@ -809,3 +809,637 @@
 2025-11-25 11:33:14,813 - INFO - 127.0.0.1 - - [25/Nov/2025 11:33:14] "GET / HTTP/1.1" 200 -
 2025-11-25 11:33:20,836 - INFO - 127.0.0.1 - - [25/Nov/2025 11:33:20] "GET /auth HTTP/1.1" 200 -
 2025-11-25 11:33:28,141 - INFO - 127.0.0.1 - - [25/Nov/2025 11:33:28] "GET / HTTP/1.1" 200 -
+2025-11-25 12:43:24,685 - INFO - 127.0.0.1 - - [25/Nov/2025 12:43:24] "GET / HTTP/1.1" 200 -
+2025-11-25 12:45:32,139 - INFO - 127.0.0.1 - - [25/Nov/2025 12:45:32] "GET / HTTP/1.1" 200 -
+2025-11-25 12:50:38,332 - INFO - 127.0.0.1 - - [25/Nov/2025 12:50:38] "GET / HTTP/1.1" 200 -
+2025-11-25 12:54:41,010 - INFO - 127.0.0.1 - - [25/Nov/2025 12:54:41] "GET / HTTP/1.1" 200 -
+2025-11-25 12:55:15,798 - INFO - [crypto_api.backend] User=0 | Created crypto request 50 for sushi/usd
+2025-11-25 12:55:15,844 - INFO - [crypto_api.backend] User=None | Request created for sushi/usd (ID: 50)
+2025-11-25 12:55:16,217 - INFO - 127.0.0.1 - - [25/Nov/2025 12:55:16] "POST / HTTP/1.1" 200 -
+2025-11-25 12:55:18,211 - INFO - Worker: Found processing request: ID=50, sushi/usd
+2025-11-25 12:55:18,247 - INFO - Worker: Processing request 50 for sushi/usd
+2025-11-25 12:55:18,248 - INFO - Worker: Calling API for sushi/usd
+2025-11-25 12:55:18,918 - INFO - Worker: Successfully processed request 50 - sushi/usd: 0.409419
+2025-11-25 13:00:50,435 - INFO - [crypto_api.backend] User=0 | Created crypto request 51 for sushi/usd
+2025-11-25 13:00:50,482 - INFO - [crypto_api.backend] User=None | Request created for sushi/usd (ID: 51)
+2025-11-25 13:00:50,829 - INFO - 127.0.0.1 - - [25/Nov/2025 13:00:50] "POST / HTTP/1.1" 200 -
+2025-11-25 13:00:51,843 - INFO - Worker: Found processing request: ID=51, sushi/usd
+2025-11-25 13:00:51,872 - INFO - Worker: Processing request 51 for sushi/usd
+2025-11-25 13:00:51,872 - INFO - Worker: Calling API for sushi/usd
+2025-11-25 13:00:52,536 - INFO - Worker: Successfully processed request 51 - sushi/usd: 0.409556
+2025-11-25 13:00:54,103 - INFO - [crypto_api.backend] User=0 | Created crypto request 52 for sushi/usd
+2025-11-25 13:00:54,149 - INFO - [crypto_api.backend] User=None | Request created for sushi/usd (ID: 52)
+2025-11-25 13:00:54,452 - INFO - 127.0.0.1 - - [25/Nov/2025 13:00:54] "POST / HTTP/1.1" 200 -
+2025-11-25 13:00:57,770 - INFO - Worker: Found processing request: ID=52, sushi/usd
+2025-11-25 13:00:57,800 - INFO - Worker: Processing request 52 for sushi/usd
+2025-11-25 13:00:57,800 - INFO - Worker: Calling API for sushi/usd
+2025-11-25 13:00:58,325 - INFO - Worker: Successfully processed request 52 - sushi/usd: 0.409556
+2025-11-25 13:00:58,472 - INFO - [crypto_api.backend] User=0 | Created crypto request 53 for sushi/usd
+2025-11-25 13:00:58,518 - INFO - [crypto_api.backend] User=None | Request created for sushi/usd (ID: 53)
+2025-11-25 13:00:58,830 - INFO - 127.0.0.1 - - [25/Nov/2025 13:00:58] "POST / HTTP/1.1" 200 -
+2025-11-25 13:01:00,036 - INFO - [crypto_api.backend] User=0 | Active request already exists for sushi/usd, returning existing ID
+2025-11-25 13:01:00,083 - ERROR - [crypto_api.backend] User=None | Ошибка БД: Instance <CryptoRequest at 0x26f70fd9810> is not bound to a Session; attribute refresh operation cannot proceed (Background on this error at: https://sqlalche.me/e/20/bhk3)
+2025-11-25 13:01:00,146 - ERROR - [crypto_api.backend] User=None | Error creating crypto request: Instance <CryptoRequest at 0x26f70fd9810> is not bound to a Session; attribute refresh operation cannot proceed (Background on this error at: https://sqlalche.me/e/20/bhk3)
+2025-11-25 13:01:00,208 - ERROR - [crypto_api.backend] User=None | Error creating request in queue
+2025-11-25 13:01:00,405 - INFO - 127.0.0.1 - - [25/Nov/2025 13:01:00] "POST / HTTP/1.1" 200 -
+2025-11-25 13:01:03,559 - INFO - Worker: Found processing request: ID=53, sushi/usd
+2025-11-25 13:01:03,590 - INFO - Worker: Processing request 53 for sushi/usd
+2025-11-25 13:01:03,591 - INFO - Worker: Calling API for sushi/usd
+2025-11-25 13:01:04,129 - INFO - Worker: Successfully processed request 53 - sushi/usd: 0.409556
+2025-11-25 13:01:08,353 - INFO - [crypto_api.backend] User=0 | Created crypto request 54 for uniswap/usd
+2025-11-25 13:01:08,400 - INFO - [crypto_api.backend] User=None | Request created for uniswap/usd (ID: 54)
+2025-11-25 13:01:08,723 - INFO - 127.0.0.1 - - [25/Nov/2025 13:01:08] "POST / HTTP/1.1" 200 -
+2025-11-25 13:01:09,364 - INFO - Worker: Found processing request: ID=54, uniswap/usd
+2025-11-25 13:01:09,394 - INFO - Worker: Processing request 54 for uniswap/usd
+2025-11-25 13:01:09,395 - INFO - Worker: Calling API for uniswap/usd
+2025-11-25 13:01:09,959 - INFO - Worker: Successfully processed request 54 - uniswap/usd: 6.18
+2025-11-25 13:01:22,713 - INFO - 127.0.0.1 - - [25/Nov/2025 13:01:22] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-25 13:01:31,107 - INFO - [crypto_api.backend] User=0 | Created crypto request 55 for sushi/usd
+2025-11-25 13:01:31,152 - INFO - [crypto_api.backend] User=None | Request created for sushi/usd (ID: 55)
+2025-11-25 13:01:31,472 - INFO - 127.0.0.1 - - [25/Nov/2025 13:01:31] "POST / HTTP/1.1" 200 -
+2025-11-25 13:01:35,666 - INFO - Worker: Found processing request: ID=55, sushi/usd
+2025-11-25 13:01:35,697 - INFO - Worker: Processing request 55 for sushi/usd
+2025-11-25 13:01:35,697 - INFO - Worker: Calling API for sushi/usd
+2025-11-25 13:01:36,276 - INFO - Worker: Successfully processed request 55 - sushi/usd: 0.409556
+2025-11-25 13:03:41,062 - INFO -  * Detected change in 'C:\\Users\\romanov\\PycharmProjects\\crypto_app\\app.py', reloading
+2025-11-25 13:03:41,289 - INFO -  * Restarting with stat
+2025-11-25 13:03:42,583 - INFO - Starting async full crypto list loading...
+2025-11-25 13:03:42,628 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 13:03:42,956 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 13:03:43,014 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 13:03:43,084 - WARNING -  * Debugger is active!
+2025-11-25 13:03:43,086 - INFO -  * Debugger PIN: 678-835-787
+2025-11-25 13:03:45,537 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 13:06:19,488 - INFO - Worker: Получен сигнал остановки
+2025-11-25 13:06:19,488 - INFO - Worker: Остановка воркера
+2025-11-25 13:06:26,928 - INFO - Starting async full crypto list loading...
+2025-11-25 13:06:26,969 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 13:06:27,293 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 13:06:27,350 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 13:06:27,427 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.50.24.59:5000
+2025-11-25 13:06:27,427 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-25 13:06:27,428 - INFO -  * Restarting with stat
+2025-11-25 13:06:28,603 - INFO - Starting async full crypto list loading...
+2025-11-25 13:06:28,649 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 13:06:28,989 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 13:06:29,044 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 13:06:29,115 - WARNING -  * Debugger is active!
+2025-11-25 13:06:29,117 - INFO -  * Debugger PIN: 678-835-787
+2025-11-25 13:06:29,946 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 13:06:31,544 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 13:06:37,071 - INFO - Starting async full crypto list loading...
+2025-11-25 13:06:37,116 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 13:06:37,457 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 13:06:37,517 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 13:06:37,580 - INFO - Worker: Инициализировано подключение к базе данных
+2025-11-25 13:06:37,580 - INFO - Worker: Запуск воркера обработки запросов
+2025-11-25 13:06:39,978 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 13:06:45,904 - INFO - [crypto_api.backend] User=0 | Created crypto request 56 for sushi/usd
+2025-11-25 13:06:45,946 - INFO - [crypto_api.backend] User=None | Request created for sushi/usd (ID: 56)
+2025-11-25 13:06:46,296 - INFO - 127.0.0.1 - - [25/Nov/2025 13:06:46] "POST / HTTP/1.1" 200 -
+2025-11-25 13:06:48,459 - INFO - Worker: Found processing request: ID=56, sushi/usd
+2025-11-25 13:06:48,493 - INFO - Worker: Processing request 56 for sushi/usd
+2025-11-25 13:06:48,493 - INFO - Worker: Calling API for sushi/usd
+2025-11-25 13:06:49,110 - INFO - Worker: Successfully processed request 56 - sushi/usd: 0.409462
+2025-11-25 13:06:51,501 - INFO - 127.0.0.1 - - [25/Nov/2025 13:06:51] "GET /request-status/56 HTTP/1.1" 200 -
+2025-11-25 13:06:53,645 - INFO - [crypto_api.backend] User=0 | Created crypto request 57 for sushi/usd
+2025-11-25 13:06:53,687 - INFO - [crypto_api.backend] User=None | Request created for sushi/usd (ID: 57)
+2025-11-25 13:06:53,980 - INFO - 127.0.0.1 - - [25/Nov/2025 13:06:53] "POST / HTTP/1.1" 200 -
+2025-11-25 13:06:54,364 - INFO - Worker: Found processing request: ID=57, sushi/usd
+2025-11-25 13:06:54,397 - INFO - Worker: Processing request 57 for sushi/usd
+2025-11-25 13:06:54,397 - INFO - Worker: Calling API for sushi/usd
+2025-11-25 13:06:54,905 - INFO - Worker: Successfully processed request 57 - sushi/usd: 0.409462
+2025-11-25 13:06:59,163 - INFO - 127.0.0.1 - - [25/Nov/2025 13:06:59] "GET /request-status/57 HTTP/1.1" 200 -
+2025-11-25 13:07:00,252 - INFO - [crypto_api.backend] User=0 | Created crypto request 58 for uniswap/usd
+2025-11-25 13:07:00,293 - INFO - [crypto_api.backend] User=None | Request created for uniswap/usd (ID: 58)
+2025-11-25 13:07:00,390 - INFO - Worker: Found processing request: ID=58, uniswap/usd
+2025-11-25 13:07:00,422 - INFO - Worker: Processing request 58 for uniswap/usd
+2025-11-25 13:07:00,422 - INFO - Worker: Calling API for uniswap/usd
+2025-11-25 13:07:00,579 - INFO - 127.0.0.1 - - [25/Nov/2025 13:07:00] "POST / HTTP/1.1" 200 -
+2025-11-25 13:07:00,951 - ERROR - Worker: API error for request 58: Ошибка API: 429
+2025-11-25 13:07:05,763 - INFO - 127.0.0.1 - - [25/Nov/2025 13:07:05] "GET /request-status/58 HTTP/1.1" 200 -
+2025-11-25 13:07:10,764 - INFO - 127.0.0.1 - - [25/Nov/2025 13:07:10] "GET /request-status/58 HTTP/1.1" 200 -
+2025-11-25 13:07:15,765 - INFO - 127.0.0.1 - - [25/Nov/2025 13:07:15] "GET /request-status/58 HTTP/1.1" 200 -
+2025-11-25 13:07:19,272 - INFO - [crypto_api.backend] User=0 | Created crypto request 59 for bitcoin/usd
+2025-11-25 13:07:19,315 - INFO - [crypto_api.backend] User=None | Request created for bitcoin/usd (ID: 59)
+2025-11-25 13:07:19,617 - INFO - 127.0.0.1 - - [25/Nov/2025 13:07:19] "POST / HTTP/1.1" 200 -
+2025-11-25 13:07:21,551 - INFO - Worker: Found processing request: ID=59, bitcoin/usd
+2025-11-25 13:07:21,580 - INFO - Worker: Processing request 59 for bitcoin/usd
+2025-11-25 13:07:21,581 - INFO - Worker: Calling API for bitcoin/usd
+2025-11-25 13:07:22,098 - ERROR - Worker: API error for request 59: Ошибка API: 429
+2025-11-25 13:07:24,794 - INFO - 127.0.0.1 - - [25/Nov/2025 13:07:24] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:07:28,371 - INFO - 127.0.0.1 - - [25/Nov/2025 13:07:28] "GET /log_table HTTP/1.1" 200 -
+2025-11-25 13:07:49,998 - INFO - 127.0.0.1 - - [25/Nov/2025 13:07:49] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-25 13:08:13,996 - INFO - 127.0.0.1 - - [25/Nov/2025 13:08:13] "GET / HTTP/1.1" 200 -
+2025-11-25 13:08:19,158 - INFO - 127.0.0.1 - - [25/Nov/2025 13:08:19] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:08:20,572 - INFO - 127.0.0.1 - - [25/Nov/2025 13:08:20] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:08:22,526 - INFO - 127.0.0.1 - - [25/Nov/2025 13:08:22] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:08:23,276 - INFO - 127.0.0.1 - - [25/Nov/2025 13:08:23] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:08:24,163 - INFO - 127.0.0.1 - - [25/Nov/2025 13:08:24] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:08:29,170 - INFO - 127.0.0.1 - - [25/Nov/2025 13:08:29] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:08:34,167 - INFO - 127.0.0.1 - - [25/Nov/2025 13:08:34] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:08:39,169 - INFO - 127.0.0.1 - - [25/Nov/2025 13:08:39] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:08:44,179 - INFO - 127.0.0.1 - - [25/Nov/2025 13:08:44] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:08:49,167 - INFO - 127.0.0.1 - - [25/Nov/2025 13:08:49] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:08:54,166 - INFO - 127.0.0.1 - - [25/Nov/2025 13:08:54] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:08:59,170 - INFO - 127.0.0.1 - - [25/Nov/2025 13:08:59] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:09:04,173 - INFO - 127.0.0.1 - - [25/Nov/2025 13:09:04] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:09:09,173 - INFO - 127.0.0.1 - - [25/Nov/2025 13:09:09] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:09:14,165 - INFO - 127.0.0.1 - - [25/Nov/2025 13:09:14] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:09:19,169 - INFO - 127.0.0.1 - - [25/Nov/2025 13:09:19] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:09:24,173 - INFO - 127.0.0.1 - - [25/Nov/2025 13:09:24] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:09:29,162 - INFO - 127.0.0.1 - - [25/Nov/2025 13:09:29] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:09:34,166 - INFO - 127.0.0.1 - - [25/Nov/2025 13:09:34] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:09:39,169 - INFO - 127.0.0.1 - - [25/Nov/2025 13:09:39] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:09:44,165 - INFO - 127.0.0.1 - - [25/Nov/2025 13:09:44] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:09:49,167 - INFO - 127.0.0.1 - - [25/Nov/2025 13:09:49] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:09:54,176 - INFO - 127.0.0.1 - - [25/Nov/2025 13:09:54] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:09:59,176 - INFO - 127.0.0.1 - - [25/Nov/2025 13:09:59] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:10:04,174 - INFO - 127.0.0.1 - - [25/Nov/2025 13:10:04] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:10:09,167 - INFO - 127.0.0.1 - - [25/Nov/2025 13:10:09] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:10:14,174 - INFO - 127.0.0.1 - - [25/Nov/2025 13:10:14] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:10:19,169 - INFO - 127.0.0.1 - - [25/Nov/2025 13:10:19] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:10:24,160 - INFO - 127.0.0.1 - - [25/Nov/2025 13:10:24] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:10:29,167 - INFO - 127.0.0.1 - - [25/Nov/2025 13:10:29] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:10:34,164 - INFO - 127.0.0.1 - - [25/Nov/2025 13:10:34] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:10:39,159 - INFO - 127.0.0.1 - - [25/Nov/2025 13:10:39] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:10:44,170 - INFO - 127.0.0.1 - - [25/Nov/2025 13:10:44] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:10:49,167 - INFO - 127.0.0.1 - - [25/Nov/2025 13:10:49] "GET /request-status/59 HTTP/1.1" 200 -
+2025-11-25 13:10:52,283 - INFO - 127.0.0.1 - - [25/Nov/2025 13:10:52] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-25 13:11:00,545 - INFO - [crypto_api.backend] User=0 | Created crypto request 60 for dogecoin/rub
+2025-11-25 13:11:00,588 - INFO - [crypto_api.backend] User=None | Request created for dogecoin/rub (ID: 60)
+2025-11-25 13:11:00,877 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:00] "POST / HTTP/1.1" 200 -
+2025-11-25 13:11:02,530 - INFO - Worker: Found processing request: ID=60, dogecoin/rub
+2025-11-25 13:11:02,561 - INFO - Worker: Processing request 60 for dogecoin/rub
+2025-11-25 13:11:02,561 - INFO - Worker: Calling API for dogecoin/rub
+2025-11-25 13:11:03,194 - INFO - Worker: Successfully processed request 60 - dogecoin/rub: 11.68
+2025-11-25 13:11:06,046 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:06] "GET /request-status/60 HTTP/1.1" 200 -
+2025-11-25 13:11:08,203 - INFO - [crypto_api.backend] User=0 | Created crypto request 61 for dogecoin/rub
+2025-11-25 13:11:08,255 - INFO - [crypto_api.backend] User=None | Request created for dogecoin/rub (ID: 61)
+2025-11-25 13:11:08,440 - INFO - Worker: Found processing request: ID=61, dogecoin/rub
+2025-11-25 13:11:08,471 - INFO - Worker: Processing request 61 for dogecoin/rub
+2025-11-25 13:11:08,472 - INFO - Worker: Calling API for dogecoin/rub
+2025-11-25 13:11:08,537 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:08] "POST / HTTP/1.1" 200 -
+2025-11-25 13:11:08,999 - INFO - Worker: Successfully processed request 61 - dogecoin/rub: 11.68
+2025-11-25 13:11:13,735 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:13] "GET /request-status/61 HTTP/1.1" 200 -
+2025-11-25 13:11:15,883 - INFO - [crypto_api.backend] User=0 | Created crypto request 62 for dogecoin/rub
+2025-11-25 13:11:15,926 - INFO - [crypto_api.backend] User=None | Request created for dogecoin/rub (ID: 62)
+2025-11-25 13:11:16,251 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:16] "POST / HTTP/1.1" 200 -
+2025-11-25 13:11:19,367 - INFO - Worker: Found processing request: ID=62, dogecoin/rub
+2025-11-25 13:11:19,399 - INFO - Worker: Processing request 62 for dogecoin/rub
+2025-11-25 13:11:19,399 - INFO - Worker: Calling API for dogecoin/rub
+2025-11-25 13:11:19,913 - INFO - Worker: Successfully processed request 62 - dogecoin/rub: 11.68
+2025-11-25 13:11:21,446 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:21] "GET /request-status/62 HTTP/1.1" 200 -
+2025-11-25 13:11:23,589 - INFO - [crypto_api.backend] User=0 | Created crypto request 63 for dogecoin/rub
+2025-11-25 13:11:23,633 - INFO - [crypto_api.backend] User=None | Request created for dogecoin/rub (ID: 63)
+2025-11-25 13:11:23,909 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:23] "POST / HTTP/1.1" 200 -
+2025-11-25 13:11:25,156 - INFO - Worker: Found processing request: ID=63, dogecoin/rub
+2025-11-25 13:11:25,188 - INFO - Worker: Processing request 63 for dogecoin/rub
+2025-11-25 13:11:25,188 - INFO - Worker: Calling API for dogecoin/rub
+2025-11-25 13:11:25,701 - INFO - Worker: Successfully processed request 63 - dogecoin/rub: 11.68
+2025-11-25 13:11:29,082 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:29] "GET /request-status/63 HTTP/1.1" 200 -
+2025-11-25 13:11:31,218 - INFO - [crypto_api.backend] User=0 | Created crypto request 64 for dogecoin/rub
+2025-11-25 13:11:31,259 - INFO - [crypto_api.backend] User=None | Request created for dogecoin/rub (ID: 64)
+2025-11-25 13:11:31,550 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:31] "POST / HTTP/1.1" 200 -
+2025-11-25 13:11:36,070 - INFO - Worker: Found processing request: ID=64, dogecoin/rub
+2025-11-25 13:11:36,101 - INFO - Worker: Processing request 64 for dogecoin/rub
+2025-11-25 13:11:36,102 - INFO - Worker: Calling API for dogecoin/rub
+2025-11-25 13:11:36,619 - INFO - Worker: Successfully processed request 64 - dogecoin/rub: 11.68
+2025-11-25 13:11:36,737 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:36] "GET /request-status/64 HTTP/1.1" 200 -
+2025-11-25 13:11:38,884 - INFO - [crypto_api.backend] User=0 | Created crypto request 65 for dogecoin/rub
+2025-11-25 13:11:38,926 - INFO - [crypto_api.backend] User=None | Request created for dogecoin/rub (ID: 65)
+2025-11-25 13:11:39,221 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:39] "POST / HTTP/1.1" 200 -
+2025-11-25 13:11:40,926 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:40] "GET /request-status/65 HTTP/1.1" 200 -
+2025-11-25 13:11:41,862 - INFO - Worker: Found processing request: ID=65, dogecoin/rub
+2025-11-25 13:11:41,892 - INFO - Worker: Processing request 65 for dogecoin/rub
+2025-11-25 13:11:41,892 - INFO - Worker: Calling API for dogecoin/rub
+2025-11-25 13:11:42,386 - ERROR - Worker: API error for request 65: Ошибка API: 429
+2025-11-25 13:11:44,417 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:44] "GET /request-status/65 HTTP/1.1" 200 -
+2025-11-25 13:11:45,989 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:45] "GET /request-status/65 HTTP/1.1" 200 -
+2025-11-25 13:11:46,702 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:46] "GET /request-status/65 HTTP/1.1" 200 -
+2025-11-25 13:11:47,319 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:47] "GET /request-status/65 HTTP/1.1" 200 -
+2025-11-25 13:11:47,934 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:47] "GET /request-status/65 HTTP/1.1" 200 -
+2025-11-25 13:11:48,574 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:48] "GET /request-status/65 HTTP/1.1" 200 -
+2025-11-25 13:11:49,394 - INFO - 127.0.0.1 - - [25/Nov/2025 13:11:49] "GET /request-status/65 HTTP/1.1" 200 -
+2025-11-25 13:13:36,799 - INFO - Worker: Получен сигнал остановки
+2025-11-25 13:13:36,799 - INFO - Worker: Остановка воркера
+2025-11-25 13:45:53,680 - INFO - Starting async full crypto list loading...
+2025-11-25 13:45:53,749 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 13:45:54,103 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 13:45:54,161 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 13:45:54,260 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.50.24.59:5000
+2025-11-25 13:45:54,260 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-25 13:45:54,262 - INFO -  * Restarting with stat
+2025-11-25 13:45:55,418 - INFO - Starting async full crypto list loading...
+2025-11-25 13:45:55,467 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 13:45:55,808 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 13:45:55,869 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 13:45:55,946 - WARNING -  * Debugger is active!
+2025-11-25 13:45:55,949 - INFO -  * Debugger PIN: 678-835-787
+2025-11-25 13:45:56,681 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 13:45:58,230 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 13:46:04,981 - INFO - Starting async full crypto list loading...
+2025-11-25 13:46:05,024 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 13:46:05,347 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 13:46:05,404 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 13:46:05,471 - INFO - Worker: Инициализировано подключение к базе данных
+2025-11-25 13:46:05,471 - INFO - Worker: Запуск воркера обработки запросов
+2025-11-25 13:46:06,078 - INFO - Worker: Cleaned up 2 old requests
+2025-11-25 13:46:07,906 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 13:46:28,379 - INFO - 127.0.0.1 - - [25/Nov/2025 13:46:28] "GET / HTTP/1.1" 200 -
+2025-11-25 13:46:40,472 - INFO - 127.0.0.1 - - [25/Nov/2025 13:46:40] "GET /auth HTTP/1.1" 200 -
+2025-11-25 13:46:56,384 - INFO - 127.0.0.1 - - [25/Nov/2025 13:46:56] "GET /log_table HTTP/1.1" 200 -
+2025-11-25 13:46:58,604 - INFO - 127.0.0.1 - - [25/Nov/2025 13:46:58] "GET /users_table HTTP/1.1" 200 -
+2025-11-25 13:47:01,539 - INFO - 127.0.0.1 - - [25/Nov/2025 13:47:01] "GET /requests_table HTTP/1.1" 200 -
+2025-11-25 13:47:05,473 - INFO - 127.0.0.1 - - [25/Nov/2025 13:47:05] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-25 13:47:10,855 - INFO - 127.0.0.1 - - [25/Nov/2025 13:47:10] "GET / HTTP/1.1" 200 -
+2025-11-25 13:47:21,529 - INFO - [crypto_api.backend] User=0 | Created crypto request 66 for ethereum/eur
+2025-11-25 13:47:21,576 - INFO - [crypto_api.backend] User=None | Request created for ethereum/eur (ID: 66)
+2025-11-25 13:47:21,929 - INFO - 127.0.0.1 - - [25/Nov/2025 13:47:21] "POST / HTTP/1.1" 200 -
+2025-11-25 13:47:22,872 - INFO - Worker: Found processing request: ID=66, ethereum/eur
+2025-11-25 13:47:22,924 - INFO - Worker: Processing request 66 for ethereum/eur
+2025-11-25 13:47:22,924 - INFO - Worker: Calling API for ethereum/eur
+2025-11-25 13:47:23,427 - INFO - Worker: Successfully processed request 66 - ethereum/eur: 2509.27
+2025-11-25 13:47:33,275 - INFO - 127.0.0.1 - - [25/Nov/2025 13:47:33] "GET /requests_table HTTP/1.1" 200 -
+2025-11-25 13:47:40,678 - INFO - 127.0.0.1 - - [25/Nov/2025 13:47:40] "GET / HTTP/1.1" 200 -
+2025-11-25 13:47:44,169 - INFO - 127.0.0.1 - - [25/Nov/2025 13:47:44] "GET /requests_table HTTP/1.1" 200 -
+2025-11-25 13:47:52,659 - INFO - 127.0.0.1 - - [25/Nov/2025 13:47:52] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-25 13:48:00,188 - INFO - 127.0.0.1 - - [25/Nov/2025 13:48:00] "GET / HTTP/1.1" 200 -
+2025-11-25 13:48:10,322 - INFO - [crypto_api.backend] User=0 | Created crypto request 67 for ripple/eur
+2025-11-25 13:48:10,369 - INFO - [crypto_api.backend] User=None | Request created for ripple/eur (ID: 67)
+2025-11-25 13:48:10,758 - INFO - 127.0.0.1 - - [25/Nov/2025 13:48:10] "POST / HTTP/1.1" 200 -
+2025-11-25 13:48:14,779 - INFO - Worker: Found processing request: ID=67, ripple/eur
+2025-11-25 13:48:14,829 - INFO - Worker: Processing request 67 for ripple/eur
+2025-11-25 13:48:14,829 - INFO - Worker: Calling API for ripple/eur
+2025-11-25 13:48:15,339 - INFO - Worker: Successfully processed request 67 - ripple/eur: 1.91
+2025-11-25 13:50:34,008 - INFO - [crypto_api.backend] User=0 | Created crypto request 68 for bitcoin/eur
+2025-11-25 13:50:34,053 - INFO - [crypto_api.backend] User=None | Request created for bitcoin/eur (ID: 68)
+2025-11-25 13:50:34,397 - INFO - 127.0.0.1 - - [25/Nov/2025 13:50:34] "POST / HTTP/1.1" 200 -
+2025-11-25 13:50:38,887 - INFO - Worker: Found processing request: ID=68, bitcoin/eur
+2025-11-25 13:50:38,938 - INFO - Worker: Processing request 68 for bitcoin/eur
+2025-11-25 13:50:38,939 - INFO - Worker: Calling API for bitcoin/eur
+2025-11-25 13:50:39,470 - INFO - Worker: Successfully processed request 68 - bitcoin/eur: 75603
+2025-11-25 13:51:10,326 - INFO - 127.0.0.1 - - [25/Nov/2025 13:51:10] "GET /requests_table HTTP/1.1" 200 -
+2025-11-25 13:51:20,374 - INFO - 127.0.0.1 - - [25/Nov/2025 13:51:20] "GET / HTTP/1.1" 200 -
+2025-11-25 13:52:28,341 - INFO - 127.0.0.1 - - [25/Nov/2025 13:52:28] "GET /requests_table HTTP/1.1" 200 -
+2025-11-25 13:52:45,119 - INFO - 127.0.0.1 - - [25/Nov/2025 13:52:45] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-25 13:52:52,167 - INFO - 127.0.0.1 - - [25/Nov/2025 13:52:52] "GET /log_table HTTP/1.1" 200 -
+2025-11-25 13:57:46,007 - INFO -  * Detected change in 'C:\\Users\\romanov\\PycharmProjects\\crypto_app\\app.py', reloading
+2025-11-25 13:57:46,173 - INFO -  * Restarting with stat
+2025-11-25 13:57:47,446 - INFO - Starting async full crypto list loading...
+2025-11-25 13:57:47,489 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 13:57:47,816 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 13:57:47,873 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 13:57:47,942 - WARNING -  * Debugger is active!
+2025-11-25 13:57:47,943 - INFO -  * Debugger PIN: 678-835-787
+2025-11-25 13:57:52,099 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 13:57:58,469 - INFO -  * Detected change in 'C:\\Users\\romanov\\PycharmProjects\\crypto_app\\app.py', reloading
+2025-11-25 13:57:58,632 - INFO -  * Restarting with stat
+2025-11-25 13:57:59,813 - INFO - Starting async full crypto list loading...
+2025-11-25 13:57:59,859 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 13:58:00,187 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 13:58:00,242 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 13:58:00,309 - WARNING -  * Debugger is active!
+2025-11-25 13:58:00,311 - INFO -  * Debugger PIN: 678-835-787
+2025-11-25 13:58:02,631 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 13:58:37,131 - INFO -  * Detected change in 'C:\\Users\\romanov\\PycharmProjects\\crypto_app\\app.py', reloading
+2025-11-25 13:58:37,331 - INFO -  * Restarting with stat
+2025-11-25 13:58:38,517 - INFO - Starting async full crypto list loading...
+2025-11-25 13:58:38,563 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 13:58:39,074 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 13:58:39,168 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 13:58:41,351 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 13:58:41,356 - WARNING -  * Debugger is active!
+2025-11-25 13:58:41,358 - INFO -  * Debugger PIN: 678-835-787
+2025-11-25 13:59:26,658 - INFO - Starting async full crypto list loading...
+2025-11-25 13:59:26,702 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 13:59:27,043 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 13:59:27,102 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 13:59:27,180 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.50.24.59:5000
+2025-11-25 13:59:27,180 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-25 13:59:27,182 - INFO -  * Restarting with stat
+2025-11-25 13:59:28,420 - INFO - Starting async full crypto list loading...
+2025-11-25 13:59:28,464 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 13:59:28,805 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 13:59:28,864 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 13:59:28,936 - WARNING -  * Debugger is active!
+2025-11-25 13:59:28,938 - INFO -  * Debugger PIN: 678-835-787
+2025-11-25 13:59:29,630 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 13:59:31,260 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 13:59:42,832 - INFO - 127.0.0.1 - - [25/Nov/2025 13:59:42] "GET / HTTP/1.1" 200 -
+2025-11-25 13:59:43,371 - INFO - 127.0.0.1 - - [25/Nov/2025 13:59:43] "GET /request-status/68 HTTP/1.1" 200 -
+2025-11-25 13:59:55,157 - INFO - [crypto_api.backend] User=0 | Created crypto request 69 for cardano/eur
+2025-11-25 13:59:55,204 - INFO - [crypto_api.backend] User=None | Request created for cardano/eur (ID: 69)
+2025-11-25 13:59:55,564 - INFO - 127.0.0.1 - - [25/Nov/2025 13:59:55] "POST / HTTP/1.1" 200 -
+2025-11-25 13:59:56,116 - INFO - 127.0.0.1 - - [25/Nov/2025 13:59:56] "GET /request-status/69 HTTP/1.1" 200 -
+2025-11-25 13:59:57,859 - INFO - Worker: Found processing request: ID=69, cardano/eur
+2025-11-25 13:59:57,908 - INFO - Worker: Processing request 69 for cardano/eur
+2025-11-25 13:59:57,909 - INFO - Worker: Calling API for cardano/eur
+2025-11-25 13:59:58,575 - INFO - Worker: Successfully processed request 69 - cardano/eur: 0.361653
+2025-11-25 14:00:14,439 - INFO - 127.0.0.1 - - [25/Nov/2025 14:00:14] "GET /requests_table HTTP/1.1" 200 -
+2025-11-25 14:00:23,535 - INFO - 127.0.0.1 - - [25/Nov/2025 14:00:23] "GET / HTTP/1.1" 200 -
+2025-11-25 14:00:24,021 - INFO - 127.0.0.1 - - [25/Nov/2025 14:00:24] "GET /request-status/69 HTTP/1.1" 200 -
+2025-11-25 14:00:45,927 - INFO - [crypto_api.backend] User=0 | Created crypto request 70 for ethereum/rub
+2025-11-25 14:00:45,973 - INFO - [crypto_api.backend] User=None | Request created for ethereum/rub (ID: 70)
+2025-11-25 14:00:46,318 - INFO - 127.0.0.1 - - [25/Nov/2025 14:00:46] "POST / HTTP/1.1" 200 -
+2025-11-25 14:00:46,865 - INFO - 127.0.0.1 - - [25/Nov/2025 14:00:46] "GET /request-status/70 HTTP/1.1" 200 -
+2025-11-25 14:00:49,916 - INFO - Worker: Found processing request: ID=70, ethereum/rub
+2025-11-25 14:00:49,964 - INFO - Worker: Processing request 70 for ethereum/rub
+2025-11-25 14:00:49,964 - INFO - Worker: Calling API for ethereum/rub
+2025-11-25 14:00:50,969 - INFO - Worker: Successfully processed request 70 - ethereum/rub: 228917
+2025-11-25 14:00:58,949 - INFO - 127.0.0.1 - - [25/Nov/2025 14:00:58] "GET /requests_table HTTP/1.1" 200 -
+2025-11-25 14:01:03,721 - INFO - 127.0.0.1 - - [25/Nov/2025 14:01:03] "GET / HTTP/1.1" 200 -
+2025-11-25 14:01:04,237 - INFO - 127.0.0.1 - - [25/Nov/2025 14:01:04] "GET /request-status/70 HTTP/1.1" 200 -
+2025-11-25 14:01:49,166 - INFO - [crypto_api.backend] User=0 | Created crypto request 71 for dogecoin/rub
+2025-11-25 14:01:49,216 - INFO - [crypto_api.backend] User=None | Request created for dogecoin/rub (ID: 71)
+2025-11-25 14:01:49,589 - INFO - 127.0.0.1 - - [25/Nov/2025 14:01:49] "POST / HTTP/1.1" 200 -
+2025-11-25 14:01:50,117 - INFO - 127.0.0.1 - - [25/Nov/2025 14:01:50] "GET /request-status/71 HTTP/1.1" 200 -
+2025-11-25 14:01:52,562 - INFO - Worker: Found processing request: ID=71, dogecoin/rub
+2025-11-25 14:01:52,611 - INFO - Worker: Processing request 71 for dogecoin/rub
+2025-11-25 14:01:52,612 - INFO - Worker: Calling API for dogecoin/rub
+2025-11-25 14:01:53,251 - INFO - Worker: Successfully processed request 71 - dogecoin/rub: 11.76
+2025-11-25 14:01:58,699 - INFO - [crypto_api.backend] User=0 | Created crypto request 72 for dogecoin/rub
+2025-11-25 14:01:58,744 - INFO - [crypto_api.backend] User=None | Request created for dogecoin/rub (ID: 72)
+2025-11-25 14:01:59,080 - INFO - 127.0.0.1 - - [25/Nov/2025 14:01:59] "POST / HTTP/1.1" 200 -
+2025-11-25 14:01:59,610 - INFO - 127.0.0.1 - - [25/Nov/2025 14:01:59] "GET /request-status/72 HTTP/1.1" 200 -
+2025-11-25 14:02:03,618 - INFO - Worker: Found processing request: ID=72, dogecoin/rub
+2025-11-25 14:02:03,667 - INFO - Worker: Processing request 72 for dogecoin/rub
+2025-11-25 14:02:03,667 - INFO - Worker: Calling API for dogecoin/rub
+2025-11-25 14:02:04,180 - INFO - Worker: Successfully processed request 72 - dogecoin/rub: 11.76
+2025-11-25 14:02:10,454 - INFO - 127.0.0.1 - - [25/Nov/2025 14:02:10] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-25 14:02:13,758 - INFO - 127.0.0.1 - - [25/Nov/2025 14:02:13] "GET / HTTP/1.1" 200 -
+2025-11-25 14:02:14,275 - INFO - 127.0.0.1 - - [25/Nov/2025 14:02:14] "GET /request-status/72 HTTP/1.1" 200 -
+2025-11-25 14:05:56,928 - INFO - Worker: Получен сигнал остановки
+2025-11-25 14:05:56,929 - INFO - Worker: Остановка воркера
+2025-11-25 14:06:00,500 - INFO - Starting async full crypto list loading...
+2025-11-25 14:06:00,546 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 14:06:00,878 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 14:06:00,934 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 14:06:01,016 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.50.24.59:5000
+2025-11-25 14:06:01,016 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-25 14:06:01,019 - INFO -  * Restarting with stat
+2025-11-25 14:06:02,235 - INFO - Starting async full crypto list loading...
+2025-11-25 14:06:02,277 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 14:06:02,607 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 14:06:02,665 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 14:06:02,738 - WARNING -  * Debugger is active!
+2025-11-25 14:06:02,740 - INFO -  * Debugger PIN: 678-835-787
+2025-11-25 14:06:03,593 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 14:06:05,175 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 14:06:08,804 - INFO - Starting async full crypto list loading...
+2025-11-25 14:06:08,848 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 14:06:09,177 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 14:06:09,233 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 14:06:09,294 - INFO - Worker: Инициализировано подключение к базе данных
+2025-11-25 14:06:09,294 - INFO - Worker: Запуск воркера обработки запросов
+2025-11-25 14:06:11,691 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 14:06:28,182 - INFO - 127.0.0.1 - - [25/Nov/2025 14:06:28] "GET / HTTP/1.1" 200 -
+2025-11-25 14:06:28,721 - INFO - 127.0.0.1 - - [25/Nov/2025 14:06:28] "GET /request-status/72 HTTP/1.1" 200 -
+2025-11-25 14:06:38,777 - INFO - [crypto_api.backend] User=0 | Created crypto request 73 for ethereum/rub
+2025-11-25 14:06:38,824 - INFO - [crypto_api.backend] User=None | Request created for ethereum/rub (ID: 73)
+2025-11-25 14:06:39,173 - INFO - 127.0.0.1 - - [25/Nov/2025 14:06:39] "POST / HTTP/1.1" 200 -
+2025-11-25 14:06:39,776 - INFO - 127.0.0.1 - - [25/Nov/2025 14:06:39] "GET /request-status/73 HTTP/1.1" 200 -
+2025-11-25 14:06:40,719 - INFO - Worker: Found processing request: ID=73, ethereum/rub
+2025-11-25 14:06:40,771 - INFO - Worker: Processing request 73 for ethereum/rub
+2025-11-25 14:06:40,771 - INFO - Worker: Calling API for ethereum/rub
+2025-11-25 14:06:41,398 - INFO - Worker: Successfully processed request 73 - ethereum/rub: 228386
+2025-11-25 14:06:41,713 - INFO - 127.0.0.1 - - [25/Nov/2025 14:06:41] "GET /request-status/73 HTTP/1.1" 200 -
+2025-11-25 14:07:10,677 - INFO - 127.0.0.1 - - [25/Nov/2025 14:07:10] "GET /requests_table HTTP/1.1" 200 -
+2025-11-25 14:07:17,518 - INFO - 127.0.0.1 - - [25/Nov/2025 14:07:17] "GET / HTTP/1.1" 200 -
+2025-11-25 14:07:18,040 - INFO - 127.0.0.1 - - [25/Nov/2025 14:07:18] "GET /request-status/73 HTTP/1.1" 200 -
+2025-11-25 14:09:51,061 - INFO - Worker: Cleaned up 1 old requests
+2025-11-25 14:12:39,530 - INFO - 127.0.0.1 - - [25/Nov/2025 14:12:39] "GET / HTTP/1.1" 200 -
+2025-11-25 14:12:39,703 - INFO - 127.0.0.1 - - [25/Nov/2025 14:12:39] "GET /request-status/73 HTTP/1.1" 200 -
+2025-11-25 14:17:42,488 - INFO - 127.0.0.1 - - [25/Nov/2025 14:17:42] "GET / HTTP/1.1" 200 -
+2025-11-25 14:17:42,652 - INFO - 127.0.0.1 - - [25/Nov/2025 14:17:42] "GET /request-status/73 HTTP/1.1" 200 -
+2025-11-25 14:17:48,824 - INFO - [crypto_api.backend] User=0 | Created crypto request 74 for ripple/rub
+2025-11-25 14:17:48,868 - INFO - [crypto_api.backend] User=None | Request created for ripple/rub (ID: 74)
+2025-11-25 14:17:49,167 - INFO - 127.0.0.1 - - [25/Nov/2025 14:17:49] "POST / HTTP/1.1" 200 -
+2025-11-25 14:17:49,323 - INFO - 127.0.0.1 - - [25/Nov/2025 14:17:49] "GET /request-status/74 HTTP/1.1" 200 -
+2025-11-25 14:17:51,330 - INFO - 127.0.0.1 - - [25/Nov/2025 14:17:51] "GET /request-status/74 HTTP/1.1" 200 -
+2025-11-25 14:17:52,304 - INFO - Worker: Found processing request: ID=74, ripple/rub
+2025-11-25 14:17:52,353 - INFO - Worker: Processing request 74 for ripple/rub
+2025-11-25 14:17:52,353 - INFO - Worker: Calling API for ripple/rub
+2025-11-25 14:17:53,005 - INFO - Worker: Successfully processed request 74 - ripple/rub: 174.11
+2025-11-25 14:17:53,338 - INFO - 127.0.0.1 - - [25/Nov/2025 14:17:53] "GET /request-status/74 HTTP/1.1" 200 -
+2025-11-25 14:19:16,879 - INFO - [crypto_api.backend] User=0 | Created crypto request 75 for ripple/rub
+2025-11-25 14:19:16,926 - INFO - [crypto_api.backend] User=None | Request created for ripple/rub (ID: 75)
+2025-11-25 14:19:17,284 - INFO - 127.0.0.1 - - [25/Nov/2025 14:19:17] "POST / HTTP/1.1" 200 -
+2025-11-25 14:19:17,444 - INFO - 127.0.0.1 - - [25/Nov/2025 14:19:17] "GET /request-status/75 HTTP/1.1" 200 -
+2025-11-25 14:19:19,452 - INFO - 127.0.0.1 - - [25/Nov/2025 14:19:19] "GET /request-status/75 HTTP/1.1" 200 -
+2025-11-25 14:19:20,179 - INFO - Worker: Found processing request: ID=75, ripple/rub
+2025-11-25 14:19:20,228 - INFO - Worker: Processing request 75 for ripple/rub
+2025-11-25 14:19:20,228 - INFO - Worker: Calling API for ripple/rub
+2025-11-25 14:19:20,883 - INFO - Worker: Successfully processed request 75 - ripple/rub: 174.08
+2025-11-25 14:19:21,454 - INFO - 127.0.0.1 - - [25/Nov/2025 14:19:21] "GET /request-status/75 HTTP/1.1" 200 -
+2025-11-25 14:19:23,076 - INFO - 127.0.0.1 - - [25/Nov/2025 14:19:23] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+2025-11-25 14:19:56,885 - INFO - Worker: Cleaned up 1 old requests
+2025-11-25 14:20:07,146 - INFO - Worker: Cleaned up 1 old requests
+2025-11-25 14:20:22,500 - INFO - Worker: Cleaned up 1 old requests
+2025-11-25 14:20:48,092 - INFO - Worker: Cleaned up 1 old requests
+2025-11-25 14:20:55,420 - INFO - [crypto_api.backend] User=0 | Created crypto request 76 for ripple/rub
+2025-11-25 14:20:55,463 - INFO - [crypto_api.backend] User=None | Request created for ripple/rub (ID: 76)
+2025-11-25 14:20:55,754 - INFO - 127.0.0.1 - - [25/Nov/2025 14:20:55] "POST / HTTP/1.1" 200 -
+2025-11-25 14:20:55,802 - INFO - 127.0.0.1 - - [25/Nov/2025 14:20:55] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+2025-11-25 14:20:56,147 - INFO - 127.0.0.1 - - [25/Nov/2025 14:20:56] "GET /request-status/76 HTTP/1.1" 200 -
+2025-11-25 14:20:58,152 - INFO - 127.0.0.1 - - [25/Nov/2025 14:20:58] "GET /request-status/76 HTTP/1.1" 200 -
+2025-11-25 14:20:58,270 - INFO - Worker: Found processing request: ID=76, ripple/rub
+2025-11-25 14:20:58,316 - INFO - Worker: Processing request 76 for ripple/rub
+2025-11-25 14:20:58,316 - INFO - Worker: Calling API for ripple/rub
+2025-11-25 14:20:58,995 - INFO - Worker: Successfully processed request 76 - ripple/rub: 174.02
+2025-11-25 14:20:59,171 - INFO - Worker: Cleaned up 1 old requests
+2025-11-25 14:21:00,144 - INFO - 127.0.0.1 - - [25/Nov/2025 14:21:00] "GET /request-status/76 HTTP/1.1" 200 -
+2025-11-25 14:21:09,410 - INFO - Worker: Cleaned up 1 old requests
+2025-11-25 14:21:14,529 - INFO - Worker: Cleaned up 1 old requests
+2025-11-25 14:21:29,888 - INFO - Worker: Cleaned up 1 old requests
+2025-11-25 14:21:40,125 - INFO - Worker: Cleaned up 1 old requests
+2025-11-25 14:25:51,235 - INFO - [crypto_api.backend] User=0 | Created crypto request 77 for ripple/rub
+2025-11-25 14:25:51,280 - INFO - [crypto_api.backend] User=None | Request created for ripple/rub (ID: 77)
+2025-11-25 14:25:51,594 - INFO - 127.0.0.1 - - [25/Nov/2025 14:25:51] "POST / HTTP/1.1" 200 -
+2025-11-25 14:25:51,646 - INFO - 127.0.0.1 - - [25/Nov/2025 14:25:51] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+2025-11-25 14:25:51,989 - INFO - 127.0.0.1 - - [25/Nov/2025 14:25:51] "GET /request-status/77 HTTP/1.1" 200 -
+2025-11-25 14:25:53,996 - INFO - 127.0.0.1 - - [25/Nov/2025 14:25:53] "GET /request-status/77 HTTP/1.1" 200 -
+2025-11-25 14:25:55,985 - INFO - Worker: Found processing request: ID=77, ripple/rub
+2025-11-25 14:25:55,992 - INFO - 127.0.0.1 - - [25/Nov/2025 14:25:55] "GET /request-status/77 HTTP/1.1" 200 -
+2025-11-25 14:25:56,031 - INFO - Worker: Processing request 77 for ripple/rub
+2025-11-25 14:25:56,031 - INFO - Worker: Calling API for ripple/rub
+2025-11-25 14:25:56,691 - INFO - Worker: Successfully processed request 77 - ripple/rub: 173.71
+2025-11-25 14:25:57,987 - INFO - 127.0.0.1 - - [25/Nov/2025 14:25:57] "GET /request-status/77 HTTP/1.1" 200 -
+2025-11-25 14:29:02,152 - INFO - [crypto_api.backend] User=0 | Created crypto request 78 for ripple/rub
+2025-11-25 14:29:02,198 - INFO - [crypto_api.backend] User=None | Request created for ripple/rub (ID: 78)
+2025-11-25 14:29:02,517 - INFO - 127.0.0.1 - - [25/Nov/2025 14:29:02] "POST / HTTP/1.1" 200 -
+2025-11-25 14:29:02,560 - INFO - 127.0.0.1 - - [25/Nov/2025 14:29:02] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+2025-11-25 14:29:02,912 - INFO - 127.0.0.1 - - [25/Nov/2025 14:29:02] "GET /request-status/78 HTTP/1.1" 200 -
+2025-11-25 14:29:04,920 - INFO - 127.0.0.1 - - [25/Nov/2025 14:29:04] "GET /request-status/78 HTTP/1.1" 200 -
+2025-11-25 14:29:06,201 - INFO - Worker: Found processing request: ID=78, ripple/rub
+2025-11-25 14:29:06,247 - INFO - Worker: Processing request 78 for ripple/rub
+2025-11-25 14:29:06,247 - INFO - Worker: Calling API for ripple/rub
+2025-11-25 14:29:06,878 - INFO - Worker: Successfully processed request 78 - ripple/rub: 173.71
+2025-11-25 14:29:06,927 - INFO - 127.0.0.1 - - [25/Nov/2025 14:29:06] "GET /request-status/78 HTTP/1.1" 200 -
+2025-11-25 14:29:08,922 - INFO - 127.0.0.1 - - [25/Nov/2025 14:29:08] "GET /request-status/78 HTTP/1.1" 200 -
+2025-11-25 14:29:57,037 - INFO - [crypto_api.backend] User=0 | Created crypto request 79 for 0vix-protocol/rub
+2025-11-25 14:29:57,081 - INFO - [crypto_api.backend] User=None | Request created for 0vix-protocol/rub (ID: 79)
+2025-11-25 14:29:57,373 - INFO - 127.0.0.1 - - [25/Nov/2025 14:29:57] "POST / HTTP/1.1" 200 -
+2025-11-25 14:29:57,403 - INFO - 127.0.0.1 - - [25/Nov/2025 14:29:57] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+2025-11-25 14:29:57,766 - INFO - 127.0.0.1 - - [25/Nov/2025 14:29:57] "GET /request-status/79 HTTP/1.1" 200 -
+2025-11-25 14:29:58,176 - INFO - Worker: Found processing request: ID=79, 0vix-protocol/rub
+2025-11-25 14:29:58,223 - INFO - Worker: Processing request 79 for 0vix-protocol/rub
+2025-11-25 14:29:58,223 - INFO - Worker: Calling API for 0vix-protocol/rub
+2025-11-25 14:29:58,915 - ERROR - Worker: API error for request 79: Курс для 0vix-protocol/rub не найден
+2025-11-25 14:29:59,803 - INFO - 127.0.0.1 - - [25/Nov/2025 14:29:59] "GET /request-status/79 HTTP/1.1" 200 -
+2025-11-25 14:30:11,935 - INFO - [crypto_api.backend] User=0 | Created crypto request 80 for 000-capital/usd
+2025-11-25 14:30:11,977 - INFO - [crypto_api.backend] User=None | Request created for 000-capital/usd (ID: 80)
+2025-11-25 14:30:12,277 - INFO - 127.0.0.1 - - [25/Nov/2025 14:30:12] "POST / HTTP/1.1" 200 -
+2025-11-25 14:30:12,313 - INFO - 127.0.0.1 - - [25/Nov/2025 14:30:12] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+2025-11-25 14:30:12,667 - INFO - 127.0.0.1 - - [25/Nov/2025 14:30:12] "GET /request-status/80 HTTP/1.1" 200 -
+2025-11-25 14:30:14,375 - INFO - Worker: Found processing request: ID=80, 000-capital/usd
+2025-11-25 14:30:14,422 - INFO - Worker: Processing request 80 for 000-capital/usd
+2025-11-25 14:30:14,423 - INFO - Worker: Calling API for 000-capital/usd
+2025-11-25 14:30:14,676 - INFO - 127.0.0.1 - - [25/Nov/2025 14:30:14] "GET /request-status/80 HTTP/1.1" 200 -
+2025-11-25 14:30:15,101 - INFO - Worker: Successfully processed request 80 - 000-capital/usd: 4.304e-05
+2025-11-25 14:30:16,673 - INFO - 127.0.0.1 - - [25/Nov/2025 14:30:16] "GET /request-status/80 HTTP/1.1" 200 -
+2025-11-25 14:43:14,653 - INFO - [crypto_api.backend] User=0 | Created crypto request 81 for 000-capital/usd
+2025-11-25 14:43:14,701 - INFO - [crypto_api.backend] User=None | Request created for 000-capital/usd (ID: 81)
+2025-11-25 14:43:15,041 - INFO - 127.0.0.1 - - [25/Nov/2025 14:43:15] "POST / HTTP/1.1" 200 -
+2025-11-25 14:43:15,218 - INFO - 127.0.0.1 - - [25/Nov/2025 14:43:15] "GET /request-status/81 HTTP/1.1" 200 -
+2025-11-25 14:43:17,236 - INFO - 127.0.0.1 - - [25/Nov/2025 14:43:17] "GET /request-status/81 HTTP/1.1" 200 -
+2025-11-25 14:43:18,713 - INFO - Worker: Found processing request: ID=81, 000-capital/usd
+2025-11-25 14:43:18,763 - INFO - Worker: Processing request 81 for 000-capital/usd
+2025-11-25 14:43:18,764 - INFO - Worker: Calling API for 000-capital/usd
+2025-11-25 14:43:19,231 - INFO - 127.0.0.1 - - [25/Nov/2025 14:43:19] "GET /request-status/81 HTTP/1.1" 200 -
+2025-11-25 14:43:19,456 - INFO - Worker: Successfully processed request 81 - 000-capital/usd: 4.299e-05
+2025-11-25 14:43:21,240 - INFO - 127.0.0.1 - - [25/Nov/2025 14:43:21] "GET /request-status/81 HTTP/1.1" 200 -
+2025-11-25 14:43:32,564 - INFO - [crypto_api.backend] User=0 | Created crypto request 82 for bitcoin/usd
+2025-11-25 14:43:32,611 - INFO - [crypto_api.backend] User=None | Request created for bitcoin/usd (ID: 82)
+2025-11-25 14:43:32,968 - INFO - 127.0.0.1 - - [25/Nov/2025 14:43:32] "POST / HTTP/1.1" 200 -
+2025-11-25 14:43:33,122 - INFO - 127.0.0.1 - - [25/Nov/2025 14:43:33] "GET /request-status/82 HTTP/1.1" 200 -
+2025-11-25 14:43:34,942 - INFO - Worker: Found processing request: ID=82, bitcoin/usd
+2025-11-25 14:43:34,992 - INFO - Worker: Processing request 82 for bitcoin/usd
+2025-11-25 14:43:34,992 - INFO - Worker: Calling API for bitcoin/usd
+2025-11-25 14:43:35,132 - INFO - 127.0.0.1 - - [25/Nov/2025 14:43:35] "GET /request-status/82 HTTP/1.1" 200 -
+2025-11-25 14:43:35,530 - INFO - Worker: Successfully processed request 82 - bitcoin/usd: 87474
+2025-11-25 14:43:37,135 - INFO - 127.0.0.1 - - [25/Nov/2025 14:43:37] "GET /request-status/82 HTTP/1.1" 200 -
+2025-11-25 14:46:46,247 - INFO - [crypto_api.backend] User=0 | Created crypto request 83 for bitcoin/usd
+2025-11-25 14:46:46,293 - INFO - [crypto_api.backend] User=None | Request created for bitcoin/usd (ID: 83)
+2025-11-25 14:46:46,616 - INFO - 127.0.0.1 - - [25/Nov/2025 14:46:46] "POST / HTTP/1.1" 200 -
+2025-11-25 14:46:46,772 - INFO - 127.0.0.1 - - [25/Nov/2025 14:46:46] "GET /request-status/83 HTTP/1.1" 200 -
+2025-11-25 14:46:48,783 - INFO - 127.0.0.1 - - [25/Nov/2025 14:46:48] "GET /request-status/83 HTTP/1.1" 200 -
+2025-11-25 14:46:50,227 - INFO - Worker: Found processing request: ID=83, bitcoin/usd
+2025-11-25 14:46:50,275 - INFO - Worker: Processing request 83 for bitcoin/usd
+2025-11-25 14:46:50,275 - INFO - Worker: Calling API for bitcoin/usd
+2025-11-25 14:46:50,778 - INFO - 127.0.0.1 - - [25/Nov/2025 14:46:50] "GET /request-status/83 HTTP/1.1" 200 -
+2025-11-25 14:46:50,851 - INFO - Worker: Successfully processed request 83 - bitcoin/usd: 87424
+2025-11-25 14:46:52,796 - INFO - 127.0.0.1 - - [25/Nov/2025 14:46:52] "GET /request-status/83 HTTP/1.1" 200 -
+2025-11-25 14:47:02,561 - INFO - [crypto_api.backend] User=0 | Created crypto request 84 for bitcoin/cny
+2025-11-25 14:47:02,604 - INFO - [crypto_api.backend] User=None | Request created for bitcoin/cny (ID: 84)
+2025-11-25 14:47:02,915 - INFO - 127.0.0.1 - - [25/Nov/2025 14:47:02] "POST / HTTP/1.1" 200 -
+2025-11-25 14:47:03,064 - INFO - 127.0.0.1 - - [25/Nov/2025 14:47:03] "GET /request-status/84 HTTP/1.1" 200 -
+2025-11-25 14:47:05,101 - INFO - 127.0.0.1 - - [25/Nov/2025 14:47:05] "GET /request-status/84 HTTP/1.1" 200 -
+2025-11-25 14:47:06,335 - INFO - Worker: Found processing request: ID=84, bitcoin/cny
+2025-11-25 14:47:06,386 - INFO - Worker: Processing request 84 for bitcoin/cny
+2025-11-25 14:47:06,386 - INFO - Worker: Calling API for bitcoin/cny
+2025-11-25 14:47:07,059 - INFO - Worker: Successfully processed request 84 - bitcoin/cny: 619493
+2025-11-25 14:47:07,081 - INFO - 127.0.0.1 - - [25/Nov/2025 14:47:07] "GET /request-status/84 HTTP/1.1" 200 -
+2025-11-25 14:47:09,068 - INFO - 127.0.0.1 - - [25/Nov/2025 14:47:09] "GET /request-status/84 HTTP/1.1" 200 -
+2025-11-25 14:47:23,882 - INFO - Worker: Получен сигнал остановки
+2025-11-25 14:47:23,882 - INFO - Worker: Остановка воркера
+2025-11-25 14:47:29,546 - INFO - Starting async full crypto list loading...
+2025-11-25 14:47:29,593 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 14:47:29,910 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 14:47:29,965 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 14:47:30,041 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.50.24.59:5000
+2025-11-25 14:47:30,041 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-25 14:47:30,042 - INFO -  * Restarting with stat
+2025-11-25 14:47:31,205 - INFO - Starting async full crypto list loading...
+2025-11-25 14:47:31,253 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 14:47:31,595 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 14:47:31,654 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 14:47:31,725 - WARNING -  * Debugger is active!
+2025-11-25 14:47:31,726 - INFO -  * Debugger PIN: 678-835-787
+2025-11-25 14:47:32,416 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 14:47:34,079 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 14:47:41,038 - INFO - Starting async full crypto list loading...
+2025-11-25 14:47:41,079 - INFO - [crypto_api.backend] User=None | Инициализировано подключение к базе данных
+2025-11-25 14:47:41,416 - INFO - [crypto_api.backend] User=None | База данных инициализирована
+2025-11-25 14:47:41,475 - INFO - [crypto_api.backend] User=None | Приложение инициализировано
+2025-11-25 14:47:41,537 - INFO - Worker: Инициализировано подключение к базе данных
+2025-11-25 14:47:41,537 - INFO - Worker: Запуск воркера обработки запросов
+2025-11-25 14:47:43,774 - INFO - Full crypto list loaded: 19374 items
+2025-11-25 14:47:51,351 - INFO - 10.50.24.59 - - [25/Nov/2025 14:47:51] "GET / HTTP/1.1" 200 -
+2025-11-25 14:47:51,569 - INFO - 10.50.24.59 - - [25/Nov/2025 14:47:51] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-25 14:47:57,555 - INFO - [crypto_api.backend] User=0 | Created crypto request 85 for bitcoin/usd
+2025-11-25 14:47:57,601 - INFO - [crypto_api.backend] User=None | Request created for bitcoin/usd (ID: 85)
+2025-11-25 14:47:57,656 - INFO - Worker: Found processing request: ID=85, bitcoin/usd
+2025-11-25 14:47:57,704 - INFO - Worker: Processing request 85 for bitcoin/usd
+2025-11-25 14:47:57,704 - INFO - Worker: Calling API for bitcoin/usd
+2025-11-25 14:47:57,948 - INFO - 10.50.24.59 - - [25/Nov/2025 14:47:57] "POST / HTTP/1.1" 200 -
+2025-11-25 14:47:58,117 - INFO - 10.50.24.59 - - [25/Nov/2025 14:47:58] "GET /request-status/85 HTTP/1.1" 200 -
+2025-11-25 14:47:58,259 - INFO - Worker: Successfully processed request 85 - bitcoin/usd: 87406
+2025-11-25 14:48:00,129 - INFO - 10.50.24.59 - - [25/Nov/2025 14:48:00] "GET /request-status/85 HTTP/1.1" 200 -
+2025-11-25 14:48:09,025 - INFO - [crypto_api.backend] User=0 | Created crypto request 86 for 0x678-landwolf-1933/usd
+2025-11-25 14:48:09,070 - INFO - [crypto_api.backend] User=None | Request created for 0x678-landwolf-1933/usd (ID: 86)
+2025-11-25 14:48:09,388 - INFO - 10.50.24.59 - - [25/Nov/2025 14:48:09] "POST / HTTP/1.1" 200 -
+2025-11-25 14:48:09,541 - INFO - 10.50.24.59 - - [25/Nov/2025 14:48:09] "GET /request-status/86 HTTP/1.1" 200 -
+2025-11-25 14:48:11,554 - INFO - 10.50.24.59 - - [25/Nov/2025 14:48:11] "GET /request-status/86 HTTP/1.1" 200 -
+2025-11-25 14:48:13,549 - INFO - 10.50.24.59 - - [25/Nov/2025 14:48:13] "GET /request-status/86 HTTP/1.1" 200 -
+2025-11-25 14:48:13,723 - INFO - Worker: Found processing request: ID=86, 0x678-landwolf-1933/usd
+2025-11-25 14:48:13,770 - INFO - Worker: Processing request 86 for 0x678-landwolf-1933/usd
+2025-11-25 14:48:13,770 - INFO - Worker: Calling API for 0x678-landwolf-1933/usd
+2025-11-25 14:48:14,455 - INFO - Worker: Successfully processed request 86 - 0x678-landwolf-1933/usd: 2.9625e-08
+2025-11-25 14:48:15,551 - INFO - 10.50.24.59 - - [25/Nov/2025 14:48:15] "GET /request-status/86 HTTP/1.1" 200 -
+2025-11-25 14:49:00,200 - INFO - [crypto_api.backend] User=0 | Created crypto request 87 for 0x678-landwolf-1933/usd
+2025-11-25 14:49:00,243 - INFO - [crypto_api.backend] User=None | Request created for 0x678-landwolf-1933/usd (ID: 87)
+2025-11-25 14:49:00,568 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:00] "POST / HTTP/1.1" 200 -
+2025-11-25 14:49:00,602 - INFO - Worker: Found processing request: ID=87, 0x678-landwolf-1933/usd
+2025-11-25 14:49:00,645 - INFO - Worker: Processing request 87 for 0x678-landwolf-1933/usd
+2025-11-25 14:49:00,645 - INFO - Worker: Calling API for 0x678-landwolf-1933/usd
+2025-11-25 14:49:00,721 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:00] "GET /request-status/87 HTTP/1.1" 200 -
+2025-11-25 14:49:01,160 - INFO - Worker: Successfully processed request 87 - 0x678-landwolf-1933/usd: 2.9625e-08
+2025-11-25 14:49:02,731 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:02] "GET /request-status/87 HTTP/1.1" 200 -
+2025-11-25 14:49:07,741 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:07] "GET /crypto_table HTTP/1.1" 200 -
+2025-11-25 14:49:12,710 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:12] "GET / HTTP/1.1" 200 -
+2025-11-25 14:49:12,862 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:12] "GET /request-status/87 HTTP/1.1" 200 -
+2025-11-25 14:49:15,276 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:15] "GET /requests_table HTTP/1.1" 200 -
+2025-11-25 14:49:21,307 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:21] "GET /log_table HTTP/1.1" 200 -
+2025-11-25 14:49:24,719 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:24] "GET / HTTP/1.1" 200 -
+2025-11-25 14:49:24,873 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:24] "GET /request-status/87 HTTP/1.1" 200 -
+2025-11-25 14:49:28,836 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:28] "GET /users_table HTTP/1.1" 200 -
+2025-11-25 14:49:34,657 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:34] "GET / HTTP/1.1" 200 -
+2025-11-25 14:49:34,811 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:34] "GET /request-status/87 HTTP/1.1" 200 -
+2025-11-25 14:49:39,494 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:39] "GET /chart HTTP/1.1" 200 -
+2025-11-25 14:49:43,964 - INFO - [crypto_api.backend] User=None | Сгенерирован график для bitcoin/usd за 7 дней
+2025-11-25 14:49:44,075 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:44] "POST /chart HTTP/1.1" 200 -
+2025-11-25 14:49:51,311 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:51] "GET / HTTP/1.1" 200 -
+2025-11-25 14:49:51,476 - INFO - 10.50.24.59 - - [25/Nov/2025 14:49:51] "GET /request-status/87 HTTP/1.1" 200 -
+2025-11-25 14:51:00,176 - INFO - 10.50.24.59 - - [25/Nov/2025 14:51:00] "GET / HTTP/1.1" 200 -
+2025-11-25 14:51:00,337 - INFO - 10.50.24.59 - - [25/Nov/2025 14:51:00] "GET /request-status/87 HTTP/1.1" 200 -
+2025-11-25 14:51:03,227 - INFO - 10.50.24.59 - - [25/Nov/2025 14:51:03] "GET /chart HTTP/1.1" 200 -
+2025-11-25 14:51:10,177 - INFO - [crypto_api.backend] User=None | Сгенерирован график для bitcoin/cny за 180 дней
+2025-11-25 14:51:10,280 - INFO - 10.50.24.59 - - [25/Nov/2025 14:51:10] "POST /chart HTTP/1.1" 200 -
+2025-11-25 14:51:16,699 - INFO - 10.50.24.59 - - [25/Nov/2025 14:51:16] "GET / HTTP/1.1" 200 -
+2025-11-25 14:51:16,865 - INFO - 10.50.24.59 - - [25/Nov/2025 14:51:16] "GET /request-status/87 HTTP/1.1" 200 -
+2025-11-25 14:51:20,905 - INFO - [crypto_api.backend] User=0 | Created crypto request 88 for ethereum/usd
+2025-11-25 14:51:20,950 - INFO - [crypto_api.backend] User=None | Request created for ethereum/usd (ID: 88)
+2025-11-25 14:51:21,255 - INFO - 10.50.24.59 - - [25/Nov/2025 14:51:21] "POST / HTTP/1.1" 200 -
+2025-11-25 14:51:21,425 - INFO - 10.50.24.59 - - [25/Nov/2025 14:51:21] "GET /request-status/88 HTTP/1.1" 200 -
+2025-11-25 14:51:23,443 - INFO - 10.50.24.59 - - [25/Nov/2025 14:51:23] "GET /request-status/88 HTTP/1.1" 200 -
+2025-11-25 14:51:24,489 - INFO - Worker: Found processing request: ID=88, ethereum/usd
+2025-11-25 14:51:24,533 - INFO - Worker: Processing request 88 for ethereum/usd
+2025-11-25 14:51:24,533 - INFO - Worker: Calling API for ethereum/usd
+2025-11-25 14:51:25,023 - INFO - Worker: Successfully processed request 88 - ethereum/usd: 2894.51
+2025-11-25 14:51:25,434 - INFO - 10.50.24.59 - - [25/Nov/2025 14:51:25] "GET /request-status/88 HTTP/1.1" 200 -
