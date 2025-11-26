@@ -544,6 +544,57 @@ def process_pending_requests():
         log_message(f"Error processing OLD pending requests: {e}", 'error')
 
 
+def get_main_crypto_rates_to_btc(timeout=30, coin_ids_to_fetch=None):
+    """
+    Запрашивает курсы криптовалют к биткоину (BTC) с API CoinGecko.
+
+    Args:
+        timeout (int): Таймаут для HTTP-запросов в секундах. По умолчанию 30.
+        coin_ids_to_fetch (list): Список ID криптовалют для запроса. Если None, используются POPULAR_CRYPTOS.
+
+    Returns:
+        dict: Словарь, где ключ - ID криптовалюты (например, 'ethereum', 'bitcoin'),
+              значение - словарь с курсом к BTC {'btc': float_rate}.
+              Пример: {'ethereum': {'btc': 0.0654321}, 'bitcoin': {'btc': 1.0}}
+              Возвращает пустой словарь в случае ошибки.
+    """
+    if coin_ids_to_fetch is None:
+        coin_ids_to_fetch = [cid for cid in POPULAR_CRYPTOS if cid != 'bitcoin']
+    else:
+        # Убедимся, что 'bitcoin' не включён, если он там есть
+        coin_ids_to_fetch = [cid for cid in coin_ids_to_fetch if cid != 'bitcoin']
+
+    url = "https://api.coingecko.com/api/v3/simple/price"
+    params = {
+        'ids': ','.join(coin_ids_to_fetch), # Передаём список ID через запятую
+        'vs_currencies': 'btc' # Запрашиваем курсы относительно BTC
+    }
+
+    try:
+        logging.info(f"Запрашиваю курсы криптовалют ({len(coin_ids_to_fetch)} шт.) к BTC...")
+        response = requests.get(url, params=params, timeout=timeout)
+        response.raise_for_status() # Вызывает исключение для HTTP-ошибок (4xx, 5xx)
+
+        rates = response.json()
+        logging.info(f"Получены курсы для {len(rates)} криптовалют к BTC.")
+
+        return rates
+
+    except requests.exceptions.HTTPError as e:
+        logging.error(f"HTTP ошибка при запросе к API CoinGecko: {e}")
+        logging.error(f"Статус код: {e.response.status_code}")
+        logging.error(f"Текст ответа: {e.response.text}")
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Ошибка запроса к API CoinGecko: {e}")
+    except ValueError as e: # Ошибка при парсинге JSON
+        logging.error(f"Ошибка парсинга JSON ответа от API CoinGecko: {e}")
+    except Exception as e:
+        logging.error(f"Неизвестная ошибка при запросе курсов: {e}")
+
+    # Возвращаем пустой словарь в случае любой ошибки
+    return {}
+
+
 class CoinGeckoAPI:
     def __init__(self):
         self.base_url = "https://api.coingecko.com/api/v3"
@@ -1140,6 +1191,126 @@ def verify_code():
 
     flash("Функция проверки кода временно недоступна. Используйте Telegram Widget авторизацию.", 'warning')
     return redirect(url_for('auth'))
+
+
+@app.route('/main_crypto_rates_to_btc')
+def show_main_crypto_rates_to_btc():
+    """Отображает таблицу с курсами основных криптовалют (POPULAR_CRYPTOS) к биткоину"""
+    if not db_connection_active:
+        flash("Соединение с базой данных отключено", 'error')
+        return redirect(url_for('index'))
+
+    user = session.get('user')
+
+    # Получаем курсы для основных 50 криптовалют
+    rates_data = get_main_crypto_rates_to_btc(coin_ids_to_fetch=[cid for cid in POPULAR_CRYPTOS if cid != 'bitcoin'])
+
+    if not rates_data:
+        flash("Не удалось получить курсы криптовалют к BTC. Проверьте логи.", 'error')
+        log_message("Не удалось получить курсы основных криптовалют к BTC", 'error', user_id=str(user['id']) if user else None)
+        return redirect(url_for('index'))
+
+    # Подготовим данные для шаблона
+    # Сортируем по названию криптовалюты
+    sorted_rates = sorted(rates_data.items(), key=lambda item: item[0])
+    table_data = []
+    for crypto_id, rate_dict in sorted_rates:
+        rate = rate_dict.get('btc', 'N/A')
+        # Преобразуем float_rate в строку с 8 знаками после запятой
+        formatted_rate = f"{rate:.8f}" if isinstance(rate, float) else rate
+        table_data.append({
+            'crypto': crypto_id,
+            'rate_to_btc': formatted_rate
+        })
+
+    # Подготовим информацию о просмотренных/оставшихся
+    all_crypto_ids = load_crypto_list() # Загружаем полный список
+    viewed_ids = set(rates_data.keys()) # Уже полученные ID
+    remaining_ids = [cid for cid in all_crypto_ids if cid != 'bitcoin' and cid not in viewed_ids]
+    remaining_count = len(remaining_ids)
+    viewed_count = len(viewed_ids)
+
+    log_message("Таблица курсов основных криптовалют к BTC отображена", 'info', user_id=str(user['id']) if user else None)
+    return render_template('main_crypto_rates_table.html',
+                           title='Курсы основных криптовалют к BTC',
+                           data=table_data,
+                           columns=['crypto', 'rate_to_btc'],
+                           user=user,
+                           viewed_count=viewed_count,
+                           remaining_count=remaining_count,
+                           has_next=True) # Показываем кнопку "Следующие пары..."
+
+
+@app.route('/main_crypto_rates_to_btc/next')
+def show_next_crypto_rates_to_btc():
+    """Отображает таблицу с курсами следующих 50 криптовалют к биткоину в алфавитном порядке"""
+    if not db_connection_active:
+        flash("Соединение с базой данных отключено", 'error')
+        return redirect(url_for('index'))
+
+    user = session.get('user')
+
+    # Получаем полный список криптовалют
+    all_crypto_ids = load_crypto_list()
+    # Исключаем 'bitcoin' и сортируем по алфавиту
+    all_crypto_ids_sorted = sorted([cid for cid in all_crypto_ids if cid != 'bitcoin'])
+
+    # Найдем ID, которые уже были отображены (всё, что не в POPULAR_CRYPTOS)
+    # Или, более обобщенно, возьмем следующие 50 после POPULAR_CRYPTOS, отсортированные по алфавиту
+    # Для простоты, возьмем первые 50 из отсортированного списка, исключая POPULAR_CRYPTOS
+    # Но для "следующих" нужно исключить уже полученные.
+    # В предыдущем запросе были получены только POPULAR_CRYPTOS.
+    # Поэтому "следующие" будут первые 50 из отсортированного списка, исключая POPULAR_CRYPTOS.
+    popular_set = set(POPULAR_CRYPTOS)
+    next_batch_ids = []
+    for cid in all_crypto_ids_sorted:
+        if cid not in popular_set:
+            next_batch_ids.append(cid)
+        if len(next_batch_ids) == 50: # Берем следующие 50
+            break
+
+    if not next_batch_ids:
+        flash("Больше нет криптовалют для отображения.", 'info')
+        return redirect(url_for('show_main_crypto_rates_to_btc'))
+
+    # Получаем курсы для следующей партии
+    rates_data = get_main_crypto_rates_to_btc(coin_ids_to_fetch=next_batch_ids)
+
+    if not rates_data:
+        flash("Не удалось получить курсы следующих криптовалют к BTC. Проверьте логи.", 'error')
+        log_message("Не удалось получить курсы следующих криптовалют к BTC", 'error', user_id=str(user['id']) if user else None)
+        return redirect(url_for('show_main_crypto_rates_to_btc'))
+
+    # Подготовим данные для шаблона
+    # Сортируем по названию криптовалюты (уже должны быть отсортированы, но перестрахуемся)
+    sorted_rates = sorted(rates_data.items(), key=lambda item: item[0])
+    table_data = []
+    for crypto_id, rate_dict in sorted_rates:
+        rate = rate_dict.get('btc', 'N/A')
+        # Преобразуем float_rate в строку с 8 знаками после запятой
+        formatted_rate = f"{rate:.8f}" if isinstance(rate, float) else rate
+        table_data.append({
+            'crypto': crypto_id,
+            'rate_to_btc': formatted_rate
+        })
+
+    # Подготовим информацию о просмотренных/оставшихся
+    # Теперь просмотренные - это POPULAR_CRYPTOS + полученные сейчас
+    viewed_ids = set(POPULAR_CRYPTOS) | set(rates_data.keys())
+    remaining_ids = [cid for cid in all_crypto_ids_sorted if cid not in viewed_ids]
+    remaining_count = len(remaining_ids)
+    viewed_count = len(viewed_ids)
+
+    log_message("Таблица курсов следующих криптовалют к BTC отображена", 'info', user_id=str(user['id']) if user else None)
+    return render_template('main_crypto_rates_table.html',
+                           title='Курсы следующих криптовалют к BTC',
+                           data=table_data,
+                           columns=['crypto', 'rate_to_btc'],
+                           user=user,
+                           viewed_count=viewed_count,
+                           remaining_count=remaining_count,
+                           has_next=bool(remaining_count)) # Показываем кнопку "Следующие пары...", если есть что показывать
+
 
 
 # Инициализация базы данных при импорте модуля
