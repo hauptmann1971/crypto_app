@@ -1312,6 +1312,235 @@ def show_next_crypto_rates_to_btc():
                            has_next=bool(remaining_count)) # Показываем кнопку "Следующие пары...", если есть что показывать
 
 
+# app.py - Добавить после существующих маршрутов
+
+@app.route('/historical', methods=['GET', 'POST'])
+def historical_data():
+    """Страница с историческими данными по выбранной паре"""
+    plot_url = None
+    error = None
+    user = session.get('user')
+    df_stats = None
+
+    # Значения по умолчанию из сессии или формы
+    default_crypto = 'bitcoin'
+    default_currency = 'usd'
+    default_start_date = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+    default_end_date = datetime.now().strftime('%Y-%m-%d')
+
+    # Получаем данные из формы
+    if request.method == 'POST':
+        crypto = request.form.get('crypto', default_crypto)
+        currency = request.form.get('currency', default_currency)
+        start_date = request.form.get('start_date', default_start_date)
+        end_date = request.form.get('end_date', default_end_date)
+
+        # Сохраняем в сессию для запоминания выбора
+        session['historical_crypto'] = crypto
+        session['historical_currency'] = currency
+        session['historical_start_date'] = start_date
+        session['historical_end_date'] = end_date
+
+    else:
+        # GET запрос - берем из сессии или используем значения по умолчанию
+        crypto = session.get('historical_crypto', default_crypto)
+        currency = session.get('historical_currency', default_currency)
+        start_date = session.get('historical_start_date', default_start_date)
+        end_date = session.get('historical_end_date', default_end_date)
+
+    # Если получены данные из формы, строим график
+    if request.method == 'POST' and crypto and currency and start_date and end_date:
+        try:
+            # Используем функцию get_historical_price_range
+            df = get_historical_price_range(
+                coin_id=crypto,
+                vs_currency=currency,
+                start_date=start_date,
+                end_date=end_date
+            )
+
+            if df is not None and not df.empty:
+                # Рассчитываем статистику
+                df_stats = {
+                    'start_price': float(df['price'].iloc[0]),
+                    'end_price': float(df['price'].iloc[-1]),
+                    'max_price': float(df['price'].max()),
+                    'min_price': float(df['price'].min()),
+                    'avg_price': float(df['price'].mean()),
+                    'change_pct': ((df['price'].iloc[-1] / df['price'].iloc[0]) - 1) * 100
+                }
+
+                plot_url = generate_historical_plot(df, crypto, currency, start_date, end_date)
+                if plot_url:
+                    log_message(
+                        f"Сгенерирован исторический график для {crypto}/{currency} за период {start_date} - {end_date}",
+                        'info', user_id=str(user['id']) if user else None)
+                else:
+                    error = "Ошибка генерации графика"
+            else:
+                error = "Не удалось получить исторические данные для выбранного периода"
+
+        except Exception as e:
+            error = f"Ошибка: {str(e)}"
+            log_message(f"Ошибка получения исторических данных: {e}", 'error',
+                        user_id=str(user['id']) if user else None)
+
+    cryptos = load_crypto_list()
+    return render_template('historical.html',
+                           cryptos=cryptos,
+                           currencies=CURRENCIES,
+                           current_crypto=crypto,
+                           current_currency=currency,
+                           start_date=start_date,
+                           end_date=end_date,
+                           plot_url=plot_url,
+                           error=error,
+                           df_stats=df_stats,
+                           user=user)
+
+
+def generate_historical_plot(df, crypto, currency, start_date, end_date):
+    """Генерирует график исторических данных и возвращает base64 строку"""
+    try:
+        matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+        import matplotlib.dates as mdates
+
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10), gridspec_kw={'height_ratios': [3, 1]})
+
+        # График цены
+        ax1.plot(df['timestamp'], df['price'], 'b-', linewidth=2, label='Цена')
+        ax1.set_title(f'{crypto.upper()}/{currency.upper()} - Исторические данные ({start_date} - {end_date})',
+                      fontsize=14, fontweight='bold')
+        ax1.set_ylabel(f'Цена ({currency.upper()})', fontsize=12)
+        ax1.grid(True, alpha=0.3)
+        ax1.legend()
+
+        # Форматирование оси времени
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+        ax1.xaxis.set_major_locator(mdates.AutoDateLocator())
+        plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45, ha='right')
+
+        # График процентных изменений
+        if 'returns_pct' in df.columns:
+            colors = ['green' if x >= 0 else 'red' for x in df['returns_pct']]
+            ax2.bar(df['timestamp'], df['returns_pct'], color=colors, alpha=0.7, width=0.8)
+            ax2.axhline(y=0, color='black', linestyle='-', linewidth=0.5)
+            ax2.set_xlabel('Дата', fontsize=12)
+            ax2.set_ylabel('Изменение (%)', fontsize=12)
+            ax2.grid(True, alpha=0.3)
+
+            # Форматирование оси времени для второго графика
+            ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+            ax2.xaxis.set_major_locator(mdates.AutoDateLocator())
+            plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right')
+
+        plt.tight_layout()
+
+        # Сохраняем в буфер
+        img = io.BytesIO()
+        plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
+        img.seek(0)
+        plt.close()
+
+        # Конвертируем в base64
+        plot_url = base64.b64encode(img.getvalue()).decode()
+        return f"data:image/png;base64,{plot_url}"
+
+    except Exception as e:
+        logging.error(f"Ошибка генерации исторического графика: {e}")
+        return None
+
+
+# Обновленная функция get_historical_price_range (добавить в app.py, если её нет)
+def get_historical_price_range(coin_id='bitcoin', vs_currency='usd',
+                               start_date='2024-01-01', end_date=None):
+    """Получить исторические цены для выбранного периода"""
+    import requests
+    import pandas as pd
+    from datetime import datetime
+
+    # Если конечная дата не указана - берем сегодня
+    if end_date is None:
+        end_date = datetime.now().strftime('%Y-%m-%d')
+
+    # Преобразуем строки в datetime
+    start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+    end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+
+    # Проверяем, что даты корректны
+    if start_dt >= end_dt:
+        raise ValueError("Дата начала должна быть раньше даты окончания")
+
+    # Рассчитываем количество дней между датами
+    days_diff = (end_dt - start_dt).days
+
+    if days_diff < 1:
+        raise ValueError("Период должен быть хотя бы 1 день")
+
+    # Определяем интервал в зависимости от периода
+    if days_diff <= 90:
+        days_param = days_diff
+        interval = 'daily'
+    else:
+        days_param = days_diff
+        interval = 'daily'
+        logging.info(f"Для периода >90 дней данные будут агрегированными")
+
+    # URL для запроса
+    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
+
+    params = {
+        'vs_currency': vs_currency,
+        'days': days_param,
+        'interval': interval
+    }
+
+    try:
+        logging.info(f"Загрузка данных {coin_id.upper()}/{vs_currency.upper()}...")
+        logging.info(f"Период: {start_date} - {end_date} ({days_diff} дней)")
+
+        response = requests.get(url, params=params, timeout=15)
+        response.raise_for_status()
+
+        data = response.json()
+
+        # Преобразуем данные в DataFrame
+        timestamps = [pd.to_datetime(x[0], unit='ms') for x in data['prices']]
+        prices = [x[1] for x in data['prices']]
+
+        df = pd.DataFrame({
+            'timestamp': timestamps,
+            'price': prices
+        })
+
+        # Фильтруем по нашему диапазону дат
+        mask = (df['timestamp'] >= start_dt) & (df['timestamp'] <= end_dt)
+        df = df.loc[mask].copy()
+
+        if len(df) == 0:
+            logging.warning("Нет данных для указанного периода")
+            return None
+
+        # Сортируем по дате
+        df = df.sort_values('timestamp').reset_index(drop=True)
+
+        # Добавляем дополнительные колонки
+        df['date'] = df['timestamp'].dt.date
+        df['returns_pct'] = df['price'].pct_change() * 100
+
+        logging.info(f"Успешно загружено {len(df)} записей")
+        logging.info(f"Диапазон цен: ${df['price'].min():.2f} - ${df['price'].max():.2f}")
+
+        return df
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Ошибка запроса: {e}")
+        raise
+    except Exception as e:
+        logging.error(f"Ошибка обработки данных: {e}")
+        raise
+
 
 # Инициализация базы данных при импорте модуля
 try:
