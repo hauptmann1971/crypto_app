@@ -35,6 +35,23 @@
             margin-right: 5px;
             margin-bottom: 5px;
         }
+        .date-hint {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+        .date-warning {
+            color: #dc3545;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        .period-info {
+            background: #e7f3ff;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -99,7 +116,7 @@
 
         <!-- Форма выбора параметров -->
         <div class="form-container">
-            <form method="POST" class="row g-3">
+            <form method="POST" class="row g-3" id="historicalForm">
                 <div class="col-md-3">
                     <label for="crypto" class="form-label">Криптовалюта:</label>
                     <select class="form-select" id="crypto" name="crypto" required>
@@ -126,15 +143,26 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label for="start_date" class="form-label">Дата начала:</label>
+                    <label for="start_date" class="form-label">Дата начала периода:</label>
                     <input type="text" class="form-control date-input" id="start_date" name="start_date"
                            value="{{ start_date }}" required readonly>
+                    <div class="date-hint">Любая дата до сегодня</div>
                 </div>
 
                 <div class="col-md-3">
-                    <label for="end_date" class="form-label">Дата окончания:</label>
+                    <label for="end_date" class="form-label">Дата окончания периода:</label>
                     <input type="text" class="form-control date-input" id="end_date" name="end_date"
                            value="{{ end_date }}" required readonly>
+                    <div class="date-hint">Любая дата до сегодня</div>
+                </div>
+
+                <!-- Информация о периоде -->
+                <div class="col-12">
+                    <div id="periodInfo" class="period-info" style="display: none;">
+                        <strong>Выбранный период:</strong>
+                        <span id="periodDays">0</span> дней
+                        (<span id="periodDates">дата - дата</span>)
+                    </div>
                 </div>
 
                 <!-- Быстрый выбор периода -->
@@ -144,27 +172,31 @@
                     </div>
                     <div>
                         <button type="button" class="btn btn-sm btn-outline-primary quick-date-btn" data-days="7">
-                            7 дней
+                            7 дней назад - сегодня
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-primary quick-date-btn" data-days="30">
-                            30 дней
+                            30 дней назад - сегодня
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-primary quick-date-btn" data-days="90">
-                            90 дней
+                            90 дней назад - сегодня
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-primary quick-date-btn" data-days="180">
-                            180 дней
+                            180 дней назад - сегодня
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-primary quick-date-btn" data-days="365">
-                            1 год
+                            1 год назад - сегодня
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="swapDatesBtn">
+                            ↔ Поменять даты местами
                         </button>
                     </div>
                 </div>
 
                 <div class="col-12 mt-3">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
                         <i class="bi bi-graph-up"></i> Получить исторические данные
                     </button>
+                    <div id="dateWarning" class="date-warning" style="display: none;"></div>
                 </div>
             </form>
         </div>
@@ -181,34 +213,58 @@
                 </div>
 
                 <!-- Статистика -->
+                {% if df_stats %}
                 <div class="row mt-4">
                     <div class="col-md-3">
                         <div class="stats-card">
                             <h6>Начальная цена</h6>
-                            <p class="fs-4 fw-bold text-primary">${{ "%.2f"|format(df_stats.start_price) }}</p>
+                            <p class="fs-4 fw-bold text-primary">
+                                {% if df_stats.start_price %}
+                                    ${{ "%.2f"|format(df_stats.start_price) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="stats-card">
                             <h6>Конечная цена</h6>
-                            <p class="fs-4 fw-bold text-primary">${{ "%.2f"|format(df_stats.end_price) }}</p>
+                            <p class="fs-4 fw-bold text-primary">
+                                {% if df_stats.end_price %}
+                                    ${{ "%.2f"|format(df_stats.end_price) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="stats-card">
                             <h6>Изменение</h6>
                             <p class="fs-4 fw-bold {% if df_stats.change_pct >= 0 %}text-success{% else %}text-danger{% endif %}">
-                                {{ "%+.2f"|format(df_stats.change_pct) }}%
+                                {% if df_stats.change_pct is defined %}
+                                    {{ "%+.2f"|format(df_stats.change_pct) }}%
+                                {% else %}
+                                    N/A
+                                {% endif %}
                             </p>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="stats-card">
                             <h6>Максимальная цена</h6>
-                            <p class="fs-4 fw-bold text-success">${{ "%.2f"|format(df_stats.max_price) }}</p>
+                            <p class="fs-4 fw-bold text-success">
+                                {% if df_stats.max_price %}
+                                    ${{ "%.2f"|format(df_stats.max_price) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
                         </div>
                     </div>
                 </div>
+                {% endif %}
             </div>
         {% elif error %}
             <div class="alert alert-danger" role="alert">
@@ -223,33 +279,38 @@
             • <strong>Тип графика:</strong> Линейный с процентными изменениями<br>
             • <strong>Доступные периоды:</strong> От 1 дня до нескольких лет<br>
             • <strong>Обновление:</strong> Данные обновляются ежедневно<br>
-            • <strong>Формат дат:</strong> ГГГГ-ММ-ДД
+            • <strong>Формат дат:</strong> ГГГГ-ММ-ДД<br>
+            • <strong>Выбор дат:</strong> Обе даты можно выбрать любые до сегодняшнего дня
         </div>
 
         <!-- Подсказки -->
         <div class="card mt-4">
             <div class="card-header">
-                <h5 class="card-title mb-0">💡 Советы по использованию</h5>
+                <h5 class="card-title mb-0">💡 Как выбрать даты?</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <h6>Для анализа трендов:</h6>
+                        <h6>Произвольный выбор дат:</h6>
                         <ul>
-                            <li>Используйте период 30-90 дней для среднесрочного анализа</li>
-                            <li>Период 1 год показывает долгосрочные тренды</li>
-                            <li>Короткие периоды (7 дней) подходят для анализа волатильности</li>
+                            <li><strong>Начальная дата:</strong> Любая дата до сегодняшнего дня</li>
+                            <li><strong>Конечная дата:</strong> Любая дата до сегодняшнего дня</li>
+                            <li>Дата начала может быть позже даты окончания</li>
+                            <li>Автоматически будет выбран период от более ранней к более поздней дате</li>
                         </ul>
                     </div>
                     <div class="col-md-6">
-                        <h6>Популярные пары для анализа:</h6>
+                        <h6>Примеры периодов для анализа:</h6>
                         <ul>
-                            <li><strong>BTC/USD</strong> - Биткоин к доллару</li>
-                            <li><strong>ETH/USD</strong> - Эфириум к доллару</li>
-                            <li><strong>BTC/EUR</strong> - Биткоин к евро</li>
-                            <li><strong>SOL/USD</strong> - Solana к доллару</li>
+                            <li><strong>Конец 2021</strong>: 2021-10-01 - 2021-12-31</li>
+                            <li><strong>Падение FTX</strong>: 2022-11-01 - 2022-11-30</li>
+                            <li><strong>Весь 2023 год</strong>: 2023-01-01 - 2023-12-31</li>
+                            <li><strong>Последняя неделя</strong>: 2024-03-01 - 2024-03-07</li>
                         </ul>
                     </div>
+                </div>
+                <div class="alert alert-warning mt-3">
+                    <strong>⚠️ Важно:</strong> Если дата начала позже даты окончания, система автоматически поменяет их местами для корректного отображения графика.
                 </div>
             </div>
         </div>
@@ -265,23 +326,91 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
     <script>
-        // Инициализация календаря
-        flatpickr("#start_date", {
+        // Инициализация календарей
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+
+        const startDatePicker = flatpickr("#start_date", {
             dateFormat: "Y-m-d",
-            maxDate: "today",
+            maxDate: today,
             locale: "ru",
-            onChange: function(selectedDates, dateStr, instance) {
-                const endDatePicker = document.querySelector("#end_date")._flatpickr;
-                endDatePicker.set("minDate", dateStr);
+            onChange: function(selectedDates, dateStr) {
+                updatePeriodInfo();
+                validateDates();
             }
         });
 
-        flatpickr("#end_date", {
+        const endDatePicker = flatpickr("#end_date", {
             dateFormat: "Y-m-d",
-            maxDate: "today",
+            maxDate: today,
             locale: "ru",
-            minDate: document.getElementById("start_date").value
+            onChange: function(selectedDates, dateStr) {
+                updatePeriodInfo();
+                validateDates();
+            }
         });
+
+        // Обновление информации о периоде
+        function updatePeriodInfo() {
+            const startDate = document.getElementById("start_date").value;
+            const endDate = document.getElementById("end_date").value;
+            const periodInfo = document.getElementById("periodInfo");
+
+            if (startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+
+                // Определяем раннюю и позднюю даты
+                const earlyDate = start < end ? start : end;
+                const lateDate = start < end ? end : start;
+
+                // Рассчитываем разницу в днях
+                const diffTime = Math.abs(lateDate - earlyDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                // Форматируем даты для отображения
+                const formatDateDisplay = (date) => {
+                    return date.toISOString().split('T')[0];
+                };
+
+                document.getElementById("periodDays").textContent = diffDays;
+                document.getElementById("periodDates").textContent =
+                    `${formatDateDisplay(earlyDate)} → ${formatDateDisplay(lateDate)}`;
+
+                periodInfo.style.display = 'block';
+            } else {
+                periodInfo.style.display = 'none';
+            }
+        }
+
+        // Проверка валидности дат (всегда валидны, так как можно выбрать любые даты)
+        function validateDates() {
+            const startDate = document.getElementById("start_date").value;
+            const endDate = document.getElementById("end_date").value;
+            const warningDiv = document.getElementById("dateWarning");
+            const submitBtn = document.getElementById("submitBtn");
+
+            if (startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+
+                // Если даты совпадают - показываем предупреждение
+                if (start.getTime() === end.getTime()) {
+                    warningDiv.textContent = "Даты начала и окончания совпадают. Выберите разные даты.";
+                    warningDiv.style.display = "block";
+                    submitBtn.disabled = true;
+                    return false;
+                } else {
+                    warningDiv.style.display = "none";
+                    submitBtn.disabled = false;
+                    return true;
+                }
+            }
+
+            warningDiv.style.display = "none";
+            submitBtn.disabled = false;
+            return true;
+        }
 
         // Обработка быстрого выбора периода
         document.querySelectorAll('.quick-date-btn').forEach(button => {
@@ -299,10 +428,72 @@
                 document.getElementById('start_date').value = formatDate(startDate);
                 document.getElementById('end_date').value = formatDate(endDate);
 
-                // Обновляем minDate для конечной даты
-                const endDatePicker = document.querySelector("#end_date")._flatpickr;
-                endDatePicker.set("minDate", formatDate(startDate));
+                // Обновляем календари
+                startDatePicker.setDate(startDate);
+                endDatePicker.setDate(endDate);
+
+                updatePeriodInfo();
+                validateDates();
             });
+        });
+
+        // Кнопка "Поменять даты местами"
+        document.getElementById('swapDatesBtn').addEventListener('click', function() {
+            const startDateInput = document.getElementById('start_date');
+            const endDateInput = document.getElementById('end_date');
+
+            // Меняем значения местами
+            const temp = startDateInput.value;
+            startDateInput.value = endDateInput.value;
+            endDateInput.value = temp;
+
+            // Обновляем календари
+            if (startDateInput.value) {
+                startDatePicker.setDate(startDateInput.value);
+            }
+            if (endDateInput.value) {
+                endDatePicker.setDate(endDateInput.value);
+            }
+
+            updatePeriodInfo();
+            validateDates();
+        });
+
+        // Проверка дат при отправке формы
+        document.getElementById('historicalForm').addEventListener('submit', function(e) {
+            if (!validateDates()) {
+                e.preventDefault();
+                return false;
+            }
+
+            const startDate = new Date(document.getElementById("start_date").value);
+            const endDate = new Date(document.getElementById("end_date").value);
+
+            // Определяем правильный порядок дат (от ранней к поздней)
+            let earlyDate = startDate;
+            let lateDate = endDate;
+
+            if (startDate > endDate) {
+                // Меняем местами в скрытых полях
+                earlyDate = endDate;
+                lateDate = startDate;
+
+                // Обновляем значения в форме
+                document.getElementById('start_date').value = earlyDate.toISOString().split('T')[0];
+                document.getElementById('end_date').value = lateDate.toISOString().split('T')[0];
+            }
+
+            const diffTime = Math.abs(lateDate - earlyDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays > 365 * 5) { // Ограничение на 5 лет
+                if (!confirm(`Выбран период в ${diffDays} дней (более 5 лет). Получение данных может занять некоторое время. Продолжить?`)) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+
+            return true;
         });
 
         // Автоматическое закрытие алертов
@@ -314,6 +505,12 @@
                 bsAlert.close();
             });
         }, 5000);
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePeriodInfo();
+            validateDates();
+        });
     </script>
 </body>
 </html>

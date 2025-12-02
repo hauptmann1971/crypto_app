@@ -24,6 +24,11 @@ import hmac
 from dataclasses import dataclass
 from typing import Optional, Dict, List, Any
 
+import numpy as np
+from scipy import stats
+import plotly.graph_objs as go
+import plotly.utils
+
 # Инициализация
 load_dotenv()
 
@@ -595,6 +600,149 @@ def get_main_crypto_rates_to_btc(timeout=30, coin_ids_to_fetch=None):
     return {}
 
 
+def generate_historical_plot(df, crypto, currency, start_date, end_date):
+    """Генерирует график исторических данных и возвращает base64 строку"""
+    try:
+        matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+        import matplotlib.dates as mdates
+
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10), gridspec_kw={'height_ratios': [3, 1]})
+
+        # График цены
+        ax1.plot(df['timestamp'], df['price'], 'b-', linewidth=2, label='Цена')
+        ax1.set_title(f'{crypto.upper()}/{currency.upper()} - Исторические данные ({start_date} - {end_date})',
+                      fontsize=14, fontweight='bold')
+        ax1.set_ylabel(f'Цена ({currency.upper()})', fontsize=12)
+        ax1.grid(True, alpha=0.3)
+        ax1.legend()
+
+        # Форматирование оси времени
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+        ax1.xaxis.set_major_locator(mdates.AutoDateLocator())
+        plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45, ha='right')
+
+        # График процентных изменений
+        if 'returns_pct' in df.columns:
+            colors = ['green' if x >= 0 else 'red' for x in df['returns_pct']]
+            ax2.bar(df['timestamp'], df['returns_pct'], color=colors, alpha=0.7, width=0.8)
+            ax2.axhline(y=0, color='black', linestyle='-', linewidth=0.5)
+            ax2.set_xlabel('Дата', fontsize=12)
+            ax2.set_ylabel('Изменение (%)', fontsize=12)
+            ax2.grid(True, alpha=0.3)
+
+            # Форматирование оси времени для второго графика
+            ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+            ax2.xaxis.set_major_locator(mdates.AutoDateLocator())
+            plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right')
+
+        plt.tight_layout()
+
+        # Сохраняем в буфер
+        img = io.BytesIO()
+        plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
+        img.seek(0)
+        plt.close()
+
+        # Конвертируем в base64
+        plot_url = base64.b64encode(img.getvalue()).decode()
+        return f"data:image/png;base64,{plot_url}"
+
+    except Exception as e:
+        logging.error(f"Ошибка генерации исторического графика: {e}")
+        return None
+
+
+# Обновленная функция get_historical_price_range (добавить в app.py, если её нет)
+def get_historical_price_range(coin_id='bitcoin', vs_currency='usd',
+                               start_date='2024-01-01', end_date=None):
+    """Получить исторические цены для выбранного периода"""
+    import requests
+    import pandas as pd
+    from datetime import datetime
+
+    # Если конечная дата не указана - берем сегодня
+    if end_date is None:
+        end_date = datetime.now().strftime('%Y-%m-%d')
+
+    # Преобразуем строки в datetime
+    start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+    end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+
+    # Проверяем, что даты корректны
+    if start_dt >= end_dt:
+        raise ValueError("Дата начала должна быть раньше даты окончания")
+
+    # Рассчитываем количество дней между датами
+    days_diff = (end_dt - start_dt).days
+
+    if days_diff < 1:
+        raise ValueError("Период должен быть хотя бы 1 день")
+
+    # Определяем интервал в зависимости от периода
+    if days_diff <= 90:
+        days_param = days_diff
+        interval = 'daily'
+    else:
+        days_param = days_diff
+        interval = 'daily'
+        logging.info(f"Для периода >90 дней данные будут агрегированными")
+
+    # URL для запроса
+    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
+
+    params = {
+        'vs_currency': vs_currency,
+        'days': days_param,
+        'interval': interval
+    }
+
+    try:
+        logging.info(f"Загрузка данных {coin_id.upper()}/{vs_currency.upper()}...")
+        logging.info(f"Период: {start_date} - {end_date} ({days_diff} дней)")
+
+        response = requests.get(url, params=params, timeout=15)
+        response.raise_for_status()
+
+        data = response.json()
+
+        # Преобразуем данные в DataFrame
+        timestamps = [pd.to_datetime(x[0], unit='ms') for x in data['prices']]
+        prices = [x[1] for x in data['prices']]
+
+        df = pd.DataFrame({
+            'timestamp': timestamps,
+            'price': prices
+        })
+
+        # Фильтруем по нашему диапазону дат
+        mask = (df['timestamp'] >= start_dt) & (df['timestamp'] <= end_dt)
+        df = df.loc[mask].copy()
+
+        if len(df) == 0:
+            logging.warning("Нет данных для указанного периода")
+            return None
+
+        # Сортируем по дате
+        df = df.sort_values('timestamp').reset_index(drop=True)
+
+        # Добавляем дополнительные колонки
+        df['date'] = df['timestamp'].dt.date
+        df['returns_pct'] = df['price'].pct_change() * 100
+
+        logging.info(f"Успешно загружено {len(df)} записей")
+        logging.info(f"Диапазон цен: ${df['price'].min():.2f} - ${df['price'].max():.2f}")
+
+        return df
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Ошибка запроса: {e}")
+        raise
+    except Exception as e:
+        logging.error(f"Ошибка обработки данных: {e}")
+        raise
+
+
 class CoinGeckoAPI:
     def __init__(self):
         self.base_url = "https://api.coingecko.com/api/v3"
@@ -679,6 +827,698 @@ class CoinGeckoAPI:
         except Exception as e:
             logging.error(f"Ошибка генерации свечного графика: {e}")
             return None
+
+
+def calculate_correlation_with_btc(coin_id, vs_currency='usd', days=30, timeframe='1d'):
+    """Рассчитывает корреляцию выбранной криптовалюты с Bitcoin с обработкой ошибок"""
+    try:
+        # Проверяем, не является ли это Bitcoin
+        if coin_id.lower() == 'bitcoin':
+            logging.info("Пропускаем Bitcoin (корреляция с самим собой = 1)")
+            return {
+                'coin_id': 'bitcoin',
+                'correlation': 1.0,
+                'r_squared': 1.0,
+                'p_value': 0.0,
+                'beta': 1.0,
+                'alpha': 0.0,
+                'btc_std': 0.0,
+                'coin_std': 0.0,
+                'n_observations': 0,
+                'significant': True,
+                'correlation_strength': 'perfect',
+                'correlation_direction': 'positive'
+            }
+
+        logging.info(f"Начинаю расчет корреляции для {coin_id}...")
+
+        # Получаем данные для Bitcoin
+        logging.info(f"Получаю данные Bitcoin/{vs_currency}...")
+        btc_data = get_historical_price_data('bitcoin', vs_currency, days)
+        if btc_data is None or btc_data.empty:
+            logging.error(f"Не удалось получить данные для Bitcoin")
+            return None
+
+        # Получаем данные для выбранной криптовалюты
+        logging.info(f"Получаю данные {coin_id}/{vs_currency}...")
+        coin_data = get_historical_price_data(coin_id, vs_currency, days)
+        if coin_data is None or coin_data.empty:
+            logging.error(f"Не удалось получить данные для {coin_id}")
+            return None
+
+        # Выравниваем данные по датам
+        common_dates = set(btc_data['timestamp']).intersection(set(coin_data['timestamp']))
+        if len(common_dates) < 2:
+            logging.error(f"Недостаточно общих дат для {coin_id}: {len(common_dates)}")
+            return None
+
+        # Фильтруем данные по общим датам
+        btc_filtered = btc_data[btc_data['timestamp'].isin(common_dates)].sort_values('timestamp')
+        coin_filtered = coin_data[coin_data['timestamp'].isin(common_dates)].sort_values('timestamp')
+
+        # Проверяем, что данные синхронизированы
+        if len(btc_filtered) != len(coin_filtered):
+            logging.error(f"Разное количество точек: BTC={len(btc_filtered)}, {coin_id}={len(coin_filtered)}")
+            return None
+
+        # Агрегируем данные в зависимости от таймфрейма
+        if timeframe == '1d':
+            # Дневные данные уже есть
+            btc_prices = btc_filtered['price'].values
+            coin_prices = coin_filtered['price'].values
+        elif timeframe == '1w':
+            # Недельные данные
+            btc_filtered['week'] = btc_filtered['timestamp'].dt.isocalendar().week
+            btc_filtered['year'] = btc_filtered['timestamp'].dt.isocalendar().year
+            coin_filtered['week'] = coin_filtered['timestamp'].dt.isocalendar().week
+            coin_filtered['year'] = coin_filtered['timestamp'].dt.isocalendar().year
+
+            btc_weekly = btc_filtered.groupby(['year', 'week'])['price'].last()
+            coin_weekly = coin_filtered.groupby(['year', 'week'])['price'].last()
+
+            # Выравниваем данные
+            common_indices = set(btc_weekly.index).intersection(set(coin_weekly.index))
+            if len(common_indices) < 2:
+                logging.error(f"Недостаточно общих недель для {coin_id}")
+                return None
+
+            btc_prices = btc_weekly.loc[list(common_indices)].values
+            coin_prices = coin_weekly.loc[list(common_indices)].values
+        elif timeframe == '1M':
+            # Месячные данные
+            btc_filtered['month'] = btc_filtered['timestamp'].dt.strftime('%Y-%m')
+            coin_filtered['month'] = coin_filtered['timestamp'].dt.strftime('%Y-%m')
+
+            btc_monthly = btc_filtered.groupby('month')['price'].last()
+            coin_monthly = coin_filtered.groupby('month')['price'].last()
+
+            # Выравниваем данные
+            common_months = set(btc_monthly.index).intersection(set(coin_monthly.index))
+            if len(common_months) < 2:
+                logging.error(f"Недостаточно общих месяцев для {coin_id}")
+                return None
+
+            btc_prices = btc_monthly.loc[list(common_months)].values
+            coin_prices = coin_monthly.loc[list(common_months)].values
+        else:
+            logging.error(f"Неизвестный таймфрейм: {timeframe}")
+            return None
+
+        # Проверяем, что есть достаточно данных
+        if len(btc_prices) < 5 or len(coin_prices) < 5:
+            logging.error(f"Недостаточно данных после агрегации: {len(btc_prices)} точек")
+            return None
+
+        # Рассчитываем процентные изменения
+        btc_returns = np.diff(btc_prices) / btc_prices[:-1]
+        coin_returns = np.diff(coin_prices) / coin_prices[:-1]
+
+        # Рассчитываем корреляцию
+        correlation, p_value = stats.pearsonr(btc_returns, coin_returns)
+
+        # Проверяем на NaN
+        if np.isnan(correlation) or np.isnan(p_value):
+            logging.error(f"Результат корреляции содержит NaN для {coin_id}")
+            return None
+
+        # Рассчитываем остальные метрики
+        r_squared = correlation ** 2
+
+        # Бета-коэффициент
+        covariance = np.cov(btc_returns, coin_returns)[0, 1]
+        btc_variance = np.var(btc_returns)
+        beta = covariance / btc_variance if btc_variance != 0 else 0
+
+        # Альфа-коэффициент
+        coin_mean_return = np.mean(coin_returns)
+        btc_mean_return = np.mean(btc_returns)
+        alpha = coin_mean_return - beta * btc_mean_return
+
+        # Стандартные отклонения
+        btc_std = np.std(btc_returns)
+        coin_std = np.std(coin_returns)
+
+        # Результаты
+        results = {
+            'coin_id': coin_id,
+            'vs_currency': vs_currency,
+            'timeframe': timeframe,
+            'days': days,
+            'correlation': float(correlation),
+            'r_squared': float(r_squared),
+            'p_value': float(p_value),
+            'beta': float(beta),
+            'alpha': float(alpha),
+            'btc_std': float(btc_std),
+            'coin_std': float(coin_std),
+            'n_observations': len(btc_returns),
+            'significant': p_value < 0.05,
+            'correlation_strength': get_correlation_strength(abs(correlation)),
+            'correlation_direction': 'positive' if correlation > 0 else 'negative',
+            'btc_mean_return': float(btc_mean_return),
+            'coin_mean_return': float(coin_mean_return)
+        }
+
+        logging.info(f"Успешно рассчитана корреляция для {coin_id}: {correlation:.3f}")
+
+        return results
+
+    except Exception as e:
+        logging.error(f"Ошибка расчета корреляции для {coin_id}: {e}")
+        import traceback
+        logging.error(traceback.format_exc())
+        return None
+
+
+def get_correlation_strength(corr_value):
+    """Определяет силу корреляции"""
+    abs_corr = abs(corr_value)
+    if abs_corr >= 0.9:
+        return 'very strong'
+    elif abs_corr >= 0.7:
+        return 'strong'
+    elif abs_corr >= 0.5:
+        return 'moderate'
+    elif abs_corr >= 0.3:
+        return 'weak'
+    else:
+        return 'very weak'
+
+
+# app.py - исправленная функция get_historical_price_data
+def get_historical_price_data(coin_id, vs_currency='usd', days=30):
+    """Получает исторические данные для расчета корреляции с обработкой ошибок"""
+    try:
+        # Проверяем доступность API
+        ping_url = "https://api.coingecko.com/api/v3/ping"
+        ping_response = requests.get(ping_url, timeout=5)
+
+        if ping_response.status_code != 200:
+            logging.error(f"CoinGecko API недоступен. Статус: {ping_response.status_code}")
+            return None
+
+        url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
+
+        params = {
+            'vs_currency': vs_currency,
+            'days': days,
+            'interval': 'daily'
+        }
+
+        logging.info(f"Запрашиваю данные для {coin_id}/{vs_currency} за {days} дней...")
+
+        response = requests.get(url, params=params, timeout=30)
+
+        if response.status_code == 429:
+            logging.error(f"Превышен лимит запросов для {coin_id}. Подождите минуту.")
+            return None
+        elif response.status_code == 404:
+            logging.error(f"Криптовалюта {coin_id} не найдена")
+            return None
+        elif response.status_code != 200:
+            logging.error(f"Ошибка API для {coin_id}: {response.status_code}")
+            logging.error(f"Ответ: {response.text[:200]}")
+            return None
+
+        data = response.json()
+
+        # Проверяем структуру данных
+        if 'prices' not in data or not data['prices']:
+            logging.error(f"Нет данных о ценах для {coin_id}")
+            return None
+
+        # Преобразуем данные в DataFrame
+        timestamps = []
+        prices = []
+
+        for item in data['prices']:
+            if len(item) >= 2:
+                timestamps.append(pd.to_datetime(item[0], unit='ms'))
+                prices.append(item[1])
+
+        if len(prices) < 2:
+            logging.error(f"Недостаточно данных для {coin_id}: {len(prices)} точек")
+            return None
+
+        df = pd.DataFrame({
+            'timestamp': timestamps,
+            'price': prices
+        })
+
+        # Сортируем по дате
+        df = df.sort_values('timestamp').reset_index(drop=True)
+
+        logging.info(f"Получено {len(df)} записей для {coin_id}")
+
+        return df
+
+    except requests.exceptions.Timeout:
+        logging.error(f"Таймаут при запросе данных для {coin_id}")
+        return None
+    except requests.exceptions.ConnectionError:
+        logging.error(f"Ошибка соединения при запросе {coin_id}")
+        return None
+    except Exception as e:
+        logging.error(f"Ошибка получения данных для {coin_id}: {e}")
+        import traceback
+        logging.error(traceback.format_exc())
+        return None
+
+
+def calculate_multiple_correlations(coin_ids, vs_currency='usd', days=30, timeframe='1d'):
+    """Рассчитывает корреляции для нескольких криптовалют"""
+    results = {}
+
+    for coin_id in coin_ids:
+        if coin_id == 'bitcoin':
+            continue  # Пропускаем Bitcoin
+
+        logging.info(f"Рассчитываю корреляцию для {coin_id}...")
+        correlation_result = calculate_correlation_with_btc(
+            coin_id=coin_id,
+            vs_currency=vs_currency,
+            days=days,
+            timeframe=timeframe
+        )
+
+        if correlation_result:
+            results[coin_id] = correlation_result
+
+    # Сортируем по абсолютному значению корреляции
+    sorted_results = dict(sorted(
+        results.items(),
+        key=lambda x: abs(x[1]['correlation']),
+        reverse=True
+    ))
+
+    return sorted_results
+
+
+def generate_correlation_plot(results):
+    """Генерирует график корреляций"""
+    try:
+        if not results:
+            return None
+
+        # Подготовка данных
+        coin_names = []
+        correlations = []
+        colors = []
+        strengths = []
+
+        for coin_id, data in results.items():
+            coin_names.append(coin_id.upper())
+            correlations.append(data['correlation'])
+
+            # Цвет в зависимости от направления корреляции
+            if data['correlation'] > 0:
+                colors.append('rgba(46, 204, 113, 0.7)')  # Зеленый
+            else:
+                colors.append('rgba(231, 76, 60, 0.7)')  # Красный
+
+            strengths.append(data['correlation_strength'])
+
+        # Создаем график
+        fig = go.Figure()
+
+        fig.add_trace(go.Bar(
+            x=coin_names,
+            y=correlations,
+            marker_color=colors,
+            text=[f"{corr:.3f}" for corr in correlations],
+            textposition='outside',
+            hovertemplate=(
+                    "<b>%{x}</b><br>" +
+                    "Корреляция: %{y:.3f}<br>" +
+                    "Сила: %{customdata}<br>" +
+                    "<extra></extra>"
+            ),
+            customdata=strengths,
+            name='Корреляция с BTC'
+        ))
+
+        # Добавляем горизонтальную линию на 0
+        fig.add_hline(
+            y=0,
+            line_dash="dash",
+            line_color="gray",
+            opacity=0.5
+        )
+
+        # Настройки макета
+        fig.update_layout(
+            title={
+                'text': 'Корреляция криптовалют с Bitcoin',
+                'x': 0.5,
+                'xanchor': 'center'
+            },
+            xaxis_title="Криптовалюта",
+            yaxis_title="Коэффициент корреляции",
+            yaxis=dict(
+                range=[-1.1, 1.1],
+                gridcolor='rgba(128, 128, 128, 0.2)'
+            ),
+            plot_bgcolor='white',
+            showlegend=False,
+            height=500,
+            margin=dict(l=50, r=50, t=80, b=50)
+        )
+
+        # Конвертируем в JSON для передачи в шаблон
+        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+        return graphJSON
+
+    except Exception as e:
+        logging.error(f"Ошибка генерации графика корреляции: {e}")
+        return None
+
+
+def calculate_multiple_correlations_with_retry(coin_ids, vs_currency='usd', days=30, timeframe='1d', max_retries=3):
+    """Рассчитывает корреляции с повторными попытками"""
+    results = {}
+
+    for coin_id in coin_ids:
+        if coin_id == 'bitcoin':
+            continue  # Пропускаем Bitcoin
+
+        logging.info(f"Обрабатываю {coin_id}...")
+
+        # Пробуем несколько раз с задержкой
+        for attempt in range(max_retries):
+            try:
+                correlation_result = calculate_correlation_with_btc(
+                    coin_id=coin_id,
+                    vs_currency=vs_currency,
+                    days=days,
+                    timeframe=timeframe
+                )
+
+                if correlation_result:
+                    results[coin_id] = correlation_result
+                    logging.info(f"Успешно: {coin_id} (попытка {attempt + 1})")
+                    break
+                else:
+                    if attempt < max_retries - 1:
+                        wait_time = (attempt + 1) * 2  # Увеличиваем задержку
+                        logging.warning(f"Повторная попытка для {coin_id} через {wait_time} сек...")
+                        time.sleep(wait_time)
+                    else:
+                        logging.error(f"Не удалось рассчитать корреляцию для {coin_id} после {max_retries} попыток")
+
+            except Exception as e:
+                logging.error(f"Ошибка при попытке {attempt + 1} для {coin_id}: {e}")
+                if attempt < max_retries - 1:
+                    time.sleep((attempt + 1) * 2)
+
+    # Сортируем по абсолютному значению корреляции
+    if results:
+        sorted_results = dict(sorted(
+            results.items(),
+            key=lambda x: abs(x[1]['correlation']),
+            reverse=True
+        ))
+        return sorted_results
+
+    return None
+
+
+class BinanceAPI:
+    def __init__(self):
+        self.base_url = "https://api.binance.com/api/v3"
+        self.symbols_cache = {}
+
+    def get_all_symbols(self):
+        """Получает все доступные торговые пары на Binance"""
+        try:
+            if self.symbols_cache:
+                return self.symbols_cache
+
+            url = f"{self.base_url}/exchangeInfo"
+            response = requests.get(url, timeout=10)
+            data = response.json()
+
+            symbols = []
+            for symbol_info in data['symbols']:
+                if symbol_info['status'] == 'TRADING':  # Только активные пары
+                    symbols.append(symbol_info['symbol'])
+
+            self.symbols_cache = symbols
+            return symbols
+
+        except Exception as e:
+            logging.error(f"Ошибка получения символов Binance: {e}")
+            return []
+
+    def get_historical_klines(self, symbol, interval='1d', limit=100, start_time=None, end_time=None):
+        """
+        Получает исторические данные свечей (klines) с Binance
+
+        Args:
+            symbol: Торговая пара (например, 'BTCUSDT')
+            interval: Интервал ('1d', '1w', '1M' и т.д.)
+            limit: Количество свечей
+            start_time: Время начала (timestamp в миллисекундах)
+            end_time: Время окончания (timestamp в миллисекундах)
+
+        Returns:
+            DataFrame с колонками: timestamp, open, high, low, close, volume
+        """
+        try:
+            url = f"{self.base_url}/klines"
+            params = {
+                'symbol': symbol,
+                'interval': interval,
+                'limit': limit
+            }
+
+            if start_time:
+                params['startTime'] = start_time
+            if end_time:
+                params['endTime'] = end_time
+
+            response = requests.get(url, params=params, timeout=15)
+            response.raise_for_status()
+            data = response.json()
+
+            # Преобразуем в DataFrame
+            df = pd.DataFrame(data, columns=[
+                'timestamp', 'open', 'high', 'low', 'close', 'volume',
+                'close_time', 'quote_asset_volume', 'number_of_trades',
+                'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume', 'ignore'
+            ])
+
+            # Конвертируем типы данных
+            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+            for col in ['open', 'high', 'low', 'close', 'volume']:
+                df[col] = pd.to_numeric(df[col])
+
+            # Оставляем только нужные колонки
+            df = df[['timestamp', 'open', 'high', 'low', 'close', 'volume']]
+
+            return df
+
+        except Exception as e:
+            logging.error(f"Ошибка получения данных для {symbol}: {e}")
+            return None
+
+    def get_daily_returns(self, symbol, days=30):
+        """Получает дневные доходности для символа"""
+        try:
+            # Рассчитываем временные рамки
+            end_time = int(time.time() * 1000)  # Текущее время в миллисекундах
+            start_time = end_time - (days * 24 * 60 * 60 * 1000)  # days дней назад
+
+            # Получаем данные
+            df = self.get_historical_klines(
+                symbol=symbol,
+                interval='1d',
+                limit=days,
+                start_time=start_time,
+                end_time=end_time
+            )
+
+            if df is None or df.empty:
+                return None
+
+            # Рассчитываем процентные изменения
+            prices = df['close'].values
+            if len(prices) < 2:
+                return None
+
+            returns = np.diff(prices) / prices[:-1] * 100
+            return returns
+
+        except Exception as e:
+            logging.error(f"Ошибка расчета доходностей для {symbol}: {e}")
+            return None
+
+    def get_available_crypto_pairs(self, vs_currency='USDT'):
+        """Получает список криптовалютных пар с указанной валютой"""
+        try:
+            symbols = self.get_all_symbols()
+            crypto_pairs = {}
+
+            for symbol in symbols:
+                if symbol.endswith(vs_currency):
+                    crypto = symbol.replace(vs_currency, '')
+                    crypto_pairs[crypto.lower()] = symbol
+
+            return crypto_pairs
+
+        except Exception as e:
+            logging.error(f"Ошибка получения пар: {e}")
+            return {}
+
+
+# Создаем экземпляр API
+binance_api = BinanceAPI()
+
+
+def calculate_correlation_with_btc_binance(coin_symbol, vs_currency='USDT', days=30):
+    """
+    Рассчитывает корреляцию криптовалюты с Bitcoin через Binance API
+
+    Args:
+        coin_symbol: Символ криптовалюты (например, 'ETH' для Ethereum)
+        vs_currency: Валюта котировки ('USDT', 'BUSD', 'BTC')
+        days: Количество дней для анализа
+
+    Returns:
+        dict: Результаты корреляции
+    """
+    try:
+        # Формируем символы для Binance
+        btc_symbol = f"BTC{vs_currency}"
+        coin_symbol_full = f"{coin_symbol}{vs_currency}"
+
+        logging.info(f"Рассчитываю корреляцию для {coin_symbol_full} с {btc_symbol}")
+
+        # Получаем доходности для Bitcoin
+        logging.info(f"Получаю данные для {btc_symbol}...")
+        btc_returns = binance_api.get_daily_returns(btc_symbol, days)
+        if btc_returns is None or len(btc_returns) < 5:
+            logging.error(f"Не удалось получить данные для {btc_symbol}")
+            return None
+
+        # Получаем доходности для криптовалюты
+        logging.info(f"Получаю данные для {coin_symbol_full}...")
+        coin_returns = binance_api.get_daily_returns(coin_symbol_full, days)
+        if coin_returns is None or len(coin_returns) < 5:
+            logging.error(f"Не удалось получить данные для {coin_symbol_full}")
+            return None
+
+        # Выравниваем массивы по минимальной длине
+        min_len = min(len(btc_returns), len(coin_returns))
+        btc_returns_aligned = btc_returns[:min_len]
+        coin_returns_aligned = coin_returns[:min_len]
+
+        if min_len < 5:
+            logging.error(f"Недостаточно данных после выравнивания: {min_len}")
+            return None
+
+        # Рассчитываем корреляцию
+        correlation, p_value = stats.pearsonr(btc_returns_aligned, coin_returns_aligned)
+
+        # Рассчитываем остальные метрики
+        r_squared = correlation ** 2
+
+        # Бета-коэффициент
+        covariance = np.cov(btc_returns_aligned, coin_returns_aligned)[0, 1]
+        btc_variance = np.var(btc_returns_aligned)
+        beta = covariance / btc_variance if btc_variance != 0 else 0
+
+        # Альфа-коэффициент
+        coin_mean_return = np.mean(coin_returns_aligned)
+        btc_mean_return = np.mean(btc_returns_aligned)
+        alpha = coin_mean_return - beta * btc_mean_return
+
+        # Стандартные отклонения
+        btc_std = np.std(btc_returns_aligned)
+        coin_std = np.std(coin_returns_aligned)
+
+        # Определяем силу корреляции
+        correlation_strength = get_correlation_strength(abs(correlation))
+
+        # Результаты
+        results = {
+            'coin_symbol': coin_symbol,
+            'vs_currency': vs_currency,
+            'days': days,
+            'correlation': float(correlation),
+            'r_squared': float(r_squared),
+            'p_value': float(p_value),
+            'beta': float(beta),
+            'alpha': float(alpha),
+            'btc_std': float(btc_std),
+            'coin_std': float(coin_std),
+            'n_observations': min_len,
+            'significant': p_value < 0.05,
+            'correlation_strength': correlation_strength,
+            'correlation_direction': 'positive' if correlation > 0 else 'negative',
+            'btc_mean_return': float(btc_mean_return),
+            'coin_mean_return': float(coin_mean_return),
+            'btc_symbol': btc_symbol,
+            'coin_symbol_full': coin_symbol_full
+        }
+
+        logging.info(f"Успешно рассчитана корреляция: {correlation:.3f} для {coin_symbol}")
+
+        return results
+
+    except Exception as e:
+        logging.error(f"Ошибка расчета корреляции через Binance: {e}")
+        import traceback
+        logging.error(traceback.format_exc())
+        return None
+
+
+def calculate_multiple_correlations_binance(coin_symbols, vs_currency='USDT', days=30):
+    """Рассчитывает корреляции для нескольких криптовалют через Binance"""
+    results = {}
+    successful = 0
+    failed = []
+
+    # Получаем доступные пары
+    available_pairs = binance_api.get_available_crypto_pairs(vs_currency)
+
+    for coin_symbol in coin_symbols:
+        # Проверяем, доступна ли пара
+        coin_lower = coin_symbol.lower()
+        if coin_lower not in available_pairs:
+            logging.warning(f"Пара {coin_symbol}{vs_currency} не найдена на Binance")
+            failed.append(coin_symbol)
+            continue
+
+        logging.info(f"Обрабатываю {coin_symbol}...")
+
+        # Рассчитываем корреляцию
+        correlation_result = calculate_correlation_with_btc_binance(
+            coin_symbol=coin_symbol.upper(),
+            vs_currency=vs_currency,
+            days=days
+        )
+
+        if correlation_result:
+            results[coin_symbol] = correlation_result
+            successful += 1
+            logging.info(f"✓ Успешно: {coin_symbol}")
+
+            # Небольшая задержка, чтобы не перегружать API
+            time.sleep(0.1)
+        else:
+            failed.append(coin_symbol)
+            logging.warning(f"✗ Не удалось: {coin_symbol}")
+
+    # Сортируем по абсолютному значению корреляции
+    if results:
+        sorted_results = dict(sorted(
+            results.items(),
+            key=lambda x: abs(x[1]['correlation']),
+            reverse=True
+        ))
+        return sorted_results, successful, failed
+
+    return None, successful, failed
 
 
 # Flask маршруты
@@ -917,8 +1757,6 @@ def index():
                            pending_requests_count=pending_requests_count,
                            processing_requests_count=processing_requests_count,
                            bot_username=Config.BOT_USERNAME)
-
-# ... (остальной код app.py без изменений) ...
 
 
 
@@ -1312,8 +2150,8 @@ def show_next_crypto_rates_to_btc():
                            has_next=bool(remaining_count)) # Показываем кнопку "Следующие пары...", если есть что показывать
 
 
-# app.py - Добавить после существующих маршрутов
 
+# app.py - обновленная функция historical_data
 @app.route('/historical', methods=['GET', 'POST'])
 def historical_data():
     """Страница с историческими данными по выбранной паре"""
@@ -1334,6 +2172,15 @@ def historical_data():
         currency = request.form.get('currency', default_currency)
         start_date = request.form.get('start_date', default_start_date)
         end_date = request.form.get('end_date', default_end_date)
+
+        # Автоматически исправляем, если дата начала позже даты окончания
+        start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+        end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+
+        if start_dt > end_dt:
+            # Меняем даты местами
+            start_date, end_date = end_date, start_date
+            flash("Даты были автоматически переставлены, так как дата начала была позже даты окончания", 'info')
 
         # Сохраняем в сессию для запоминания выбора
         session['historical_crypto'] = crypto
@@ -1399,147 +2246,254 @@ def historical_data():
                            user=user)
 
 
-def generate_historical_plot(df, crypto, currency, start_date, end_date):
-    """Генерирует график исторических данных и возвращает base64 строку"""
-    try:
-        matplotlib.use('Agg')
-        import matplotlib.pyplot as plt
-        import matplotlib.dates as mdates
+@app.route('/correlation', methods=['GET', 'POST'])
+def correlation_analysis():
+    """Страница анализа корреляции с Bitcoin"""
+    user = session.get('user')
+    correlation_results = None
+    plot_json = None
+    error = None
+    summary_stats = None
+    successful_calculations = 0
+    failed_calculations = []
 
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10), gridspec_kw={'height_ratios': [3, 1]})
+    # Значения по умолчанию
+    default_cryptos = ['ethereum', 'binancecoin', 'solana', 'cardano', 'ripple']
+    default_days = 30  # Начинаем с 30 дней для скорости
+    default_timeframe = '1d'
+    default_currency = 'usd'
 
-        # График цены
-        ax1.plot(df['timestamp'], df['price'], 'b-', linewidth=2, label='Цена')
-        ax1.set_title(f'{crypto.upper()}/{currency.upper()} - Исторические данные ({start_date} - {end_date})',
-                      fontsize=14, fontweight='bold')
-        ax1.set_ylabel(f'Цена ({currency.upper()})', fontsize=12)
-        ax1.grid(True, alpha=0.3)
-        ax1.legend()
+    if request.method == 'POST':
+        # Получаем данные из формы
+        selected_cryptos = request.form.getlist('cryptos')
+        days = int(request.form.get('days', default_days))
+        timeframe = request.form.get('timeframe', default_timeframe)
+        currency = request.form.get('currency', default_currency)
 
-        # Форматирование оси времени
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-        ax1.xaxis.set_major_locator(mdates.AutoDateLocator())
-        plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45, ha='right')
+        # Если не выбраны криптовалюты, используем значения по умолчанию
+        if not selected_cryptos:
+            selected_cryptos = default_cryptos
 
-        # График процентных изменений
-        if 'returns_pct' in df.columns:
-            colors = ['green' if x >= 0 else 'red' for x in df['returns_pct']]
-            ax2.bar(df['timestamp'], df['returns_pct'], color=colors, alpha=0.7, width=0.8)
-            ax2.axhline(y=0, color='black', linestyle='-', linewidth=0.5)
-            ax2.set_xlabel('Дата', fontsize=12)
-            ax2.set_ylabel('Изменение (%)', fontsize=12)
-            ax2.grid(True, alpha=0.3)
+        # Ограничиваем количество для производительности
+        if len(selected_cryptos) > 10:
+            selected_cryptos = selected_cryptos[:10]
+            flash(f"Выбрано слишком много криптовалют. Анализ будет проведен для первых 10.", 'warning')
 
-            # Форматирование оси времени для второго графика
-            ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-            ax2.xaxis.set_major_locator(mdates.AutoDateLocator())
-            plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right')
+        # Сохраняем в сессии
+        session['correlation_cryptos'] = selected_cryptos
+        session['correlation_days'] = days
+        session['correlation_timeframe'] = timeframe
+        session['correlation_currency'] = currency
 
-        plt.tight_layout()
+        try:
+            logging.info(f"Начинаю расчет корреляций для {len(selected_cryptos)} криптовалют...")
 
-        # Сохраняем в буфер
-        img = io.BytesIO()
-        plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
-        img.seek(0)
-        plt.close()
+            # Используем функцию с повторными попытками
+            correlation_results = calculate_multiple_correlations_with_retry(
+                coin_ids=selected_cryptos,
+                vs_currency=currency,
+                days=days,
+                timeframe=timeframe,
+                max_retries=2
+            )
 
-        # Конвертируем в base64
-        plot_url = base64.b64encode(img.getvalue()).decode()
-        return f"data:image/png;base64,{plot_url}"
+            if correlation_results:
+                successful_calculations = len(correlation_results)
+                failed_calculations = [c for c in selected_cryptos if c not in correlation_results and c != 'bitcoin']
 
-    except Exception as e:
-        logging.error(f"Ошибка генерации исторического графика: {e}")
-        return None
+                # Генерируем график
+                if successful_calculations > 0:
+                    plot_json = generate_correlation_plot(correlation_results)
 
+                    # Рассчитываем сводную статистику
+                    correlations = [data['correlation'] for data in correlation_results.values()]
+                    if correlations:
+                        summary_stats = {
+                            'average_correlation': np.mean(correlations),
+                            'median_correlation': np.median(correlations),
+                            'max_correlation': max(correlations),
+                            'min_correlation': min(correlations),
+                            'positive_count': sum(1 for c in correlations if c > 0),
+                            'negative_count': sum(1 for c in correlations if c < 0),
+                            'total_count': len(correlations)
+                        }
 
-# Обновленная функция get_historical_price_range (добавить в app.py, если её нет)
-def get_historical_price_range(coin_id='bitcoin', vs_currency='usd',
-                               start_date='2024-01-01', end_date=None):
-    """Получить исторические цены для выбранного периода"""
-    import requests
-    import pandas as pd
-    from datetime import datetime
+                    log_message(f"Успешно рассчитано {successful_calculations} корреляций из {len(selected_cryptos)}",
+                                'info', user_id=str(user['id']) if user else None)
 
-    # Если конечная дата не указана - берем сегодня
-    if end_date is None:
-        end_date = datetime.now().strftime('%Y-%m-%d')
+                    if failed_calculations:
+                        error = f"Не удалось рассчитать корреляцию для: {', '.join(failed_calculations)}"
+                        flash(f"Успешно: {successful_calculations}, Не удалось: {len(failed_calculations)}", 'warning')
+                else:
+                    error = "Не удалось рассчитать ни одной корреляции."
+            else:
+                error = "Не удалось рассчитать корреляции. Возможные причины: недоступность API, отсутствие данных или проблемы с соединением."
 
-    # Преобразуем строки в datetime
-    start_dt = datetime.strptime(start_date, '%Y-%m-%d')
-    end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+        except Exception as e:
+            error = f"Ошибка при расчете корреляций: {str(e)}"
+            logging.error(f"Ошибка анализа корреляции: {e}", exc_info=True)
 
-    # Проверяем, что даты корректны
-    if start_dt >= end_dt:
-        raise ValueError("Дата начала должна быть раньше даты окончания")
-
-    # Рассчитываем количество дней между датами
-    days_diff = (end_dt - start_dt).days
-
-    if days_diff < 1:
-        raise ValueError("Период должен быть хотя бы 1 день")
-
-    # Определяем интервал в зависимости от периода
-    if days_diff <= 90:
-        days_param = days_diff
-        interval = 'daily'
     else:
-        days_param = days_diff
-        interval = 'daily'
-        logging.info(f"Для периода >90 дней данные будут агрегированными")
+        # GET запрос - берем из сессии или используем значения по умолчанию
+        selected_cryptos = session.get('correlation_cryptos', default_cryptos)
+        days = session.get('correlation_days', default_days)
+        timeframe = session.get('correlation_timeframe', default_timeframe)
+        currency = session.get('correlation_currency', default_currency)
 
-    # URL для запроса
-    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
+    # Загружаем список криптовалют для выбора
+    all_cryptos = load_crypto_list()
 
-    params = {
-        'vs_currency': vs_currency,
-        'days': days_param,
-        'interval': interval
-    }
+    # Исключаем Bitcoin из списка для выбора
+    available_cryptos = [c for c in all_cryptos if c != 'bitcoin']
 
-    try:
-        logging.info(f"Загрузка данных {coin_id.upper()}/{vs_currency.upper()}...")
-        logging.info(f"Период: {start_date} - {end_date} ({days_diff} дней)")
+    # Периоды для анализа (начинаем с меньших для скорости)
+    days_options = [
+        {'value': '30', 'label': '30 дней (быстрее)'},
+        {'value': '90', 'label': '90 дней'},
+        {'value': '180', 'label': '180 дней'},
+        {'value': '365', 'label': '1 год (медленнее)'}
+    ]
 
-        response = requests.get(url, params=params, timeout=15)
-        response.raise_for_status()
+    timeframe_options = [
+        {'value': '1d', 'label': 'Дневной (1D)'},
+        {'value': '1w', 'label': 'Недельный (1W)'},
+        {'value': '1M', 'label': 'Месячный (1M)'}
+    ]
 
-        data = response.json()
+    return render_template('correlation.html',
+                           all_cryptos=available_cryptos[:50],  # Ограничиваем для производительности
+                           selected_cryptos=selected_cryptos,
+                           days=days,
+                           days_options=days_options,
+                           timeframe=timeframe,
+                           timeframe_options=timeframe_options,
+                           currency=currency,
+                           currencies=CURRENCIES,
+                           correlation_results=correlation_results,
+                           plot_json=plot_json,
+                           error=error,
+                           summary_stats=summary_stats,
+                           successful_calculations=successful_calculations,
+                           failed_calculations=failed_calculations,
+                           user=user)
 
-        # Преобразуем данные в DataFrame
-        timestamps = [pd.to_datetime(x[0], unit='ms') for x in data['prices']]
-        prices = [x[1] for x in data['prices']]
 
-        df = pd.DataFrame({
-            'timestamp': timestamps,
-            'price': prices
-        })
+@app.route('/correlation_binance', methods=['GET', 'POST'])
+def correlation_binance():
+    """Страница анализа корреляции через Binance API"""
+    user = session.get('user')
+    correlation_results = None
+    plot_json = None
+    error = None
+    summary_stats = None
+    successful = 0
+    failed = []
 
-        # Фильтруем по нашему диапазону дат
-        mask = (df['timestamp'] >= start_dt) & (df['timestamp'] <= end_dt)
-        df = df.loc[mask].copy()
+    # Популярные криптовалюты на Binance
+    default_cryptos = ['ETH', 'BNB', 'SOL', 'ADA', 'XRP', 'DOT', 'DOGE', 'MATIC', 'AVAX', 'LINK']
 
-        if len(df) == 0:
-            logging.warning("Нет данных для указанного периода")
-            return None
+    # Значения по умолчанию
+    default_days = 30
+    default_currency = 'USDT'
 
-        # Сортируем по дате
-        df = df.sort_values('timestamp').reset_index(drop=True)
+    if request.method == 'POST':
+        # Получаем данные из формы
+        selected_cryptos = request.form.get('cryptos', '').upper().split(',')
+        if not selected_cryptos or selected_cryptos[0] == '':
+            selected_cryptos = default_cryptos
+        else:
+            # Очищаем от пробелов
+            selected_cryptos = [c.strip() for c in selected_cryptos if c.strip()]
 
-        # Добавляем дополнительные колонки
-        df['date'] = df['timestamp'].dt.date
-        df['returns_pct'] = df['price'].pct_change() * 100
+        days = int(request.form.get('days', default_days))
+        currency = request.form.get('currency', default_currency)
 
-        logging.info(f"Успешно загружено {len(df)} записей")
-        logging.info(f"Диапазон цен: ${df['price'].min():.2f} - ${df['price'].max():.2f}")
+        # Ограничиваем количество
+        if len(selected_cryptos) > 15:
+            selected_cryptos = selected_cryptos[:15]
+            flash("Ограничено 15 криптовалютами для производительности", 'warning')
 
-        return df
+        # Сохраняем в сессии
+        session['correlation_binance_cryptos'] = selected_cryptos
+        session['correlation_binance_days'] = days
+        session['correlation_binance_currency'] = currency
 
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Ошибка запроса: {e}")
-        raise
-    except Exception as e:
-        logging.error(f"Ошибка обработки данных: {e}")
-        raise
+        try:
+            # Проверяем доступность Binance API
+            logging.info("Проверяю доступность Binance API...")
+            test_response = requests.get("https://api.binance.com/api/v3/ping", timeout=5)
+            if test_response.status_code != 200:
+                error = "Binance API временно недоступен. Попробуйте позже."
+                flash(error, 'error')
+            else:
+                # Рассчитываем корреляции
+                correlation_results, successful, failed = calculate_multiple_correlations_binance(
+                    coin_symbols=selected_cryptos,
+                    vs_currency=currency,
+                    days=days
+                )
+
+                if correlation_results:
+                    # Генерируем график
+                    plot_json = generate_correlation_plot(correlation_results)
+
+                    # Рассчитываем статистику
+                    correlations = [data['correlation'] for data in correlation_results.values()]
+                    if correlations:
+                        summary_stats = {
+                            'average_correlation': np.mean(correlations),
+                            'median_correlation': np.median(correlations),
+                            'max_correlation': max(correlations),
+                            'min_correlation': min(correlations),
+                            'positive_count': sum(1 for c in correlations if c > 0),
+                            'negative_count': sum(1 for c in correlations if c < 0),
+                            'total_count': len(correlations)
+                        }
+
+                    if successful > 0:
+                        flash(f"Успешно рассчитано: {successful} корреляций", 'success')
+                    if failed:
+                        flash(f"Не удалось: {len(failed)} криптовалют", 'warning')
+                else:
+                    error = "Не удалось рассчитать корреляции. Проверьте символы криптовалют."
+
+        except Exception as e:
+            error = f"Ошибка: {str(e)}"
+            logging.error(f"Ошибка в correlation_binance: {e}", exc_info=True)
+
+    else:
+        # GET запрос
+        selected_cryptos = session.get('correlation_binance_cryptos', default_cryptos)
+        days = session.get('correlation_binance_days', default_days)
+        currency = session.get('correlation_binance_currency', default_currency)
+
+    # Доступные валюты на Binance
+    currencies = ['USDT', 'BUSD', 'BTC', 'ETH', 'BNB']
+
+    # Периоды дней
+    days_options = [
+        {'value': '7', 'label': '7 дней'},
+        {'value': '30', 'label': '30 дней'},
+        {'value': '90', 'label': '90 дней'},
+        {'value': '180', 'label': '180 дней'}
+    ]
+
+    return render_template('correlation_binance.html',
+                           selected_cryptos=selected_cryptos,
+                           days=days,
+                           days_options=days_options,
+                           currency=currency,
+                           currencies=currencies,
+                           correlation_results=correlation_results,
+                           plot_json=plot_json,
+                           error=error,
+                           summary_stats=summary_stats,
+                           successful=successful,
+                           failed=failed,
+                           user=user)
+
+
+
 
 
 # Инициализация базы данных при импорте модуля

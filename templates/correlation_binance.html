@@ -1,0 +1,345 @@
+<!-- templates/correlation_binance.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корреляция с Bitcoin (Binance)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        .positive { color: #28a745; }
+        .negative { color: #dc3545; }
+        .crypto-badge {
+            font-size: 0.8rem;
+            margin: 2px;
+        }
+        #chart-container {
+            height: 500px;
+            width: 100%;
+        }
+        .back-button {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">📈 Binance Correlation</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('correlation_binance') }}">Корреляция (Binance)</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('historical_data') }}">История</a>
+                    </li>
+                </ul>
+                {% if user %}
+                <div class="user-info text-light">
+                    <span>{{ user.first_name }}</span>
+                    {% if user.username %}
+                    <span class="text-muted">@{{ user.username }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Кнопка возврата на главную -->
+        <div class="back-button">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                ← Назад на главную
+            </a>
+        </div>
+
+        <h1>📊 Корреляция с Bitcoin (Binance API)</h1>
+        <p class="text-muted">Быстрый и стабильный анализ через Binance</p>
+
+        <!-- Остальной код остается без изменений -->
+        <div class="alert alert-info">
+            <strong>Как использовать:</strong>
+            <ul class="mb-0">
+                <li>Вводите символы криптовалют через запятую (ETH, BNB, SOL)</li>
+                <li>Используйте заглавные буквы для символов</li>
+                <li>Доступные валюты: USDT, BUSD, BTC, ETH, BNB</li>
+                <li>Данные обновляются в реальном времени</li>
+            </ul>
+        </div>
+
+        <!-- Форма -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Криптовалюты (через запятую):</label>
+                            <input type="text" class="form-control" name="cryptos"
+                                   value="{{ ', '.join(selected_cryptos) }}"
+                                   placeholder="ETH, BNB, SOL, ADA, XRP">
+                            <small class="text-muted">Пример: ETH, BNB, SOL, ADA, XRP, DOT, DOGE</small>
+
+                            <div class="mt-2">
+                                <small class="text-muted">Быстрый выбор:</small><br>
+                                {% for crypto in ['ETH', 'BNB', 'SOL', 'ADA', 'XRP', 'DOT', 'DOGE', 'MATIC', 'AVAX', 'LINK'] %}
+                                <span class="badge bg-light text-dark crypto-badge" style="cursor: pointer;"
+                                      onclick="addCrypto('{{ crypto }}')">{{ crypto }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Период:</label>
+                            <select class="form-select" name="days">
+                                {% for option in days_options %}
+                                <option value="{{ option.value }}" {% if option.value == days|string %}selected{% endif %}>
+                                    {{ option.label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Валюта:</label>
+                            <select class="form-select" name="currency">
+                                {% for curr in currencies %}
+                                <option value="{{ curr }}" {% if curr == currency %}selected{% endif %}>
+                                    {{ curr }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                Рассчитать корреляцию
+                            </button>
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary ms-2">
+                                ← На главную
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Ошибки и предупреждения -->
+        {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        {% if failed %}
+        <div class="alert alert-warning">
+            <strong>Не удалось рассчитать для:</strong> {{ failed|join(', ') }}
+        </div>
+        {% endif %}
+
+        {% if successful > 0 %}
+        <div class="alert alert-success">
+            Успешно рассчитано корреляций: <strong>{{ successful }}</strong>
+        </div>
+        {% endif %}
+
+        <!-- График -->
+        {% if plot_json %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Визуализация корреляций</h5>
+            </div>
+            <div class="card-body">
+                <div id="chart-container"></div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Таблица результатов -->
+        {% if correlation_results %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Результаты корреляции</h5>
+                <span class="badge bg-primary">
+                    Период: {{ days }} дней | Валюта: {{ currency }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Криптовалюта</th>
+                                <th>Пара</th>
+                                <th>Корреляция</th>
+                                <th>Сила</th>
+                                <th>Beta</th>
+                                <th>Alpha</th>
+                                <th>Наблюдения</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for coin_symbol, data in correlation_results.items() %}
+                            <tr>
+                                <td><strong>{{ coin_symbol }}</strong></td>
+                                <td><code>{{ data.coin_symbol_full }}</code></td>
+                                <td>
+                                    <span class="{% if data.correlation > 0 %}positive{% else %}negative{% endif %} fw-bold">
+                                        {{ "%.4f"|format(data.correlation) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge
+                                        {% if data.correlation_strength == 'very strong' %}bg-success
+                                        {% elif data.correlation_strength == 'strong' %}bg-info
+                                        {% elif data.correlation_strength == 'moderate' %}bg-primary
+                                        {% elif data.correlation_strength == 'weak' %}bg-warning
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ data.correlation_strength }}
+                                    </span>
+                                </td>
+                                <td>{{ "%.4f"|format(data.beta) }}</td>
+                                <td>{{ "%.6f"|format(data.alpha) }}</td>
+                                <td>{{ data.n_observations }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Сводная статистика -->
+        {% if summary_stats %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Сводная статистика</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Средняя корреляция</h6>
+                                <p class="display-6 {% if summary_stats.average_correlation > 0 %}positive{% else %}negative{% endif %}">
+                                    {{ "%.4f"|format(summary_stats.average_correlation) }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Положительных</h6>
+                                <p class="display-6 positive">{{ summary_stats.positive_count }}</p>
+                                <small>из {{ summary_stats.total_count }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Максимальная</h6>
+                                <p class="display-6 positive">{{ "%.4f"|format(summary_stats.max_correlation) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Минимальная</h6>
+                                <p class="display-6 negative">{{ "%.4f"|format(summary_stats.min_correlation) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Интерпретация -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5>📈 Как интерпретировать результаты:</h5>
+                <ul>
+                    <li><strong>Корреляция > 0.8</strong>: Очень сильная связь с Bitcoin</li>
+                    <li><strong>Корреляция 0.5-0.8</strong>: Сильная связь</li>
+                    <li><strong>Корреляция 0.3-0.5</strong>: Умеренная связь</li>
+                    <li><strong>Корреляция < 0.3</strong>: Слабая или отсутствует</li>
+                    <li><strong>Корреляция < 0</strong>: Движется в противоположном направлении</li>
+                    <li><strong>Beta > 1</strong>: Более волатильно, чем Bitcoin</li>
+                    <li><strong>Beta < 1</strong>: Менее волатильно, чем Bitcoin</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Дополнительная кнопка возврата в конце страницы -->
+        <div class="mt-4 mb-4 text-center">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                ← Вернуться на главную страницу
+            </a>
+        </div>
+
+        {% endif %}
+    </div>
+
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">Crypto Analysis App &copy; 2025 |
+                <a href="{{ url_for('index') }}" class="text-light">На главную</a> |
+                Данные предоставлены Binance API
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Функция для добавления криптовалюты в поле ввода
+        function addCrypto(crypto) {
+            const input = document.querySelector('input[name="cryptos"]');
+            const currentValue = input.value.trim();
+
+            if (currentValue === '') {
+                input.value = crypto;
+            } else {
+                const cryptos = currentValue.split(',').map(c => c.trim());
+                if (!cryptos.includes(crypto)) {
+                    input.value = currentValue + ', ' + crypto;
+                }
+            }
+        }
+
+        // Отображение графика Plotly
+        {% if plot_json %}
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const plotData = JSON.parse('{{ plot_json|safe }}');
+                Plotly.newPlot('chart-container', plotData.data, plotData.layout, {
+                    responsive: true,
+                    displayModeBar: true
+                });
+            } catch (error) {
+                console.error('Ошибка отображения графика:', error);
+            }
+        });
+        {% endif %}
+
+        // Автоматическое скрытие алертов через 5 секунд
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                if (!alert.classList.contains('alert-dismissible')) return;
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
