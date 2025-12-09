@@ -1,0 +1,277 @@
+<!-- templates/status.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Crypto App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .status-card {
+            transition: all 0.3s;
+        }
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .progress-thin {
+            height: 8px;
+        }
+        .process-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .badge-online {
+            background-color: #28a745;
+        }
+        .badge-offline {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">{{ title }}</h1>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card status-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">📊 Системная информация</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="system-info">
+                            <p class="text-center">
+                                <span class="spinner-border spinner-border-sm"></span>
+                                Загрузка информации...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card status-card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">⚡ Ресурсы</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="resources-info">
+                            <p class="text-center">
+                                <span class="spinner-border spinner-border-sm"></span>
+                                Загрузка информации...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card status-card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">🛡️ Nginx</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="nginx-status">
+                            <p class="text-center">
+                                <span class="spinner-border spinner-border-sm"></span>
+                                Загрузка...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card status-card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">🐍 Gunicorn</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="gunicorn-status">
+                            <p class="text-center">
+                                <span class="spinner-border spinner-border-sm"></span>
+                                Загрузка...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card status-card">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">🔥 Flask</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="flask-status">
+                            <p class="text-center">
+                                <span class="spinner-border spinner-border-sm"></span>
+                                Загрузка...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card status-card mb-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">📈 Активные процессы</h5>
+            </div>
+            <div class="card-body">
+                <div id="processes-list">
+                    <p class="text-center">
+                        <span class="spinner-border spinner-border-sm"></span>
+                        Загрузка списка процессов...
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-4">
+            <button id="refresh-btn" class="btn btn-primary">
+                🔄 Обновить статус
+            </button>
+            <a href="/" class="btn btn-secondary">🏠 На главную</a>
+            <a href="/log_table" class="btn btn-info">📝 Логи</a>
+        </div>
+
+        <div class="text-muted text-center small">
+            <p>Данные обновляются при загрузке страницы. Нажмите "Обновить статус" для актуальной информации.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        async function loadStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+
+                // Обновляем системную информацию
+                document.getElementById('system-info').innerHTML = `
+                    <p><strong>Система:</strong> ${data.system.system} ${data.system.release}</p>
+                    <p><strong>Хост:</strong> ${data.system.node}</p>
+                    <p><strong>Машина:</strong> ${data.system.machine}</p>
+                    <p><strong>Процессор:</strong> ${data.system.processor}</p>
+                    <p><strong>ID хоста:</strong> <code>${data.system.host_id}</code></p>
+                    <p><strong>Время:</strong> ${data.timestamp}</p>
+                `;
+
+                // Обновляем информацию о ресурсах
+                document.getElementById('resources-info').innerHTML = `
+                    <div class="mb-3">
+                        <strong>RAM:</strong> ${data.resources.ram.used}GB / ${data.resources.ram.total}GB
+                        <div class="progress progress-thin">
+                            <div class="progress-bar ${data.resources.ram.percent > 80 ? 'bg-danger' : data.resources.ram.percent > 60 ? 'bg-warning' : 'bg-success'}"
+                                 style="width: ${data.resources.ram.percent}%">
+                                ${data.resources.ram.percent}%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <strong>CPU:</strong> ${data.resources.cpu.percent}%
+                        <div class="progress progress-thin">
+                            <div class="progress-bar ${data.resources.cpu.percent > 80 ? 'bg-danger' : data.resources.cpu.percent > 60 ? 'bg-warning' : 'bg-info'}"
+                                 style="width: ${data.resources.cpu.percent}%">
+                                ${data.resources.cpu.percent}%
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <strong>Disk:</strong> ${data.resources.disk.used}GB / ${data.resources.disk.total}GB
+                        <div class="progress progress-thin">
+                            <div class="progress-bar ${data.resources.disk.percent > 80 ? 'bg-danger' : data.resources.disk.percent > 60 ? 'bg-warning' : 'bg-primary'}"
+                                 style="width: ${data.resources.disk.percent}%">
+                                ${data.resources.disk.percent}%
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Обновляем статус Nginx
+                const nginxOn = data.services.nginx.on;
+                const nginxOff = data.services.nginx.off;
+                document.getElementById('nginx-status').innerHTML = `
+                    <p><strong>Статус:</strong>
+                        <span class="badge ${nginxOn > 0 ? 'badge-online' : 'badge-offline'}">
+                            ${nginxOn > 0 ? 'ONLINE' : 'OFFLINE'}
+                        </span>
+                    </p>
+                    <p><strong>Процессы:</strong> ${nginxOn} on / ${nginxOff} off (всего: ${data.services.nginx.count})</p>
+                    ${nginxOn > 0 ? `<p><small>${data.services.nginx.processes.map(p => `${p.name} (PID: ${p.pid})`).join(', ')}</small></p>` : ''}
+                `;
+
+                // Обновляем статус Gunicorn
+                const gunicornOn = data.services.gunicorn.on;
+                const gunicornOff = data.services.gunicorn.off;
+                document.getElementById('gunicorn-status').innerHTML = `
+                    <p><strong>Статус:</strong>
+                        <span class="badge ${gunicornOn > 0 ? 'badge-online' : 'badge-offline'}">
+                            ${gunicornOn > 0 ? 'ONLINE' : 'OFFLINE'}
+                        </span>
+                    </p>
+                    <p><strong>Процессы:</strong> ${gunicornOn} on / ${gunicornOff} off (всего: ${data.services.gunicorn.count})</p>
+                    ${gunicornOn > 0 ? `<p><small>${data.services.gunicorn.processes.map(p => `${p.name} (PID: ${p.pid})`).join(', ')}</small></p>` : ''}
+                `;
+
+                // Обновляем статус Flask
+                const flaskStatus = data.services.flask.status;
+                const uptimeHours = (data.services.flask.uptime / 3600).toFixed(1);
+                document.getElementById('flask-status').innerHTML = `
+                    <p><strong>Статус:</strong>
+                        <span class="badge ${flaskStatus === 'running' ? 'badge-online' : 'badge-offline'}">
+                            ${flaskStatus.toUpperCase()}
+                        </span>
+                    </p>
+                    <p><strong>Время работы:</strong> ${uptimeHours} часов</p>
+                    <p><strong>База данных:</strong>
+                        <span class="badge ${data.services.database.connected ? 'badge-online' : 'badge-offline'}">
+                            ${data.services.database.connected ? 'CONNECTED' : 'DISCONNECTED'}
+                        </span>
+                    </p>
+                `;
+
+                // Обновляем список процессов
+                let processesHtml = '<div class="process-list">';
+                if (data.processes.list && data.processes.list.length > 0) {
+                    data.processes.list.forEach(process => {
+                        processesHtml += `
+                            <div class="border-bottom py-2">
+                                <strong>${process.name}</strong>
+                                <small class="text-muted">(PID: ${process.pid})</small>
+                                <br>
+                                <small>
+                                    Статус: <span class="badge ${process.status === 'running' ? 'bg-success' : 'bg-danger'}">${process.status}</span>
+                                    CPU: ${process.cpu}% | RAM: ${process.memory ? process.memory.toFixed(1) : 'N/A'}%
+                                </small>
+                            </div>
+                        `;
+                    });
+                } else {
+                    processesHtml += '<p class="text-center text-muted">Нет данных о процессах</p>';
+                }
+                processesHtml += '</div>';
+                document.getElementById('processes-list').innerHTML = processesHtml;
+
+            } catch (error) {
+                console.error('Ошибка загрузки статуса:', error);
+                document.getElementById('system-info').innerHTML = '<p class="text-danger">Ошибка загрузки данных</p>';
+            }
+        }
+
+        // Загружаем статус при загрузке страницы
+        document.addEventListener('DOMContentLoaded', loadStatus);
+
+        // Обновляем статус при нажатии кнопки
+        document.getElementById('refresh-btn').addEventListener('click', loadStatus);
+
+        // Автоматическое обновление каждые 30 секунд
+        setInterval(loadStatus, 30000);
+    </script>
+</body>
+</html>

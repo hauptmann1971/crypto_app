@@ -1,15 +1,18 @@
-# app.py
+# app.py - ПОЛНЫЙ ИСПРАВЛЕННЫЙ КОД
 import threading
 import time
 import requests
 import os
 import logging
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from contextlib import contextmanager
+import socket
+import psutil
+import platform
 
 from flask import Flask, render_template, request, flash, redirect, url_for, session, jsonify
-from sqlalchemy import create_engine, Column, Integer, String, Float, Text, BigInteger, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Float, Text, BigInteger, Boolean, text
 from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base
 from sqlalchemy.exc import SQLAlchemyError
 from logging.handlers import RotatingFileHandler
@@ -112,6 +115,7 @@ class CryptoRate(Base):
     rate = Column(Float(precision=8), nullable=False)
     source = Column(String(100), nullable=False)
     timestamp = Column(BigInteger, nullable=False, index=True)
+    host = Column(String(100))
 
 
 class AppLog(Base):
@@ -125,6 +129,7 @@ class AppLog(Base):
     traceback = Column(Text)
     user_id = Column(String(36))
     timestamp = Column(BigInteger, nullable=False, index=True)
+    host = Column(String(100))
 
 
 class TelegramUser(Base):
@@ -140,6 +145,7 @@ class TelegramUser(Base):
     created_at = Column(BigInteger, nullable=False)
     last_login = Column(BigInteger, nullable=False)
     is_active = Column(Boolean, default=True)
+    host = Column(String(100))
 
 
 class CryptoRequest(Base):
@@ -153,39 +159,16 @@ class CryptoRequest(Base):
     response_data = Column(Text)
     created_at = Column(BigInteger, nullable=False, index=True)
     finished_at = Column(BigInteger)
+    host = Column(String(100))
 
 
-def log_message(
-        message: str,
-        level: str = 'info',
-        service: str = 'crypto_api',
-        component: str = 'backend',
-        traceback: str = None,
-        user_id: str = None
-):
-    """Запись лога в БД и файл"""
-    logging.log(
-        getattr(logging, level.upper()),
-        f"[{service}.{component}] User={user_id} | {message}",
-        exc_info=traceback is not None
-    )
-
-    if db_connection_active:
-        try:
-            with get_db() as db:
-                log_entry = AppLog(
-                    message=message,
-                    level=level,
-                    service=service,
-                    component=component,
-                    traceback=traceback,
-                    user_id=user_id,
-                    timestamp=int(time.time())
-                )
-                db.add(log_entry)
-                db.commit()
-        except SQLAlchemyError as e:
-            logging.error(f"Ошибка записи лога в БД: {e}")
+# Вспомогательные функции
+def get_host_id():
+    """Возвращает идентификатор хоста"""
+    try:
+        return socket.gethostname()[:50]
+    except:
+        return "localhost"
 
 
 def init_db_connection():
@@ -207,39 +190,215 @@ def init_db_connection():
             )
         )
         db_connection_active = True
-        log_message("Инициализировано подключение к базе данных", 'info')
+        print("✅ Инициализировано подключение к базе данных")
     except SQLAlchemyError as e:
         db_connection_active = False
-        log_message(f"Ошибка подключения к базе данных: {e}", 'error')
+        print(f"❌ Ошибка подключения к базе данных: {e}")
         raise
 
 
 @contextmanager
 def get_db():
     """Контекстный менеджер для работы с сессией"""
-    global db_connection_active
-
+    # Проверяем соединение
     if not db_connection_active:
-        log_message("Попытка доступа к отключенной БД", 'warning')
+        print("⚠️ База данных не подключена")
         raise RuntimeError("Соединение с базой данных отключено")
 
+    # Убеждаемся, что SessionLocal инициализирован
+    global SessionLocal
     if SessionLocal is None:
-        init_db_connection()
-
-    if SessionLocal is not None:
-        db = SessionLocal()
+        print("⚠️ SessionLocal не инициализирован, пытаюсь инициализировать...")
         try:
-            yield db
+            init_db_connection()
+        except Exception as e:
+            print(f"❌ Ошибка инициализации: {e}")
+            raise RuntimeError(f"Ошибка инициализации БД: {e}")
+
+    # Теперь точно есть SessionLocal
+    if SessionLocal is None:
+        raise RuntimeError("SessionLocal все еще None после инициализации")
+
+    # Создаем сессию
+    db = SessionLocal()
+    try:
+        yield db
+        db.commit()
+    except SQLAlchemyError as e:
+        db.rollback()
+        print(f"Ошибка БД: {e}")
+        raise
+    except Exception as e:
+        db.rollback()
+        print(f"Неизвестная ошибка в сессии БД: {e}")
+        raise
+    finally:
+        try:
+            db.close()
+        except:
+            pass
+        try:
+            SessionLocal.remove()
+        except:
+            pass
+
+
+def migrate_database_safe():
+    """Безопасная миграция базы данных"""
+    if not db_connection_active:
+        return
+
+    try:
+        with get_db() as db:
+            # Проверяем существование колонки host в app_logs
+            result = db.execute(text("""
+                SELECT COUNT(*) as count 
+                FROM information_schema.columns 
+                WHERE table_schema = DATABASE() 
+                AND table_name = 'app_logs' 
+                AND column_name = 'host'
+            """)).fetchone()
+
+            if result and result.count == 0:
+                # Добавляем колонку host
+                db.execute(text("""
+                    ALTER TABLE app_logs 
+                    ADD COLUMN host VARCHAR(100) DEFAULT NULL
+                """))
+                print("✅ Колонка 'host' добавлена в таблицу app_logs")
+
+            # Проверяем другие таблицы
+            tables = ['crypto_rates', 'crypto_requests', 'telegram_users']
+            for table in tables:
+                try:
+                    result = db.execute(text(f"""
+                        SELECT COUNT(*) as count 
+                        FROM information_schema.columns 
+                        WHERE table_schema = DATABASE() 
+                        AND table_name = '{table}' 
+                        AND column_name = 'host'
+                    """)).fetchone()
+
+                    if result and result.count == 0:
+                        db.execute(text(f"""
+                            ALTER TABLE {table} 
+                            ADD COLUMN host VARCHAR(100) DEFAULT NULL
+                        """))
+                        print(f"✅ Колонка 'host' добавлена в таблицу {table}")
+                except:
+                    continue
+
+    except Exception as e:
+        print(f"❌ Ошибка миграции: {e}")
+
+
+def log_message(
+        message: str,
+        level: str = 'info',
+        service: str = 'crypto_api',
+        component: str = 'backend',
+        traceback: str = None,
+        user_id: str = None
+):
+    """Запись лога в файл и БД - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
+    # Всегда пишем в файловый лог
+    logging.log(
+        getattr(logging, level.upper()),
+        f"[{service}.{component}] User={user_id} | {message}",
+        exc_info=traceback is not None
+    )
+
+    # Если БД не подключена - выходим
+    if not db_connection_active:
+        return
+
+    try:
+        # Создаем новую сессию для каждой записи лога
+        if SessionLocal is None:
+            return
+
+        db = SessionLocal()
+
+        try:
+            # Ограничиваем длину полей
+            message_short = str(message)[:500] if message else ""
+            traceback_short = str(traceback)[:1000] if traceback else None
+
+            # Пытаемся записать лог
+            # ВАЖНО: не используем объект AppLog после закрытия сессии
+            db.execute(
+                text("""
+                    INSERT INTO app_logs 
+                    (service, component, message, level, traceback, user_id, timestamp, host) 
+                    VALUES (:service, :component, :message, :level, :traceback, :user_id, :timestamp, :host)
+                """),
+                {
+                    'service': service,
+                    'component': component,
+                    'message': message_short,
+                    'level': level,
+                    'traceback': traceback_short,
+                    'user_id': user_id,
+                    'timestamp': int(time.time()),
+                    'host': get_host_id()
+                }
+            )
             db.commit()
+
         except SQLAlchemyError as e:
             db.rollback()
-            log_message(f"Ошибка БД: {e}", 'error')
-            raise
+
+            # Если ошибка из-за отсутствия колонки host
+            if "Unknown column 'host'" in str(e):
+                try:
+                    # Пробуем без host
+                    db.execute(
+                        text("""
+                            INSERT INTO app_logs 
+                            (service, component, message, level, traceback, user_id, timestamp) 
+                            VALUES (:service, :component, :message, :level, :traceback, :user_id, :timestamp)
+                        """),
+                        {
+                            'service': service,
+                            'component': component,
+                            'message': message_short,
+                            'level': level,
+                            'traceback': traceback_short,
+                            'user_id': user_id,
+                            'timestamp': int(time.time())
+                        }
+                    )
+                    db.commit()
+
+                    # Запускаем миграцию в фоне
+                    if not hasattr(log_message, '_migration_started'):
+                        log_message._migration_started = True
+
+                        def run_migration():
+                            try:
+                                time.sleep(2)
+                                migrate_database_safe()
+                            except:
+                                pass
+
+                        thread = threading.Thread(target=run_migration)
+                        thread.daemon = True
+                        thread.start()
+
+                except Exception:
+                    pass
+            else:
+                # Другие ошибки SQL - игнорируем
+                pass
+
         finally:
+            # Всегда закрываем сессию
             db.close()
             SessionLocal.remove()
-    else:
-        raise RuntimeError("Не удалось инициализировать подключение к базе данных")
+
+    except Exception:
+        # Игнорируем все другие ошибки при записи логов
+        pass
 
 
 def init_db():
@@ -380,6 +539,7 @@ def update_user_last_login(telegram_id: int):
             ).first()
             if user:
                 user.last_login = int(time.time())
+                user.host = get_host_id()
                 db.commit()
     except SQLAlchemyError as e:
         log_message(f"Error updating user last login: {e}", 'error')
@@ -406,7 +566,8 @@ def create_crypto_request(user_id: int, crypto: str, currency: str) -> int:
                 crypto=crypto,
                 currency=currency,
                 status='processing',
-                created_at=int(time.time())
+                created_at=int(time.time()),
+                host=get_host_id()
             )
             db.add(request)
             db.commit()
@@ -426,6 +587,7 @@ def mark_request_as_error(request_id: int, error_message: str):
             if request:
                 request.status = 'error'
                 request.response_data = json.dumps({'error': error_message})
+                request.host = get_host_id()
                 db.commit()
                 log_message(f"Marked request {request_id} as error: {error_message}", 'error')
     except Exception as e:
@@ -550,35 +712,22 @@ def process_pending_requests():
 
 
 def get_main_crypto_rates_to_btc(timeout=30, coin_ids_to_fetch=None):
-    """
-    Запрашивает курсы криптовалют к биткоину (BTC) с API CoinGecko.
-
-    Args:
-        timeout (int): Таймаут для HTTP-запросов в секундах. По умолчанию 30.
-        coin_ids_to_fetch (list): Список ID криптовалют для запроса. Если None, используются POPULAR_CRYPTOS.
-
-    Returns:
-        dict: Словарь, где ключ - ID криптовалюты (например, 'ethereum', 'bitcoin'),
-              значение - словарь с курсом к BTC {'btc': float_rate}.
-              Пример: {'ethereum': {'btc': 0.0654321}, 'bitcoin': {'btc': 1.0}}
-              Возвращает пустой словарь в случае ошибки.
-    """
+    """Запрашивает курсы криптовалют к биткоину (BTC) с API CoinGecko"""
     if coin_ids_to_fetch is None:
         coin_ids_to_fetch = [cid for cid in POPULAR_CRYPTOS if cid != 'bitcoin']
     else:
-        # Убедимся, что 'bitcoin' не включён, если он там есть
         coin_ids_to_fetch = [cid for cid in coin_ids_to_fetch if cid != 'bitcoin']
 
     url = "https://api.coingecko.com/api/v3/simple/price"
     params = {
-        'ids': ','.join(coin_ids_to_fetch), # Передаём список ID через запятую
-        'vs_currencies': 'btc' # Запрашиваем курсы относительно BTC
+        'ids': ','.join(coin_ids_to_fetch),
+        'vs_currencies': 'btc'
     }
 
     try:
         logging.info(f"Запрашиваю курсы криптовалют ({len(coin_ids_to_fetch)} шт.) к BTC...")
         response = requests.get(url, params=params, timeout=timeout)
-        response.raise_for_status() # Вызывает исключение для HTTP-ошибок (4xx, 5xx)
+        response.raise_for_status()
 
         rates = response.json()
         logging.info(f"Получены курсы для {len(rates)} криптовалют к BTC.")
@@ -591,12 +740,11 @@ def get_main_crypto_rates_to_btc(timeout=30, coin_ids_to_fetch=None):
         logging.error(f"Текст ответа: {e.response.text}")
     except requests.exceptions.RequestException as e:
         logging.error(f"Ошибка запроса к API CoinGecko: {e}")
-    except ValueError as e: # Ошибка при парсинге JSON
+    except ValueError as e:
         logging.error(f"Ошибка парсинга JSON ответа от API CoinGecko: {e}")
     except Exception as e:
         logging.error(f"Неизвестная ошибка при запросе курсов: {e}")
 
-    # Возвращаем пустой словарь в случае любой ошибки
     return {}
 
 
@@ -631,7 +779,6 @@ def generate_historical_plot(df, crypto, currency, start_date, end_date):
             ax2.set_ylabel('Изменение (%)', fontsize=12)
             ax2.grid(True, alpha=0.3)
 
-            # Форматирование оси времени для второго графика
             ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
             ax2.xaxis.set_major_locator(mdates.AutoDateLocator())
             plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right')
@@ -653,7 +800,6 @@ def generate_historical_plot(df, crypto, currency, start_date, end_date):
         return None
 
 
-# Обновленная функция get_historical_price_range (добавить в app.py, если её нет)
 def get_historical_price_range(coin_id='bitcoin', vs_currency='usd',
                                start_date='2024-01-01', end_date=None):
     """Получить исторические цены для выбранного периода"""
@@ -661,25 +807,20 @@ def get_historical_price_range(coin_id='bitcoin', vs_currency='usd',
     import pandas as pd
     from datetime import datetime
 
-    # Если конечная дата не указана - берем сегодня
     if end_date is None:
         end_date = datetime.now().strftime('%Y-%m-%d')
 
-    # Преобразуем строки в datetime
     start_dt = datetime.strptime(start_date, '%Y-%m-%d')
     end_dt = datetime.strptime(end_date, '%Y-%m-%d')
 
-    # Проверяем, что даты корректны
     if start_dt >= end_dt:
         raise ValueError("Дата начала должна быть раньше даты окончания")
 
-    # Рассчитываем количество дней между датами
     days_diff = (end_dt - start_dt).days
 
     if days_diff < 1:
         raise ValueError("Период должен быть хотя бы 1 день")
 
-    # Определяем интервал в зависимости от периода
     if days_diff <= 90:
         days_param = days_diff
         interval = 'daily'
@@ -688,7 +829,6 @@ def get_historical_price_range(coin_id='bitcoin', vs_currency='usd',
         interval = 'daily'
         logging.info(f"Для периода >90 дней данные будут агрегированными")
 
-    # URL для запроса
     url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
 
     params = {
@@ -706,7 +846,6 @@ def get_historical_price_range(coin_id='bitcoin', vs_currency='usd',
 
         data = response.json()
 
-        # Преобразуем данные в DataFrame
         timestamps = [pd.to_datetime(x[0], unit='ms') for x in data['prices']]
         prices = [x[1] for x in data['prices']]
 
@@ -715,7 +854,6 @@ def get_historical_price_range(coin_id='bitcoin', vs_currency='usd',
             'price': prices
         })
 
-        # Фильтруем по нашему диапазону дат
         mask = (df['timestamp'] >= start_dt) & (df['timestamp'] <= end_dt)
         df = df.loc[mask].copy()
 
@@ -723,10 +861,8 @@ def get_historical_price_range(coin_id='bitcoin', vs_currency='usd',
             logging.warning("Нет данных для указанного периода")
             return None
 
-        # Сортируем по дате
         df = df.sort_values('timestamp').reset_index(drop=True)
 
-        # Добавляем дополнительные колонки
         df['date'] = df['timestamp'].dt.date
         df['returns_pct'] = df['price'].pct_change() * 100
 
@@ -832,7 +968,6 @@ class CoinGeckoAPI:
 def calculate_correlation_with_btc(coin_id, vs_currency='usd', days=30, timeframe='1d'):
     """Рассчитывает корреляцию выбранной криптовалюты с Bitcoin с обработкой ошибок"""
     try:
-        # Проверяем, не является ли это Bitcoin
         if coin_id.lower() == 'bitcoin':
             logging.info("Пропускаем Bitcoin (корреляция с самим собой = 1)")
             return {
@@ -852,42 +987,32 @@ def calculate_correlation_with_btc(coin_id, vs_currency='usd', days=30, timefram
 
         logging.info(f"Начинаю расчет корреляции для {coin_id}...")
 
-        # Получаем данные для Bitcoin
-        logging.info(f"Получаю данные Bitcoin/{vs_currency}...")
         btc_data = get_historical_price_data('bitcoin', vs_currency, days)
         if btc_data is None or btc_data.empty:
             logging.error(f"Не удалось получить данные для Bitcoin")
             return None
 
-        # Получаем данные для выбранной криптовалюты
-        logging.info(f"Получаю данные {coin_id}/{vs_currency}...")
         coin_data = get_historical_price_data(coin_id, vs_currency, days)
         if coin_data is None or coin_data.empty:
             logging.error(f"Не удалось получить данные для {coin_id}")
             return None
 
-        # Выравниваем данные по датам
         common_dates = set(btc_data['timestamp']).intersection(set(coin_data['timestamp']))
         if len(common_dates) < 2:
             logging.error(f"Недостаточно общих дат для {coin_id}: {len(common_dates)}")
             return None
 
-        # Фильтруем данные по общим датам
         btc_filtered = btc_data[btc_data['timestamp'].isin(common_dates)].sort_values('timestamp')
         coin_filtered = coin_data[coin_data['timestamp'].isin(common_dates)].sort_values('timestamp')
 
-        # Проверяем, что данные синхронизированы
         if len(btc_filtered) != len(coin_filtered):
             logging.error(f"Разное количество точек: BTC={len(btc_filtered)}, {coin_id}={len(coin_filtered)}")
             return None
 
-        # Агрегируем данные в зависимости от таймфрейма
         if timeframe == '1d':
-            # Дневные данные уже есть
             btc_prices = btc_filtered['price'].values
             coin_prices = coin_filtered['price'].values
         elif timeframe == '1w':
-            # Недельные данные
             btc_filtered['week'] = btc_filtered['timestamp'].dt.isocalendar().week
             btc_filtered['year'] = btc_filtered['timestamp'].dt.isocalendar().year
             coin_filtered['week'] = coin_filtered['timestamp'].dt.isocalendar().week
@@ -896,7 +1021,6 @@ def calculate_correlation_with_btc(coin_id, vs_currency='usd', days=30, timefram
             btc_weekly = btc_filtered.groupby(['year', 'week'])['price'].last()
             coin_weekly = coin_filtered.groupby(['year', 'week'])['price'].last()
 
-            # Выравниваем данные
             common_indices = set(btc_weekly.index).intersection(set(coin_weekly.index))
             if len(common_indices) < 2:
                 logging.error(f"Недостаточно общих недель для {coin_id}")
@@ -905,14 +1029,12 @@ def calculate_correlation_with_btc(coin_id, vs_currency='usd', days=30, timefram
             btc_prices = btc_weekly.loc[list(common_indices)].values
             coin_prices = coin_weekly.loc[list(common_indices)].values
         elif timeframe == '1M':
-            # Месячные данные
             btc_filtered['month'] = btc_filtered['timestamp'].dt.strftime('%Y-%m')
             coin_filtered['month'] = coin_filtered['timestamp'].dt.strftime('%Y-%m')
 
             btc_monthly = btc_filtered.groupby('month')['price'].last()
             coin_monthly = coin_filtered.groupby('month')['price'].last()
 
-            # Выравниваем данные
             common_months = set(btc_monthly.index).intersection(set(coin_monthly.index))
             if len(common_months) < 2:
                 logging.error(f"Недостаточно общих месяцев для {coin_id}")
@@ -924,41 +1046,32 @@ def calculate_correlation_with_btc(coin_id, vs_currency='usd', days=30, timefram
             logging.error(f"Неизвестный таймфрейм: {timeframe}")
             return None
 
-        # Проверяем, что есть достаточно данных
         if len(btc_prices) < 5 or len(coin_prices) < 5:
             logging.error(f"Недостаточно данных после агрегации: {len(btc_prices)} точек")
             return None
 
-        # Рассчитываем процентные изменения
         btc_returns = np.diff(btc_prices) / btc_prices[:-1]
         coin_returns = np.diff(coin_prices) / coin_prices[:-1]
 
-        # Рассчитываем корреляцию
         correlation, p_value = stats.pearsonr(btc_returns, coin_returns)
 
-        # Проверяем на NaN
         if np.isnan(correlation) or np.isnan(p_value):
             logging.error(f"Результат корреляции содержит NaN для {coin_id}")
             return None
 
-        # Рассчитываем остальные метрики
         r_squared = correlation ** 2
 
-        # Бета-коэффициент
         covariance = np.cov(btc_returns, coin_returns)[0, 1]
         btc_variance = np.var(btc_returns)
         beta = covariance / btc_variance if btc_variance != 0 else 0
 
-        # Альфа-коэффициент
         coin_mean_return = np.mean(coin_returns)
         btc_mean_return = np.mean(btc_returns)
         alpha = coin_mean_return - beta * btc_mean_return
 
-        # Стандартные отклонения
         btc_std = np.std(btc_returns)
         coin_std = np.std(coin_returns)
 
-        # Результаты
         results = {
             'coin_id': coin_id,
             'vs_currency': vs_currency,
@@ -1005,11 +1118,9 @@ def get_correlation_strength(corr_value):
         return 'very weak'
 
 
-# app.py - исправленная функция get_historical_price_data
 def get_historical_price_data(coin_id, vs_currency='usd', days=30):
     """Получает исторические данные для расчета корреляции с обработкой ошибок"""
     try:
-        # Проверяем доступность API
         ping_url = "https://api.coingecko.com/api/v3/ping"
         ping_response = requests.get(ping_url, timeout=5)
 
@@ -1042,12 +1153,10 @@ def get_historical_price_data(coin_id, vs_currency='usd', days=30):
 
         data = response.json()
 
-        # Проверяем структуру данных
         if 'prices' not in data or not data['prices']:
             logging.error(f"Нет данных о ценах для {coin_id}")
             return None
 
-        # Преобразуем данные в DataFrame
         timestamps = []
         prices = []
 
@@ -1065,7 +1174,6 @@ def get_historical_price_data(coin_id, vs_currency='usd', days=30):
             'price': prices
         })
 
-        # Сортируем по дате
         df = df.sort_values('timestamp').reset_index(drop=True)
 
         logging.info(f"Получено {len(df)} записей для {coin_id}")
@@ -1091,7 +1199,7 @@ def calculate_multiple_correlations(coin_ids, vs_currency='usd', days=30, timefr
 
     for coin_id in coin_ids:
         if coin_id == 'bitcoin':
-            continue  # Пропускаем Bitcoin
+            continue
 
         logging.info(f"Рассчитываю корреляцию для {coin_id}...")
         correlation_result = calculate_correlation_with_btc(
@@ -1104,7 +1212,6 @@ def calculate_multiple_correlations(coin_ids, vs_currency='usd', days=30, timefr
         if correlation_result:
             results[coin_id] = correlation_result
 
-    # Сортируем по абсолютному значению корреляции
     sorted_results = dict(sorted(
         results.items(),
         key=lambda x: abs(x[1]['correlation']),
@@ -1120,7 +1227,6 @@ def generate_correlation_plot(results):
         if not results:
             return None
 
-        # Подготовка данных
         coin_names = []
         correlations = []
         colors = []
@@ -1130,15 +1236,13 @@ def generate_correlation_plot(results):
             coin_names.append(coin_id.upper())
             correlations.append(data['correlation'])
 
-            # Цвет в зависимости от направления корреляции
             if data['correlation'] > 0:
-                colors.append('rgba(46, 204, 113, 0.7)')  # Зеленый
+                colors.append('rgba(46, 204, 113, 0.7)')
             else:
-                colors.append('rgba(231, 76, 60, 0.7)')  # Красный
+                colors.append('rgba(231, 76, 60, 0.7)')
 
             strengths.append(data['correlation_strength'])
 
-        # Создаем график
         fig = go.Figure()
 
         fig.add_trace(go.Bar(
@@ -1157,7 +1261,6 @@ def generate_correlation_plot(results):
             name='Корреляция с BTC'
         ))
 
-        # Добавляем горизонтальную линию на 0
         fig.add_hline(
             y=0,
             line_dash="dash",
@@ -1165,7 +1268,6 @@ def generate_correlation_plot(results):
             opacity=0.5
         )
 
-        # Настройки макета
         fig.update_layout(
             title={
                 'text': 'Корреляция криптовалют с Bitcoin',
@@ -1184,7 +1286,6 @@ def generate_correlation_plot(results):
             margin=dict(l=50, r=50, t=80, b=50)
         )
 
-        # Конвертируем в JSON для передачи в шаблон
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return graphJSON
 
@@ -1199,11 +1300,10 @@ def calculate_multiple_correlations_with_retry(coin_ids, vs_currency='usd', days
 
     for coin_id in coin_ids:
         if coin_id == 'bitcoin':
-            continue  # Пропускаем Bitcoin
+            continue
 
         logging.info(f"Обрабатываю {coin_id}...")
 
-        # Пробуем несколько раз с задержкой
         for attempt in range(max_retries):
             try:
                 correlation_result = calculate_correlation_with_btc(
@@ -1219,7 +1319,7 @@ def calculate_multiple_correlations_with_retry(coin_ids, vs_currency='usd', days
                     break
                 else:
                     if attempt < max_retries - 1:
-                        wait_time = (attempt + 1) * 2  # Увеличиваем задержку
+                        wait_time = (attempt + 1) * 2
                         logging.warning(f"Повторная попытка для {coin_id} через {wait_time} сек...")
                         time.sleep(wait_time)
                     else:
@@ -1230,7 +1330,6 @@ def calculate_multiple_correlations_with_retry(coin_ids, vs_currency='usd', days
                 if attempt < max_retries - 1:
                     time.sleep((attempt + 1) * 2)
 
-    # Сортируем по абсолютному значению корреляции
     if results:
         sorted_results = dict(sorted(
             results.items(),
@@ -1259,7 +1358,7 @@ class BinanceAPI:
 
             symbols = []
             for symbol_info in data['symbols']:
-                if symbol_info['status'] == 'TRADING':  # Только активные пары
+                if symbol_info['status'] == 'TRADING':
                     symbols.append(symbol_info['symbol'])
 
             self.symbols_cache = symbols
@@ -1270,19 +1369,7 @@ class BinanceAPI:
             return []
 
     def get_historical_klines(self, symbol, interval='1d', limit=100, start_time=None, end_time=None):
-        """
-        Получает исторические данные свечей (klines) с Binance
-
-        Args:
-            symbol: Торговая пара (например, 'BTCUSDT')
-            interval: Интервал ('1d', '1w', '1M' и т.д.)
-            limit: Количество свечей
-            start_time: Время начала (timestamp в миллисекундах)
-            end_time: Время окончания (timestamp в миллисекундах)
-
-        Returns:
-            DataFrame с колонками: timestamp, open, high, low, close, volume
-        """
+        """Получает исторические данные свечей (klines) с Binance"""
         try:
             url = f"{self.base_url}/klines"
             params = {
@@ -1300,19 +1387,16 @@ class BinanceAPI:
             response.raise_for_status()
             data = response.json()
 
-            # Преобразуем в DataFrame
             df = pd.DataFrame(data, columns=[
                 'timestamp', 'open', 'high', 'low', 'close', 'volume',
                 'close_time', 'quote_asset_volume', 'number_of_trades',
                 'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume', 'ignore'
             ])
 
-            # Конвертируем типы данных
             df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
             for col in ['open', 'high', 'low', 'close', 'volume']:
                 df[col] = pd.to_numeric(df[col])
 
-            # Оставляем только нужные колонки
             df = df[['timestamp', 'open', 'high', 'low', 'close', 'volume']]
 
             return df
@@ -1324,11 +1408,9 @@ class BinanceAPI:
     def get_daily_returns(self, symbol, days=30):
         """Получает дневные доходности для символа"""
         try:
-            # Рассчитываем временные рамки
-            end_time = int(time.time() * 1000)  # Текущее время в миллисекундах
-            start_time = end_time - (days * 24 * 60 * 60 * 1000)  # days дней назад
+            end_time = int(time.time() * 1000)
+            start_time = end_time - (days * 24 * 60 * 60 * 1000)
 
-            # Получаем данные
             df = self.get_historical_klines(
                 symbol=symbol,
                 interval='1d',
@@ -1340,7 +1422,6 @@ class BinanceAPI:
             if df is None or df.empty:
                 return None
 
-            # Рассчитываем процентные изменения
             prices = df['close'].values
             if len(prices) < 2:
                 return None
@@ -1370,44 +1451,27 @@ class BinanceAPI:
             return {}
 
 
-# Создаем экземпляр API
 binance_api = BinanceAPI()
 
 
 def calculate_correlation_with_btc_binance(coin_symbol, vs_currency='USDT', days=30):
-    """
-    Рассчитывает корреляцию криптовалюты с Bitcoin через Binance API
-
-    Args:
-        coin_symbol: Символ криптовалюты (например, 'ETH' для Ethereum)
-        vs_currency: Валюта котировки ('USDT', 'BUSD', 'BTC')
-        days: Количество дней для анализа
-
-    Returns:
-        dict: Результаты корреляции
-    """
+    """Рассчитывает корреляцию криптовалюты с Bitcoin через Binance API"""
     try:
-        # Формируем символы для Binance
         btc_symbol = f"BTC{vs_currency}"
         coin_symbol_full = f"{coin_symbol}{vs_currency}"
 
         logging.info(f"Рассчитываю корреляцию для {coin_symbol_full} с {btc_symbol}")
 
-        # Получаем доходности для Bitcoin
-        logging.info(f"Получаю данные для {btc_symbol}...")
         btc_returns = binance_api.get_daily_returns(btc_symbol, days)
         if btc_returns is None or len(btc_returns) < 5:
             logging.error(f"Не удалось получить данные для {btc_symbol}")
             return None
 
-        # Получаем доходности для криптовалюты
-        logging.info(f"Получаю данные для {coin_symbol_full}...")
         coin_returns = binance_api.get_daily_returns(coin_symbol_full, days)
         if coin_returns is None or len(coin_returns) < 5:
             logging.error(f"Не удалось получить данные для {coin_symbol_full}")
             return None
 
-        # Выравниваем массивы по минимальной длине
         min_len = min(len(btc_returns), len(coin_returns))
         btc_returns_aligned = btc_returns[:min_len]
         coin_returns_aligned = coin_returns[:min_len]
@@ -1416,30 +1480,23 @@ def calculate_correlation_with_btc_binance(coin_symbol, vs_currency='USDT', days
             logging.error(f"Недостаточно данных после выравнивания: {min_len}")
             return None
 
-        # Рассчитываем корреляцию
         correlation, p_value = stats.pearsonr(btc_returns_aligned, coin_returns_aligned)
 
-        # Рассчитываем остальные метрики
         r_squared = correlation ** 2
 
-        # Бета-коэффициент
         covariance = np.cov(btc_returns_aligned, coin_returns_aligned)[0, 1]
         btc_variance = np.var(btc_returns_aligned)
         beta = covariance / btc_variance if btc_variance != 0 else 0
 
-        # Альфа-коэффициент
         coin_mean_return = np.mean(coin_returns_aligned)
         btc_mean_return = np.mean(btc_returns_aligned)
         alpha = coin_mean_return - beta * btc_mean_return
 
-        # Стандартные отклонения
         btc_std = np.std(btc_returns_aligned)
         coin_std = np.std(coin_returns_aligned)
 
-        # Определяем силу корреляции
         correlation_strength = get_correlation_strength(abs(correlation))
 
-        # Результаты
         results = {
             'coin_symbol': coin_symbol,
             'vs_currency': vs_currency,
@@ -1478,11 +1535,9 @@ def calculate_multiple_correlations_binance(coin_symbols, vs_currency='USDT', da
     successful = 0
     failed = []
 
-    # Получаем доступные пары
     available_pairs = binance_api.get_available_crypto_pairs(vs_currency)
 
     for coin_symbol in coin_symbols:
-        # Проверяем, доступна ли пара
         coin_lower = coin_symbol.lower()
         if coin_lower not in available_pairs:
             logging.warning(f"Пара {coin_symbol}{vs_currency} не найдена на Binance")
@@ -1491,7 +1546,6 @@ def calculate_multiple_correlations_binance(coin_symbols, vs_currency='USDT', da
 
         logging.info(f"Обрабатываю {coin_symbol}...")
 
-        # Рассчитываем корреляцию
         correlation_result = calculate_correlation_with_btc_binance(
             coin_symbol=coin_symbol.upper(),
             vs_currency=vs_currency,
@@ -1502,14 +1556,11 @@ def calculate_multiple_correlations_binance(coin_symbols, vs_currency='USDT', da
             results[coin_symbol] = correlation_result
             successful += 1
             logging.info(f"✓ Успешно: {coin_symbol}")
-
-            # Небольшая задержка, чтобы не перегружать API
             time.sleep(0.1)
         else:
             failed.append(coin_symbol)
             logging.warning(f"✗ Не удалось: {coin_symbol}")
 
-    # Сортируем по абсолютному значению корреляции
     if results:
         sorted_results = dict(sorted(
             results.items(),
@@ -1550,6 +1601,7 @@ def telegram_auth():
                     existing_user.auth_date = user_data['auth_date']
                     existing_user.last_login = current_time
                     existing_user.is_active = True
+                    existing_user.host = get_host_id()
                     db.commit()
                     user_id = existing_user.id
                     action = "updated"
@@ -1563,7 +1615,8 @@ def telegram_auth():
                         auth_date=user_data['auth_date'],
                         created_at=current_time,
                         last_login=current_time,
-                        is_active=True
+                        is_active=True,
+                        host=get_host_id()
                     )
                     db.add(new_user)
                     db.commit()
@@ -1680,11 +1733,9 @@ def get_request_status(request_id):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # current_rate больше не используется для отображения последнего завершённого
-    # current_rate = None
     current_crypto = None
     current_currency = None
-    current_request_id = None # ID текущего/последнего отправленного запроса
+    current_request_id = None
     requests_history = []
     pending_requests_count = 0
     processing_requests_count = 0
@@ -1717,10 +1768,12 @@ def index():
             session['current_crypto'] = crypto
             session['current_currency'] = currency
             session.modified = True
-            flash(f"Запрос на получение курса {crypto.upper()}/{currency.upper()} отправлен в обработку. ID: {request_id}", 'info')
+            flash(
+                f"Запрос на получение курса {crypto.upper()}/{currency.upper()} отправлен в обработку. ID: {request_id}",
+                'info')
             log_message(f"Request created for {crypto}/{currency} (ID: {request_id})", 'info',
                         user_id=str(user_session['id']) if user_session else None)
-            current_request_id = request_id # ID текущего запроса для отображения
+            current_request_id = request_id
             pending_requests_count = get_pending_requests_count()
             processing_requests_count = get_processing_requests_count()
             if user_session:
@@ -1729,16 +1782,10 @@ def index():
             flash("Ошибка при создании запроса", 'error')
             log_message("Error creating request in queue", 'error',
                         user_id=str(user_session['id']) if user_session else None)
-    else: # GET запрос
-        # --- ИЗМЕНЕНИЕ ---
-        # Не пытаемся получить последний завершённый курс
-        # current_rate = None
-        # current_crypto и current_currency могут быть из сессии для отображения в форме
-        current_crypto = session.get('current_crypto', 'bitcoin') # Значения по умолчанию
+    else:
+        current_crypto = session.get('current_crypto', 'bitcoin')
         current_currency = session.get('current_currency', 'usd')
-        # current_request_id получаем из сессии - это ID последнего отправленного запроса
-        current_request_id = session.get('last_request_id') # Это ключевое изменение
-        # --- КОНЕЦ ИЗМЕНЕНИЯ ---
+        current_request_id = session.get('last_request_id')
 
     process_pending_requests()
 
@@ -1747,17 +1794,15 @@ def index():
                            cryptos=cryptos,
                            currencies=CURRENCIES,
                            periods=PERIODS,
-                           # current_rate=current_rate, # Больше не передаём
                            current_crypto=current_crypto,
                            current_currency=current_currency,
-                           current_request_id=current_request_id, # Передаём ID текущего/последнего отправленного запроса
+                           current_request_id=current_request_id,
                            db_connected=db_connection_active,
                            user=user_from_db,
                            requests_history=requests_history,
                            pending_requests_count=pending_requests_count,
                            processing_requests_count=processing_requests_count,
                            bot_username=Config.BOT_USERNAME)
-
 
 
 @app.route('/chart', methods=['GET', 'POST'])
@@ -1888,45 +1933,66 @@ def show_crypto_table():
 
 @app.route('/log_table')
 def show_log_table():
-    """Отображает таблицу логов"""
+    """Отображает таблицу логов с фильтрацией по уровню"""
     if not db_connection_active:
         flash("Соединение с базой данных отключено", 'error')
         return redirect(url_for('index'))
 
     user = session.get('user')
+    level_filter = request.args.get('level', '').lower()
 
     try:
         with get_db() as db:
-            logs = db.query(
-                AppLog.id,
-                AppLog.service,
-                AppLog.component,
-                AppLog.message,
-                AppLog.level,
-                AppLog.traceback,
-                AppLog.user_id,
-                AppLog.timestamp
-            ).order_by(AppLog.timestamp.desc()).limit(100).all()
+            query = db.query(AppLog)
 
-        logs_data = [{
-            'date_time': datetime.fromtimestamp(l.timestamp).strftime('%Y-%m-%d %H:%M:%S') if l.timestamp else 'N/A',
-            'level': l.level,
-            'message': l.message,
-            'service': l.service,
-            'component': l.component,
-            'user_id': l.user_id or '',
-            'traceback': l.traceback or ''
-        } for l in logs]
+            if level_filter and level_filter != 'all':
+                query = query.filter(AppLog.level == level_filter)
 
-        return render_template('data_table.html',
+            logs = query.order_by(AppLog.timestamp.desc()).limit(200).all()
+
+        logs_data = []
+        moscow_tz = timezone(timedelta(hours=3))
+
+        for l in logs:
+            if l.timestamp:
+                utc_time = datetime.fromtimestamp(l.timestamp, tz=timezone.utc)
+                moscow_time = utc_time.astimezone(moscow_tz)
+                date_time_str = moscow_time.strftime('%Y-%m-%d %H:%M:%S')
+            else:
+                date_time_str = 'N/A'
+
+            log_entry = {
+                'date_time': date_time_str,
+                'level': l.level,
+                'message': l.message[:200] + '...' if len(l.message) > 200 else l.message,
+                'service': l.service,
+                'component': l.component,
+                'user_id': l.user_id or '',
+                'traceback': '',
+                'host': l.host or 'N/A'
+            }
+
+            if l.level.lower() == 'error' and l.traceback:
+                log_entry['traceback'] = l.traceback[:500] + '...' if len(l.traceback) > 500 else l.traceback
+
+            logs_data.append(log_entry)
+
+        if level_filter and level_filter != 'all' and not logs_data:
+            flash(f"Логи с уровнем '{level_filter.upper()}' не найдены", 'warning')
+
+        available_levels = ['all', 'debug', 'info', 'warning', 'error', 'critical']
+
+        return render_template('data_table_logs.html',
                                title='Логи приложения',
                                data=logs_data,
                                columns=['date_time', 'level', 'message', 'service', 'component', 'user_id',
-                                        'traceback'],
-                               user=user)
+                                        'traceback', 'host'],
+                               user=user,
+                               current_level=level_filter,
+                               available_levels=available_levels)
     except SQLAlchemyError as e:
         flash(f"Ошибка БД: {str(e)}", 'error')
-        log_message(f"Ошибка при получении логов: {e}", 'error')
+        print(f"Ошибка при получении логов: {e}")
         return redirect(url_for('index'))
 
 
@@ -1955,14 +2021,15 @@ def show_users_table():
                         '%Y-%m-%d %H:%M:%S') if u.created_at else 'N/A',
                     'last_login': datetime.fromtimestamp(u.last_login).strftime(
                         '%Y-%m-%d %H:%M:%S') if u.last_login else 'N/A',
-                    'is_active': 'Да' if u.is_active else 'Нет'
+                    'is_active': 'Да' if u.is_active else 'Нет',
+                    'host': u.host or 'N/A'
                 })
 
         return render_template('data_table.html',
                                title='Пользователи Telegram',
                                data=users_data,
                                columns=['id', 'telegram_id', 'first_name', 'last_name', 'username', 'created_at',
-                                        'last_login', 'is_active'],
+                                        'last_login', 'is_active', 'host'],
                                user=user)
     except SQLAlchemyError as e:
         flash(f"Ошибка БД: {str(e)}", 'error')
@@ -2003,14 +2070,15 @@ def show_requests_table():
                         '%Y-%m-%d %H:%M:%S') if req.created_at else 'N/A',
                     'finished_at': datetime.fromtimestamp(req.finished_at).strftime(
                         '%Y-%m-%d %H:%M:%S') if req.finished_at else 'N/A',
-                    'error': response_data.get('error', '')
+                    'error': response_data.get('error', ''),
+                    'host': req.host or 'N/A'
                 })
 
         return render_template('data_table.html',
                                title='Очередь запросов',
                                data=requests_data,
                                columns=['id', 'user_id', 'crypto', 'currency', 'status', 'rate', 'created_at',
-                                        'finished_at', 'error'],
+                                        'finished_at', 'error', 'host'],
                                user=user)
     except SQLAlchemyError as e:
         flash(f"Ошибка БД: {str(e)}", 'error')
@@ -2040,35 +2108,32 @@ def show_main_crypto_rates_to_btc():
 
     user = session.get('user')
 
-    # Получаем курсы для основных 50 криптовалют
     rates_data = get_main_crypto_rates_to_btc(coin_ids_to_fetch=[cid for cid in POPULAR_CRYPTOS if cid != 'bitcoin'])
 
     if not rates_data:
         flash("Не удалось получить курсы криптовалют к BTC. Проверьте логи.", 'error')
-        log_message("Не удалось получить курсы основных криптовалют к BTC", 'error', user_id=str(user['id']) if user else None)
+        log_message("Не удалось получить курсы основных криптовалют к BTC", 'error',
+                    user_id=str(user['id']) if user else None)
         return redirect(url_for('index'))
 
-    # Подготовим данные для шаблона
-    # Сортируем по названию криптовалюты
     sorted_rates = sorted(rates_data.items(), key=lambda item: item[0])
     table_data = []
     for crypto_id, rate_dict in sorted_rates:
         rate = rate_dict.get('btc', 'N/A')
-        # Преобразуем float_rate в строку с 8 знаками после запятой
         formatted_rate = f"{rate:.8f}" if isinstance(rate, float) else rate
         table_data.append({
             'crypto': crypto_id,
             'rate_to_btc': formatted_rate
         })
 
-    # Подготовим информацию о просмотренных/оставшихся
-    all_crypto_ids = load_crypto_list() # Загружаем полный список
-    viewed_ids = set(rates_data.keys()) # Уже полученные ID
+    all_crypto_ids = load_crypto_list()
+    viewed_ids = set(rates_data.keys())
     remaining_ids = [cid for cid in all_crypto_ids if cid != 'bitcoin' and cid not in viewed_ids]
     remaining_count = len(remaining_ids)
     viewed_count = len(viewed_ids)
 
-    log_message("Таблица курсов основных криптовалют к BTC отображена", 'info', user_id=str(user['id']) if user else None)
+    log_message("Таблица курсов основных криптовалют к BTC отображена", 'info',
+                user_id=str(user['id']) if user else None)
     return render_template('main_crypto_rates_table.html',
                            title='Курсы основных криптовалют к BTC',
                            data=table_data,
@@ -2076,7 +2141,7 @@ def show_main_crypto_rates_to_btc():
                            user=user,
                            viewed_count=viewed_count,
                            remaining_count=remaining_count,
-                           has_next=True) # Показываем кнопку "Следующие пары..."
+                           has_next=True)
 
 
 @app.route('/main_crypto_rates_to_btc/next')
@@ -2088,58 +2153,46 @@ def show_next_crypto_rates_to_btc():
 
     user = session.get('user')
 
-    # Получаем полный список криптовалют
     all_crypto_ids = load_crypto_list()
-    # Исключаем 'bitcoin' и сортируем по алфавиту
     all_crypto_ids_sorted = sorted([cid for cid in all_crypto_ids if cid != 'bitcoin'])
 
-    # Найдем ID, которые уже были отображены (всё, что не в POPULAR_CRYPTOS)
-    # Или, более обобщенно, возьмем следующие 50 после POPULAR_CRYPTOS, отсортированные по алфавиту
-    # Для простоты, возьмем первые 50 из отсортированного списка, исключая POPULAR_CRYPTOS
-    # Но для "следующих" нужно исключить уже полученные.
-    # В предыдущем запросе были получены только POPULAR_CRYPTOS.
-    # Поэтому "следующие" будут первые 50 из отсортированного списка, исключая POPULAR_CRYPTOS.
     popular_set = set(POPULAR_CRYPTOS)
     next_batch_ids = []
     for cid in all_crypto_ids_sorted:
         if cid not in popular_set:
             next_batch_ids.append(cid)
-        if len(next_batch_ids) == 50: # Берем следующие 50
+        if len(next_batch_ids) == 50:
             break
 
     if not next_batch_ids:
         flash("Больше нет криптовалют для отображения.", 'info')
         return redirect(url_for('show_main_crypto_rates_to_btc'))
 
-    # Получаем курсы для следующей партии
     rates_data = get_main_crypto_rates_to_btc(coin_ids_to_fetch=next_batch_ids)
 
     if not rates_data:
         flash("Не удалось получить курсы следующих криптовалют к BTC. Проверьте логи.", 'error')
-        log_message("Не удалось получить курсы следующих криптовалют к BTC", 'error', user_id=str(user['id']) if user else None)
+        log_message("Не удалось получить курсы следующих криптовалют к BTC", 'error',
+                    user_id=str(user['id']) if user else None)
         return redirect(url_for('show_main_crypto_rates_to_btc'))
 
-    # Подготовим данные для шаблона
-    # Сортируем по названию криптовалюты (уже должны быть отсортированы, но перестрахуемся)
     sorted_rates = sorted(rates_data.items(), key=lambda item: item[0])
     table_data = []
     for crypto_id, rate_dict in sorted_rates:
         rate = rate_dict.get('btc', 'N/A')
-        # Преобразуем float_rate в строку с 8 знаками после запятой
         formatted_rate = f"{rate:.8f}" if isinstance(rate, float) else rate
         table_data.append({
             'crypto': crypto_id,
             'rate_to_btc': formatted_rate
         })
 
-    # Подготовим информацию о просмотренных/оставшихся
-    # Теперь просмотренные - это POPULAR_CRYPTOS + полученные сейчас
     viewed_ids = set(POPULAR_CRYPTOS) | set(rates_data.keys())
     remaining_ids = [cid for cid in all_crypto_ids_sorted if cid not in viewed_ids]
     remaining_count = len(remaining_ids)
     viewed_count = len(viewed_ids)
 
-    log_message("Таблица курсов следующих криптовалют к BTC отображена", 'info', user_id=str(user['id']) if user else None)
+    log_message("Таблица курсов следующих криптовалют к BTC отображена", 'info',
+                user_id=str(user['id']) if user else None)
     return render_template('main_crypto_rates_table.html',
                            title='Курсы следующих криптовалют к BTC',
                            data=table_data,
@@ -2147,11 +2200,9 @@ def show_next_crypto_rates_to_btc():
                            user=user,
                            viewed_count=viewed_count,
                            remaining_count=remaining_count,
-                           has_next=bool(remaining_count)) # Показываем кнопку "Следующие пары...", если есть что показывать
+                           has_next=bool(remaining_count))
 
 
-
-# app.py - обновленная функция historical_data
 @app.route('/historical', methods=['GET', 'POST'])
 def historical_data():
     """Страница с историческими данными по выбранной паре"""
@@ -2160,45 +2211,37 @@ def historical_data():
     user = session.get('user')
     df_stats = None
 
-    # Значения по умолчанию из сессии или формы
     default_crypto = 'bitcoin'
     default_currency = 'usd'
     default_start_date = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
     default_end_date = datetime.now().strftime('%Y-%m-%d')
 
-    # Получаем данные из формы
     if request.method == 'POST':
         crypto = request.form.get('crypto', default_crypto)
         currency = request.form.get('currency', default_currency)
         start_date = request.form.get('start_date', default_start_date)
         end_date = request.form.get('end_date', default_end_date)
 
-        # Автоматически исправляем, если дата начала позже даты окончания
         start_dt = datetime.strptime(start_date, '%Y-%m-%d')
         end_dt = datetime.strptime(end_date, '%Y-%m-%d')
 
         if start_dt > end_dt:
-            # Меняем даты местами
             start_date, end_date = end_date, start_date
             flash("Даты были автоматически переставлены, так как дата начала была позже даты окончания", 'info')
 
-        # Сохраняем в сессию для запоминания выбора
         session['historical_crypto'] = crypto
         session['historical_currency'] = currency
         session['historical_start_date'] = start_date
         session['historical_end_date'] = end_date
 
     else:
-        # GET запрос - берем из сессии или используем значения по умолчанию
         crypto = session.get('historical_crypto', default_crypto)
         currency = session.get('historical_currency', default_currency)
         start_date = session.get('historical_start_date', default_start_date)
         end_date = session.get('historical_end_date', default_end_date)
 
-    # Если получены данные из формы, строим график
     if request.method == 'POST' and crypto and currency and start_date and end_date:
         try:
-            # Используем функцию get_historical_price_range
             df = get_historical_price_range(
                 coin_id=crypto,
                 vs_currency=currency,
@@ -2207,7 +2250,6 @@ def historical_data():
             )
 
             if df is not None and not df.empty:
-                # Рассчитываем статистику
                 df_stats = {
                     'start_price': float(df['price'].iloc[0]),
                     'end_price': float(df['price'].iloc[-1]),
@@ -2257,29 +2299,24 @@ def correlation_analysis():
     successful_calculations = 0
     failed_calculations = []
 
-    # Значения по умолчанию
     default_cryptos = ['ethereum', 'binancecoin', 'solana', 'cardano', 'ripple']
-    default_days = 30  # Начинаем с 30 дней для скорости
+    default_days = 30
     default_timeframe = '1d'
     default_currency = 'usd'
 
     if request.method == 'POST':
-        # Получаем данные из формы
         selected_cryptos = request.form.getlist('cryptos')
         days = int(request.form.get('days', default_days))
         timeframe = request.form.get('timeframe', default_timeframe)
         currency = request.form.get('currency', default_currency)
 
-        # Если не выбраны криптовалюты, используем значения по умолчанию
         if not selected_cryptos:
             selected_cryptos = default_cryptos
 
-        # Ограничиваем количество для производительности
         if len(selected_cryptos) > 10:
             selected_cryptos = selected_cryptos[:10]
             flash(f"Выбрано слишком много криптовалют. Анализ будет проведен для первых 10.", 'warning')
 
-        # Сохраняем в сессии
         session['correlation_cryptos'] = selected_cryptos
         session['correlation_days'] = days
         session['correlation_timeframe'] = timeframe
@@ -2288,7 +2325,6 @@ def correlation_analysis():
         try:
             logging.info(f"Начинаю расчет корреляций для {len(selected_cryptos)} криптовалют...")
 
-            # Используем функцию с повторными попытками
             correlation_results = calculate_multiple_correlations_with_retry(
                 coin_ids=selected_cryptos,
                 vs_currency=currency,
@@ -2301,22 +2337,21 @@ def correlation_analysis():
                 successful_calculations = len(correlation_results)
                 failed_calculations = [c for c in selected_cryptos if c not in correlation_results and c != 'bitcoin']
 
-                # Генерируем график
                 if successful_calculations > 0:
                     plot_json = generate_correlation_plot(correlation_results)
 
-                    # Рассчитываем сводную статистику
-                    correlations = [data['correlation'] for data in correlation_results.values()]
-                    if correlations:
-                        summary_stats = {
-                            'average_correlation': np.mean(correlations),
-                            'median_correlation': np.median(correlations),
-                            'max_correlation': max(correlations),
-                            'min_correlation': min(correlations),
-                            'positive_count': sum(1 for c in correlations if c > 0),
-                            'negative_count': sum(1 for c in correlations if c < 0),
-                            'total_count': len(correlations)
-                        }
+                    if plot_json:
+                        correlations = [data['correlation'] for data in correlation_results.values()]
+                        if correlations:
+                            summary_stats = {
+                                'average_correlation': np.mean(correlations),
+                                'median_correlation': np.median(correlations),
+                                'max_correlation': max(correlations),
+                                'min_correlation': min(correlations),
+                                'positive_count': sum(1 for c in correlations if c > 0),
+                                'negative_count': sum(1 for c in correlations if c < 0),
+                                'total_count': len(correlations)
+                            }
 
                     log_message(f"Успешно рассчитано {successful_calculations} корреляций из {len(selected_cryptos)}",
                                 'info', user_id=str(user['id']) if user else None)
@@ -2334,19 +2369,14 @@ def correlation_analysis():
             logging.error(f"Ошибка анализа корреляции: {e}", exc_info=True)
 
     else:
-        # GET запрос - берем из сессии или используем значения по умолчанию
         selected_cryptos = session.get('correlation_cryptos', default_cryptos)
         days = session.get('correlation_days', default_days)
         timeframe = session.get('correlation_timeframe', default_timeframe)
         currency = session.get('correlation_currency', default_currency)
 
-    # Загружаем список криптовалют для выбора
     all_cryptos = load_crypto_list()
-
-    # Исключаем Bitcoin из списка для выбора
     available_cryptos = [c for c in all_cryptos if c != 'bitcoin']
 
-    # Периоды для анализа (начинаем с меньших для скорости)
     days_options = [
         {'value': '30', 'label': '30 дней (быстрее)'},
         {'value': '90', 'label': '90 дней'},
@@ -2361,7 +2391,7 @@ def correlation_analysis():
     ]
 
     return render_template('correlation.html',
-                           all_cryptos=available_cryptos[:50],  # Ограничиваем для производительности
+                           all_cryptos=available_cryptos[:50],
                            selected_cryptos=selected_cryptos,
                            days=days,
                            days_options=days_options,
@@ -2389,44 +2419,35 @@ def correlation_binance():
     successful = 0
     failed = []
 
-    # Популярные криптовалюты на Binance
     default_cryptos = ['ETH', 'BNB', 'SOL', 'ADA', 'XRP', 'DOT', 'DOGE', 'MATIC', 'AVAX', 'LINK']
-
-    # Значения по умолчанию
     default_days = 30
     default_currency = 'USDT'
 
     if request.method == 'POST':
-        # Получаем данные из формы
         selected_cryptos = request.form.get('cryptos', '').upper().split(',')
         if not selected_cryptos or selected_cryptos[0] == '':
             selected_cryptos = default_cryptos
         else:
-            # Очищаем от пробелов
             selected_cryptos = [c.strip() for c in selected_cryptos if c.strip()]
 
         days = int(request.form.get('days', default_days))
         currency = request.form.get('currency', default_currency)
 
-        # Ограничиваем количество
         if len(selected_cryptos) > 15:
             selected_cryptos = selected_cryptos[:15]
             flash("Ограничено 15 криптовалютами для производительности", 'warning')
 
-        # Сохраняем в сессии
         session['correlation_binance_cryptos'] = selected_cryptos
         session['correlation_binance_days'] = days
         session['correlation_binance_currency'] = currency
 
         try:
-            # Проверяем доступность Binance API
             logging.info("Проверяю доступность Binance API...")
             test_response = requests.get("https://api.binance.com/api/v3/ping", timeout=5)
             if test_response.status_code != 200:
                 error = "Binance API временно недоступен. Попробуйте позже."
                 flash(error, 'error')
             else:
-                # Рассчитываем корреляции
                 correlation_results, successful, failed = calculate_multiple_correlations_binance(
                     coin_symbols=selected_cryptos,
                     vs_currency=currency,
@@ -2434,10 +2455,8 @@ def correlation_binance():
                 )
 
                 if correlation_results:
-                    # Генерируем график
                     plot_json = generate_correlation_plot(correlation_results)
 
-                    # Рассчитываем статистику
                     correlations = [data['correlation'] for data in correlation_results.values()]
                     if correlations:
                         summary_stats = {
@@ -2462,15 +2481,12 @@ def correlation_binance():
             logging.error(f"Ошибка в correlation_binance: {e}", exc_info=True)
 
     else:
-        # GET запрос
         selected_cryptos = session.get('correlation_binance_cryptos', default_cryptos)
         days = session.get('correlation_binance_days', default_days)
         currency = session.get('correlation_binance_currency', default_currency)
 
-    # Доступные валюты на Binance
     currencies = ['USDT', 'BUSD', 'BTC', 'ETH', 'BNB']
 
-    # Периоды дней
     days_options = [
         {'value': '7', 'label': '7 дней'},
         {'value': '30', 'label': '30 дней'},
@@ -2493,7 +2509,124 @@ def correlation_binance():
                            user=user)
 
 
+@app.route('/api/status')
+def get_worker_status():
+    """Возвращает статус системы и воркеров"""
+    try:
+        # Информация о системе
+        system_info = {
+            'system': platform.system(),
+            'node': platform.node(),
+            'release': platform.release(),
+            'version': platform.version(),
+            'machine': platform.machine(),
+            'processor': platform.processor(),
+            'host_id': get_host_id()
+        }
 
+        # Использование RAM
+        ram_info = {
+            'total': round(psutil.virtual_memory().total / (1024 ** 3), 2),
+            'available': round(psutil.virtual_memory().available / (1024 ** 3), 2),
+            'percent': psutil.virtual_memory().percent,
+            'used': round(psutil.virtual_memory().used / (1024 ** 3), 2)
+        }
+
+        # Использование CPU
+        cpu_info = {
+            'percent': psutil.cpu_percent(interval=1),
+            'count': psutil.cpu_count(),
+            'load_avg': os.getloadavg() if hasattr(os, 'getloadavg') else None
+        }
+
+        # Информация о процессах
+        processes = []
+        for proc in psutil.process_iter(['pid', 'name', 'status', 'cpu_percent', 'memory_percent']):
+            try:
+                if 'nginx' in proc.info['name'].lower() or 'gunicorn' in proc.info['name'].lower():
+                    processes.append({
+                        'name': proc.info['name'],
+                        'pid': proc.info['pid'],
+                        'status': proc.info['status'],
+                        'cpu': proc.info['cpu_percent'],
+                        'memory': proc.info['memory_percent']
+                    })
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+
+        # Статистика nginx
+        nginx_processes = [p for p in processes if 'nginx' in p['name'].lower()]
+        nginx_status = {
+            'count': len(nginx_processes),
+            'on': len([p for p in nginx_processes if p['status'] == 'running']),
+            'off': len([p for p in nginx_processes if p['status'] != 'running']),
+            'processes': nginx_processes[:5]
+        }
+
+        # Статистика gunicorn
+        gunicorn_processes = [p for p in processes if 'gunicorn' in p['name'].lower()]
+        gunicorn_status = {
+            'count': len(gunicorn_processes),
+            'on': len([p for p in gunicorn_processes if p['status'] == 'running']),
+            'off': len([p for p in gunicorn_processes if p['status'] != 'running']),
+            'processes': gunicorn_processes[:5]
+        }
+
+        # Flask статус
+        flask_status = {
+            'status': 'running',
+            'uptime': time.time() - psutil.Process(os.getpid()).create_time(),
+            'requests_processed': 0
+        }
+
+        # Статус базы данных
+        db_status = {
+            'connected': db_connection_active,
+            'last_check': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+        # Общий статус
+        response = {
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'system': system_info,
+            'resources': {
+                'ram': ram_info,
+                'cpu': cpu_info,
+                'disk': {
+                    'total': round(psutil.disk_usage('/').total / (1024 ** 3), 2),
+                    'used': round(psutil.disk_usage('/').used / (1024 ** 3), 2),
+                    'free': round(psutil.disk_usage('/').free / (1024 ** 3), 2),
+                    'percent': psutil.disk_usage('/').percent
+                }
+            },
+            'services': {
+                'nginx': nginx_status,
+                'gunicorn': gunicorn_status,
+                'flask': flask_status,
+                'database': db_status
+            },
+            'processes': {
+                'total': len(processes),
+                'list': processes[:10]
+            }
+        }
+
+        return jsonify(response)
+
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }), 500
+
+
+@app.route('/status')
+def show_status():
+    """Страница для просмотра статуса системы"""
+    user = session.get('user')
+    return render_template('status.html',
+                           title='Статус системы',
+                           user=user)
 
 
 # Инициализация базы данных при импорте модуля
@@ -2501,8 +2634,12 @@ try:
     init_db_connection()
     init_db()
     log_message("Приложение инициализировано", 'info')
+
+    # Запускаем миграцию при старте
+    migrate_database_safe()
+
 except Exception as e:
-    log_message(f"Ошибка инициализации приложения: {e}", 'error')
+    print(f"❌ Ошибка инициализации приложения: {e}")
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

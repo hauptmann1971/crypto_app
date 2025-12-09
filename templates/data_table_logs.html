@@ -1,0 +1,125 @@
+<!-- templates/data_table_logs.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Crypto App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .filter-buttons {
+            margin-bottom: 20px;
+        }
+        .filter-buttons .btn {
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .level-info { color: #17a2b8; }
+        .level-warning { color: #ffc107; }
+        .level-error { color: #dc3545; }
+        .level-debug { color: #6c757d; }
+        .level-critical { color: #721c24; }
+        .traceback-container {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .active-filter {
+            font-weight: bold;
+            border-width: 2px !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>{{ title }}</h1>
+
+        <!-- Фильтры по уровню -->
+        <div class="filter-buttons">
+            <strong>Фильтр по уровню:</strong>
+            {% for level in available_levels %}
+                <a href="{{ url_for('show_log_table', level=level) }}"
+                   class="btn btn-outline-secondary btn-sm {% if current_level == level %}active-filter{% endif %}">
+                    {{ level|upper }}
+                </a>
+            {% endfor %}
+            <a href="{{ url_for('show_log_table') }}" class="btn btn-outline-primary btn-sm">
+                Сбросить фильтры
+            </a>
+        </div>
+
+        {% if data %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Дата/Время (GMT+3)</th>
+                            <th>Уровень</th>
+                            <th>Сообщение</th>
+                            <th>Сервис</th>
+                            <th>Компонент</th>
+                            <th>Пользователь</th>
+                            <th>Host</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data %}
+                            <tr>
+                                <td>{{ row.date_time }}</td>
+                                <td>
+                                    <span class="level-{{ row.level }} fw-bold">
+                                        {{ row.level|upper }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {{ row.message }}
+                                    {% if row.traceback %}
+                                        <button class="btn btn-sm btn-outline-info"
+                                                type="button"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#traceback-{{ loop.index }}">
+                                            Показать Traceback
+                                        </button>
+                                        <div class="collapse" id="traceback-{{ loop.index }}">
+                                            <div class="traceback-container mt-2">
+                                                <pre>{{ row.traceback }}</pre>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>{{ row.service }}</td>
+                                <td>{{ row.component }}</td>
+                                <td>{{ row.user_id }}</td>
+                                <td><code>{{ row.host }}</code></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-warning">
+                <h4>📊 Нет данных для отображения</h4>
+                {% if current_level and current_level != 'all' %}
+                    <p>Логи с уровнем <strong>{{ current_level|upper }}</strong> не найдены.</p>
+                {% else %}
+                    <p>В таблице пока нет записей.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <div class="nav-links mt-4">
+            <a href="/" class="btn btn-primary">🏠 На главную</a>
+            <a href="/status" class="btn btn-info">📊 Статус системы</a>
+            <a href="/crypto_table" class="btn btn-secondary">💹 Таблица курсов</a>
+            <a href="/requests_table" class="btn btn-secondary">📋 Очередь запросов</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
