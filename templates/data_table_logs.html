@@ -10,15 +10,11 @@
         .filter-buttons {
             margin-bottom: 20px;
         }
-        .filter-buttons .btn {
-            margin-right: 5px;
-            margin-bottom: 5px;
-        }
-        .level-info { color: #17a2b8; }
-        .level-warning { color: #ffc107; }
-        .level-error { color: #dc3545; }
-        .level-debug { color: #6c757d; }
-        .level-critical { color: #721c24; }
+        .level-info { color: #17a2b8; font-weight: bold; }
+        .level-warning { color: #ffc107; font-weight: bold; }
+        .level-error { color: #dc3545; font-weight: bold; }
+        .level-debug { color: #6c757d; font-weight: bold; }
+        .level-critical { color: #721c24; font-weight: bold; }
         .traceback-container {
             max-height: 200px;
             overflow-y: auto;
@@ -26,12 +22,9 @@
             padding: 10px;
             border-radius: 5px;
             font-family: monospace;
-            font-size: 0.9em;
+            font-size: 0.85em;
             margin-top: 5px;
-        }
-        .active-filter {
-            font-weight: bold;
-            border-width: 2px !important;
+            white-space: pre-wrap;
         }
     </style>
 </head>
@@ -44,7 +37,7 @@
             <strong>Фильтр по уровню:</strong>
             {% for level in available_levels %}
                 <a href="{{ url_for('show_log_table', level=level) }}"
-                   class="btn btn-outline-secondary btn-sm {% if current_level == level %}active-filter{% endif %}">
+                   class="btn btn-outline-secondary btn-sm {% if current_level == level %}active{% endif %}">
                     {{ level|upper }}
                 </a>
             {% endfor %}
@@ -55,16 +48,12 @@
 
         {% if data %}
             <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
                         <tr>
-                            <th>Дата/Время (GMT+3)</th>
-                            <th>Уровень</th>
-                            <th>Сообщение</th>
-                            <th>Сервис</th>
-                            <th>Компонент</th>
-                            <th>Пользователь</th>
-                            <th>Host</th>
+                            {% for column in columns %}
+                                <th>{{ column|replace('_', ' ')|title }}</th>
+                            {% endfor %}
                         </tr>
                     </thead>
                     <tbody>
@@ -72,14 +61,14 @@
                             <tr>
                                 <td>{{ row.date_time }}</td>
                                 <td>
-                                    <span class="level-{{ row.level }} fw-bold">
+                                    <span class="level-{{ row.level }}">
                                         {{ row.level|upper }}
                                     </span>
                                 </td>
                                 <td>
                                     {{ row.message }}
                                     {% if row.traceback %}
-                                        <button class="btn btn-sm btn-outline-info"
+                                        <button class="btn btn-sm btn-outline-danger mt-1"
                                                 type="button"
                                                 data-bs-toggle="collapse"
                                                 data-bs-target="#traceback-{{ loop.index }}">
@@ -87,7 +76,7 @@
                                         </button>
                                         <div class="collapse" id="traceback-{{ loop.index }}">
                                             <div class="traceback-container mt-2">
-                                                <pre>{{ row.traceback }}</pre>
+                                                {{ row.traceback }}
                                             </div>
                                         </div>
                                     {% endif %}
@@ -101,18 +90,25 @@
                     </tbody>
                 </table>
             </div>
+
+            <div class="alert alert-info">
+                Показано {{ data|length }} записей.
+                {% if current_level and current_level != 'all' %}
+                    Фильтр: <strong>{{ current_level|upper }}</strong>
+                {% endif %}
+            </div>
         {% else %}
             <div class="alert alert-warning">
-                <h4>📊 Нет данных для отображения</h4>
+                <h5>📊 Нет данных для отображения</h5>
                 {% if current_level and current_level != 'all' %}
                     <p>Логи с уровнем <strong>{{ current_level|upper }}</strong> не найдены.</p>
                 {% else %}
-                    <p>В таблице пока нет записей.</p>
+                    <p>В таблице пока нет записей логов.</p>
                 {% endif %}
             </div>
         {% endif %}
 
-        <div class="nav-links mt-4">
+        <div class="mt-4">
             <a href="/" class="btn btn-primary">🏠 На главную</a>
             <a href="/status" class="btn btn-info">📊 Статус системы</a>
             <a href="/crypto_table" class="btn btn-secondary">💹 Таблица курсов</a>

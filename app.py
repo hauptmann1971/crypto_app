@@ -163,6 +163,50 @@ class CryptoRequest(Base):
 
 
 # Вспомогательные функции
+def add_test_logs():
+    """Добавляет тестовые логи в базу данных"""
+    if not db_connection_active:
+        return
+
+    try:
+        with get_db() as db:
+            # Проверяем, есть ли колонка host
+            try:
+                result = db.execute(text("SELECT COUNT(*) FROM app_logs LIMIT 1"))
+                has_data = result.scalar() > 0
+
+                if not has_data:
+                    # Добавляем тестовые логи
+                    import random
+                    levels = ['info', 'warning', 'error']
+                    services = ['crypto_api', 'web_app', 'worker']
+                    components = ['backend', 'frontend', 'database']
+
+                    for i in range(10):
+                        db.execute(text("""
+                            INSERT INTO app_logs 
+                            (service, component, message, level, user_id, timestamp, host)
+                            VALUES (:service, :component, :message, :level, :user_id, :timestamp, :host)
+                        """), {
+                            'service': random.choice(services),
+                            'component': random.choice(components),
+                            'message': f'Тестовое сообщение {i + 1}',
+                            'level': random.choice(levels),
+                            'user_id': str(random.randint(1, 100)) if random.random() > 0.5 else None,
+                            'timestamp': int(time.time()) - random.randint(0, 3600),
+                            'host': get_host_id()
+                        })
+
+                    db.commit()
+                    print("✅ Добавлены тестовые логи")
+
+            except Exception as e:
+                print(f"❌ Ошибка при добавлении тестовых логов: {e}")
+
+    except Exception as e:
+        print(f"❌ Ошибка подключения: {e}")
+
+
 def get_host_id():
     """Возвращает идентификатор хоста"""
     try:
@@ -290,6 +334,25 @@ def migrate_database_safe():
 
     except Exception as e:
         print(f"❌ Ошибка миграции: {e}")
+
+
+def log_message_test(
+        message: str,
+        level: str = 'info',
+        service: str = 'crypto_api',
+        component: str = 'backend',
+        traceback: str = None,
+        user_id: str = None
+):
+    """Только файловый лог - временное решение"""
+    logging.log(
+        getattr(logging, level.upper()),
+        f"[{service}.{component}] User={user_id} | {message}",
+        exc_info=traceback is not None
+    )
+
+    # НЕ пишем в БД временно
+    return
 
 
 def log_message(
@@ -1805,6 +1868,42 @@ def index():
                            bot_username=Config.BOT_USERNAME)
 
 
+@app.route('/crypto_table')
+def show_crypto_table():
+    """Отображает таблицу курсов криптовалют"""
+    if not db_connection_active:
+        flash("Соединение с базой данных отключено", 'error')
+        return redirect(url_for('index'))
+
+    try:
+        with get_db() as db:
+            # Запрашиваем только существующие столбцы
+            rates = db.query(
+                CryptoRate.crypto,
+                CryptoRate.currency,
+                CryptoRate.rate,
+                CryptoRate.source,
+                CryptoRate.timestamp
+            ).order_by(CryptoRate.timestamp.desc()).limit(100).all()
+
+        # Форматируем данные для шаблона
+        rates_data = [{
+            'crypto': r.crypto,
+            'currency': r.currency,
+            'rate': r.rate,
+            'date_time': datetime.fromtimestamp(r.timestamp).strftime('%Y-%m-%d %H:%M:%S'),
+            'source': r.source
+        } for r in rates]
+
+        return render_template('data_table.html',
+                               title='Курсы криптовалют',
+                               data=rates_data,
+                               columns=['crypto', 'currency', 'rate', 'date_time', 'source'])
+    except SQLAlchemyError as e:
+        flash(f"Ошибка БД: {str(e)}", 'error')
+        return redirect(url_for('index'))
+
+
 @app.route('/chart', methods=['GET', 'POST'])
 def chart():
     """Страница с графиком курса криптовалюты"""
@@ -1893,107 +1992,101 @@ def candlestick_chart():
                            user=user)
 
 
-@app.route('/crypto_table')
-def show_crypto_table():
-    """Отображает таблицу курсов криптовалют"""
-    if not db_connection_active:
-        flash("Соединение с базой данных отключено", 'error')
-        return redirect(url_for('index'))
-
-    user = session.get('user')
-
-    try:
-        with get_db() as db:
-            rates = db.query(
-                CryptoRate.crypto,
-                CryptoRate.currency,
-                CryptoRate.rate,
-                CryptoRate.source,
-                CryptoRate.timestamp
-            ).order_by(CryptoRate.timestamp.desc()).limit(100).all()
-
-        rates_data = [{
-            'crypto': r.crypto,
-            'currency': r.currency,
-            'rate': r.rate,
-            'date_time': datetime.fromtimestamp(r.timestamp).strftime('%Y-%m-%d %H:%M:%S') if r.timestamp else 'N/A',
-            'source': r.source
-        } for r in rates]
-
-        return render_template('data_table.html',
-                               title='Курсы криптовалют',
-                               data=rates_data,
-                               columns=['crypto', 'currency', 'rate', 'date_time', 'source'],
-                               user=user)
-    except SQLAlchemyError as e:
-        flash(f"Ошибка БД: {str(e)}", 'error')
-        log_message(f"Ошибка при получении курсов: {e}", 'error')
-        return redirect(url_for('index'))
-
-
 @app.route('/log_table')
 def show_log_table():
-    """Отображает таблицу логов с фильтрацией по уровню"""
+    """Отображает таблицу логов с фильтрацией по уровню - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
     if not db_connection_active:
         flash("Соединение с базой данных отключено", 'error')
         return redirect(url_for('index'))
 
     user = session.get('user')
     level_filter = request.args.get('level', '').lower()
+    logs_data = []
 
     try:
         with get_db() as db:
-            query = db.query(AppLog)
-
+            # Строим SQL запрос в зависимости от фильтра
             if level_filter and level_filter != 'all':
-                query = query.filter(AppLog.level == level_filter)
-
-            logs = query.order_by(AppLog.timestamp.desc()).limit(200).all()
-
-        logs_data = []
-        moscow_tz = timezone(timedelta(hours=3))
-
-        for l in logs:
-            if l.timestamp:
-                utc_time = datetime.fromtimestamp(l.timestamp, tz=timezone.utc)
-                moscow_time = utc_time.astimezone(moscow_tz)
-                date_time_str = moscow_time.strftime('%Y-%m-%d %H:%M:%S')
+                # Используем параметризованный запрос для безопасности
+                result = db.execute(
+                    text("""
+                        SELECT 
+                            timestamp, level, message, service, component, 
+                            user_id, traceback, host
+                        FROM app_logs 
+                        WHERE level = :level
+                        ORDER BY timestamp DESC 
+                        LIMIT 200
+                    """),
+                    {'level': level_filter}
+                )
             else:
-                date_time_str = 'N/A'
+                result = db.execute(text("""
+                    SELECT 
+                        timestamp, level, message, service, component, 
+                        user_id, traceback, host
+                    FROM app_logs 
+                    ORDER BY timestamp DESC 
+                    LIMIT 200
+                """))
 
-            log_entry = {
-                'date_time': date_time_str,
-                'level': l.level,
-                'message': l.message[:200] + '...' if len(l.message) > 200 else l.message,
-                'service': l.service,
-                'component': l.component,
-                'user_id': l.user_id or '',
-                'traceback': '',
-                'host': l.host or 'N/A'
-            }
+            # Получаем все строки как словари
+            rows = result.fetchall()
 
-            if l.level.lower() == 'error' and l.traceback:
-                log_entry['traceback'] = l.traceback[:500] + '...' if len(l.traceback) > 500 else l.traceback
+            # Преобразуем в список словарей для шаблона
+            moscow_tz = timezone(timedelta(hours=3))
 
-            logs_data.append(log_entry)
+            for row in rows:
+                # row - это объект Row, а не AppLog
+                # Преобразуем timestamp в московское время
+                if row.timestamp:
+                    try:
+                        utc_time = datetime.fromtimestamp(row.timestamp, tz=timezone.utc)
+                        moscow_time = utc_time.astimezone(moscow_tz)
+                        date_time_str = moscow_time.strftime('%Y-%m-%d %H:%M:%S')
+                    except Exception:
+                        date_time_str = str(row.timestamp)
+                else:
+                    date_time_str = 'N/A'
 
+                log_entry = {
+                    'date_time': date_time_str,
+                    'level': row.level or '',
+                    'message': (row.message[:200] + '...') if row.message and len(row.message) > 200 else (
+                                row.message or ''),
+                    'service': row.service or '',
+                    'component': row.component or '',
+                    'user_id': row.user_id or '',
+                    'host': row.host or 'N/A',
+                    'traceback': ''
+                }
+
+                # Добавляем traceback только для ошибок
+                if row.level and row.level.lower() == 'error' and row.traceback:
+                    log_entry['traceback'] = (row.traceback[:500] + '...') if len(
+                        row.traceback) > 500 else row.traceback
+
+                logs_data.append(log_entry)
+
+        # Если фильтр применен и нет результатов
         if level_filter and level_filter != 'all' and not logs_data:
             flash(f"Логи с уровнем '{level_filter.upper()}' не найдены", 'warning')
 
-        available_levels = ['all', 'debug', 'info', 'warning', 'error', 'critical']
+    except Exception as e:
+        flash(f"Ошибка при загрузке логов: {str(e)}", 'error')
+        print(f"Ошибка в show_log_table: {e}")
 
-        return render_template('data_table_logs.html',
-                               title='Логи приложения',
-                               data=logs_data,
-                               columns=['date_time', 'level', 'message', 'service', 'component', 'user_id',
-                                        'traceback', 'host'],
-                               user=user,
-                               current_level=level_filter,
-                               available_levels=available_levels)
-    except SQLAlchemyError as e:
-        flash(f"Ошибка БД: {str(e)}", 'error')
-        print(f"Ошибка при получении логов: {e}")
-        return redirect(url_for('index'))
+    # Доступные уровни для фильтрации
+    available_levels = ['all', 'debug', 'info', 'warning', 'error', 'critical']
+
+    return render_template('data_table_logs.html',
+                           title='Логи приложения',
+                           data=logs_data,
+                           columns=['date_time', 'level', 'message', 'service', 'component',
+                                    'user_id', 'host', 'traceback'],
+                           user=user,
+                           current_level=level_filter,
+                           available_levels=available_levels)
 
 
 @app.route('/users_table')
@@ -2633,6 +2726,17 @@ def show_status():
 try:
     init_db_connection()
     init_db()
+    """# В конце файла, после init_db()
+    try:
+        init_db_connection()
+        init_db()
+
+        # Добавляем тестовые логи
+        add_test_logs()
+
+        print("✅ Приложение инициализировано")
+    except Exception as e:
+        print(f"❌ Ошибка инициализации: {e}")"""
     log_message("Приложение инициализировано", 'info')
 
     # Запускаем миграцию при старте
