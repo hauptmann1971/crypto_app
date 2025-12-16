@@ -10,12 +10,11 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            margin: 0;
-            padding: 20px;
             color: #333;
             background-color: #f8f9fa;
+            padding-top: 20px;
         }
-        .container {
+        .main-container {
             max-width: 1400px;
             margin: 0 auto;
             background: white;
@@ -103,10 +102,51 @@
         .table-responsive {
             overflow-x: auto;
         }
+
+        /* Стили для навигации - обеспечение видимости */
+        .navbar .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        .navbar .nav-link:hover {
+            color: white !important;
+            text-decoration: none;
+        }
+        .navbar-brand {
+            color: white !important;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">📊 {{ title }}</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">← На главную</a>
+                    </li>
+                    {% if title == 'Курсы криптовалют' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('show_requests_table') }}">Очередь запросов</a>
+                        </li>
+                    {% elif title == 'Очередь запросов' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('show_crypto_table') }}">Таблица курсов</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('show_log_table') }}">Логи</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container main-container mt-4">
         <h1>{{ title }}</h1>
 
         {% if data %}
