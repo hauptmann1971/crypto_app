@@ -76,6 +76,13 @@
                         <a class="nav-link" href="{{ url_for('show_main_crypto_rates_to_btc') }}">Курсы криптовалют к BTC</a>
                     </li>
                 </ul>
+                <ul class="navbar-nav">
+                <li class="nav-item">
+                    <span class="nav-link text-light">
+                        <small>🕐 GMT+3: <span id="current-time"></span></small>
+                    </span>
+                </li>
+                </ul>
                 <!-- Информация о пользователе и ссылки на авторизацию -->
                 {% if user %}
                 <div class="user-info text-light">
@@ -404,6 +411,21 @@
             });
 
         });
+    </script>
+    <script>
+    function updateTime() {
+        const now = new Date();
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const gmt3 = new Date(utc + (3 * 3600000));
+        const timeString = gmt3.toLocaleTimeString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        document.getElementById('current-time').textContent = timeString;
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
     </script>
 </body>
 </html>

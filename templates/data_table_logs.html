@@ -48,10 +48,16 @@
                 </li>
             </ul>
         </div>
+         <div class="text-end">
+            <small class="text-muted">🕐 GMT+3: <span id="current-time"></span></small>
+        </div>
     </div>
 </nav>
     <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>{{ title }}</h1>
+
+    </div>
 
         <!-- Фильтры по уровню -->
         <div class="filter-buttons">
@@ -134,8 +140,26 @@
             <a href="/status" class="btn btn-info">📊 Статус системы</a>
             <a href="/crypto_table" class="btn btn-secondary">💹 Таблица курсов</a>
             <a href="/requests_table" class="btn btn-secondary">📋 Очередь запросов</a>
+
         </div>
+
     </div>
+
+    <script>
+    function updateTime() {
+        const now = new Date();
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const gmt3 = new Date(utc + (3 * 3600000));
+        const timeString = gmt3.toLocaleTimeString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        document.getElementById('current-time').textContent = timeString;
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+</script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
