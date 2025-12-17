@@ -17,6 +17,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           cd /root/crypto_app/crypto_app
+          git stash
           git pull origin master
           source venv/bin/activate
           pip install -r requirements.txt
