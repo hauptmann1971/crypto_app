@@ -205,6 +205,7 @@ class CryptoWorker:
                     current_request.finished_at = int(time.time())
                     logging.info(
                         f"Worker: Successfully processed request {current_request.id} - {current_request.crypto}/{current_request.currency}: {rate_data['rate']}")
+                    print(f"Worker: Successfully processed request {current_request.id} - {current_request.crypto}/{current_request.currency}: {rate_data['rate']}")
                 else:
                     current_request.status = 'error'
                     current_request.response_data = json.dumps(rate_data)
