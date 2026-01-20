@@ -23,21 +23,13 @@ jobs:
     - name: 🧪 Test Docker image
       run: |
         echo "=== Тестирование образа ==="
-        docker run --rm crypto-app:latest python -c "
-try:
-    import flask
-    print(f'✅ Flask установлен: {flask.__version__}')
-    print('✅ Приложение готово к работе')
-except Exception as e:
-    print(f'❌ Ошибка: {e}')
-    exit(1)
-        "
-        
+        docker run --rm crypto-app:latest python -c "import flask; print('✅ Flask установлен'); print('✅ Приложение готово к работе')"
+
     - name: 💾 Save Docker image
       run: |
         echo "=== Сохранение образа ==="
         docker save crypto-app:latest -o crypto-app.tar
-        echo "Размер файла: \$(du -h crypto-app.tar | cut -f1)"
+        echo "Размер файла: $(du -h crypto-app.tar | cut -f1)"
 
     - name: 📤 Upload Docker image
       uses: actions/upload-artifact@v4
