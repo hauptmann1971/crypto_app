@@ -34,11 +34,11 @@ RUN echo "=== Проверка файлов ===" && \
 # Открываем порт приложения
 EXPOSE 5000
 
-# Переменные окружения для Flask
+# Переменные окружения для Flask - ИСПРАВЛЕННЫЕ!
 ENV PYTHONUNBUFFERED=1 \
     FLASK_APP=app.py \
     FLASK_ENV=production \
-    SECRET_KEY=github-actions-build-$(date +%s) \
+    SECRET_KEY=github-actions-build-secret \
     DB_HOST=localhost \
     BOT_TOKEN=dummy_token_for_build \
     BOT_USERNAME=@crypto_app_bot

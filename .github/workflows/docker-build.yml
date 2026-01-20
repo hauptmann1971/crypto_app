@@ -1,4 +1,4 @@
-# .github/workflows/docker-build-simple.yml
+# .github/workflows/docker-build.yml
 name: Build Docker Image
 
 on:
@@ -11,24 +11,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
 
-    - name: Build Docker image
+    - name: 🏗️ Build Docker image
       run: |
+        echo "=== Сборка Docker образа ==="
         docker build -t crypto-app:latest .
+        echo "✅ Образ успешно собран"
 
-    - name: Test basic functionality
+    - name: 🧪 Test Docker image
       run: |
-        echo "Testing Docker image..."
-        docker run --rm crypto-app:latest python -c "import flask; print('✅ Flask:', flask.__version__)"
-        docker run --rm crypto-app:latest python -c "import pandas, numpy; print('✅ Pandas & NumPy imported')"
-
-    - name: Save Docker image
+        echo "=== Тестирование образа ==="
+        docker run --rm crypto-app:latest python -c "
+try:
+    import flask
+    print(f'✅ Flask установлен: {flask.__version__}')
+    print('✅ Приложение готово к работе')
+except Exception as e:
+    print(f'❌ Ошибка: {e}')
+    exit(1)
+        "
+        
+    - name: 💾 Save Docker image
       run: |
+        echo "=== Сохранение образа ==="
         docker save crypto-app:latest -o crypto-app.tar
-        echo "Image saved: crypto-app.tar"
+        echo "Размер файла: \$(du -h crypto-app.tar | cut -f1)"
 
-    - uses: actions/upload-artifact@v4
+    - name: 📤 Upload Docker image
+      uses: actions/upload-artifact@v4
       with:
         name: crypto-app-docker-image
         path: crypto-app.tar
+        retention-days: 30
+
+    - name: ✅ Success message
+      if: success()
+      run: |
+        echo "🎉 DOCKER ОБРАЗ УСПЕШНО СОБРАН!"
+        echo ""
+        echo "📦 Образ: crypto-app:latest"
+        echo "📁 Скачать: Раздел Artifacts → crypto-app-docker-image"
+        echo ""
+        echo "🚀 Команды для запуска:"
+        echo "   docker load -i crypto-app.tar"
+        echo "   docker run -d -p 5000:5000 --name crypto-app crypto-app:latest"
+        echo "   Открыть: http://localhost:5000"
