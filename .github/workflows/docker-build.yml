@@ -98,7 +98,7 @@ print(f'Количество маршрутов: {len(app.url_map._rules)}')
 for rule in list(app.url_map._rules)[:5]:
     print(f'  {rule.rule}')
         " || echo "⚠️ Приложение требует окружение, но импортируется"
-        
+
     - name: 💾 Save Docker image as artifact
       run: |
         echo "=== Сохранение Docker образа ==="
