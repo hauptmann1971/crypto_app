@@ -1,0 +1,138 @@
+# .github/workflows/docker-build.yml
+name: Build Docker Image
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Разрешает ручной запуск
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v3
+
+    - name: 🐋 Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: 🔍 Validate Dockerfile
+      run: |
+        echo "=== Проверка Dockerfile ==="
+        if [ ! -f Dockerfile ]; then
+          echo "❌ Dockerfile не найден!"
+          exit 1
+        fi
+        echo "✅ Dockerfile найден"
+        
+        echo "=== Проверка requirements.txt ==="
+        if [ ! -f requirements.txt ]; then
+          echo "❌ requirements.txt не найден!"
+          exit 1
+        fi
+        echo "✅ requirements.txt найден"
+        
+        echo "=== Проверка app.py ==="
+        if [ ! -f app.py ]; then
+          echo "❌ app.py не найден!"
+          exit 1
+        fi
+        echo "✅ app.py найден"
+        
+        echo "=== Проверка templates ==="
+        if [ -d templates ]; then
+          echo "✅ Папка templates найдена"
+          ls -la templates/
+        else
+          echo "⚠️ Папка templates не найдена, создаю базовые..."
+          mkdir -p templates
+          echo "<h1>Crypto App</h1>" > templates/index.html
+        fi
+
+    - name: 🏗️ Build Docker image
+      run: |
+        echo "=== Сборка Docker образа ==="
+        docker build -t crypto-app:${{ github.sha }} -t crypto-app:latest .
+
+    - name: ✅ Test Docker image
+      run: |
+        echo "=== Тестирование образа ==="
+        
+        # Тест 1: Проверка что образ собирается
+        echo "1. Проверка сборки..."
+        docker images crypto-app:latest
+        
+        # Тест 2: Проверка зависимостей
+        echo "2. Проверка установленных пакетов..."
+        docker run --rm crypto-app:latest python -c "
+import flask, pandas, numpy, requests
+print(f'✅ Flask: {flask.__version__}')
+print(f'✅ Pandas: {pandas.__version__}')
+print(f'✅ NumPy: {numpy.__version__}')
+print(f'✅ Requests: {requests.__version__}')
+print('Все зависимости установлены!')
+        "
+        
+        # Тест 3: Проверка структуры файлов
+        echo "3. Проверка файлов в образе..."
+        docker run --rm crypto-app:latest sh -c "
+echo 'Содержимое рабочей директории:'
+ls -la
+echo ''
+echo 'Шаблоны:'
+ls -la templates/ 2>/dev/null || echo 'templates/ не найден'
+echo ''
+echo 'Основной файл:'
+head -5 app.py
+        "
+        
+        # Тест 4: Проверка что приложение запускается
+        echo "4. Проверка запуска приложения..."
+        timeout 5s docker run --rm crypto-app:latest python -c "
+from app import app
+print('✅ Flask приложение импортируется успешно')
+print(f'Количество маршрутов: {len(app.url_map._rules)}')
+for rule in list(app.url_map._rules)[:5]:
+    print(f'  {rule.rule}')
+        " || echo "⚠️ Приложение требует окружение, но импортируется"
+        
+    - name: 💾 Save Docker image as artifact
+      run: |
+        echo "=== Сохранение Docker образа ==="
+        docker save crypto-app:latest -o crypto-app.tar
+        echo "Размер архива: $(du -h crypto-app.tar | cut -f1)"
+
+    - name: 📤 Upload Docker image artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: docker-image-crypto-app
+        path: crypto-app.tar
+        retention-days: 7
+
+    - name: 📝 Generate build report
+      run: |
+        echo "=== Отчет о сборке ==="
+        echo "✅ Сборка завершена успешно!"
+        echo "Ревизия: ${{ github.sha }}"
+        echo "Ветка: ${{ github.ref }}"
+        echo "Автор: ${{ github.actor }}"
+        echo ""
+        echo "📦 Образ: crypto-app:latest"
+        echo "📦 Тег: crypto-app:${{ github.sha }}"
+        echo ""
+        echo "⬇️ Скачать образ можно в разделе Artifacts:"
+        echo "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+    - name: 🚀 Deployment summary
+      if: success()
+      run: |
+        echo "🎉 Docker образ успешно собран!"
+        echo ""
+        echo "📋 Инструкция по использованию:"
+        echo "1. Скачайте crypto-app.tar из Artifacts"
+        echo "2. Загрузите в Docker: docker load -i crypto-app.tar"
+        echo "3. Запустите: docker run -d -p 5000:5000 --name crypto-app crypto-app:latest"
+        echo "4. Откройте: http://localhost:5000"

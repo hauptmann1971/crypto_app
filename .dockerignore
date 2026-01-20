@@ -1,0 +1,62 @@
+# .dockerignore
+# Исключаем ненужные файлы из Docker образа
+
+# Git
+.git
+.gitignore
+.github/
+
+# Python кэш и виртуальные окружения
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Конфигурационные файлы и секреты
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Логи
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Документация и тесты
+docs/
+tests/
+test_*
+.coverage
+htmlcov/
+
+# Временные файлы
+tmp/
+temp/
+
+# Операционные системы
+.DS_Store
+Thumbs.db
+
+# Docker файлы (чтобы не копировать самих себя)
+docker-compose.yml
+docker-compose.prod.yml
+Dockerfile.old
+
+# НЕ исключаем:
+# templates/  - нужно для Flask
+# static/     - если будет
+# app.py      - главный файл
+# requirements.txt - уже скопировали отдельно
