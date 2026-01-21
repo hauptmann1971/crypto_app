@@ -13,6 +13,7 @@ psutil==5.9.6
 SQLAlchemy==2.0.19
 Werkzeug==2.3.7
 pymysql
+gunicorn==21.2.0
 
 # Дополнительные зависимости для совместимости
 click==8.1.6
