@@ -1,8 +1,24 @@
 # locust_correlation.py - Упрощенная версия
 import random
-import time
 import sys
-from locust import HttpUser, task, between
+import subprocess
+
+# Проверка установки locust
+try:
+    from locust import HttpUser, task, between
+
+    LOCUST_INSTALLED = True
+except ImportError:
+    LOCUST_INSTALLED = False
+    print("❌ ОШИБКА: Locust не установлен!")
+    print("\nУстановите Locust командой:")
+    print("pip install locust")
+    print("\nИли создайте виртуальное окружение и установите зависимости:")
+    print("python -m venv .venv")
+    print(".venv\\Scripts\\activate  # Windows")
+    print("source .venv/bin/activate  # Linux/Mac")
+    print("pip install locust")
+    sys.exit(1)
 
 
 class CorrelationUser(HttpUser):
@@ -13,7 +29,7 @@ class CorrelationUser(HttpUser):
     # Базовые настройки
     wait_time = between(5, 15)
 
-    # Тестовые данные прямо в коде
+    # Тестовые данные
     COINGECKO_CRYPTOS = [
         'bitcoin', 'ethereum', 'binancecoin', 'ripple', 'cardano',
         'solana', 'polkadot', 'dogecoin', 'matic-network', 'chainlink'
@@ -122,48 +138,120 @@ class CorrelationUser(HttpUser):
         print(f"[{self.user_id}] Проверил результаты")
 
 
+def check_locust_command():
+    """Проверка доступности команды locust в системе"""
+    try:
+        # Проверяем, есть ли locust в PATH
+        result = subprocess.run(['locust', '--version'],
+                                capture_output=True,
+                                text=True,
+                                timeout=2)
+        if result.returncode == 0:
+            print(f"✅ Locust найден: {result.stdout.strip()}")
+            return True
+    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+        pass
+
+    print("⚠️  Команда 'locust' не найдена в PATH")
+    print("   Попробуйте активировать виртуальное окружение:")
+    print("   Windows: .venv\\Scripts\\activate")
+    print("   Linux/Mac: source .venv/bin/activate")
+    return False
+
+
+def run_locust_command(cmd_parts):
+    """Запуск команды locust с обработкой ошибок"""
+    try:
+        print(f"\n🚀 Запуск: {' '.join(cmd_parts)}")
+        print("-" * 60)
+
+        # Запускаем процесс
+        process = subprocess.Popen(cmd_parts,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT,
+                                   text=True,
+                                   bufsize=1,
+                                   universal_newlines=True)
+
+        # Выводим вывод в реальном времени
+        for line in process.stdout:
+            print(line, end='')
+
+        process.wait()
+
+        if process.returncode == 0:
+            print("\n✅ Тест завершен успешно")
+        else:
+            print(f"\n❌ Тест завершен с кодом ошибки: {process.returncode}")
+
+    except KeyboardInterrupt:
+        print("\n\n🛑 Тест прерван пользователем")
+    except FileNotFoundError:
+        print("\n❌ Ошибка: Команда 'locust' не найдена")
+        print("Убедитесь, что:")
+        print("1. Locust установлен: pip install locust")
+        print("2. Виртуальное окружение активировано")
+        print("3. Команда 'locust' доступна в PATH")
+    except Exception as e:
+        print(f"\n❌ Неожиданная ошибка: {e}")
+
+
 def main():
     """Простой запуск с выбором режима"""
     print("=" * 60)
     print("📊 ТЕСТИРОВАНИЕ КОРРЕЛЯЦИЙ КРИПТОВАЛЮТ")
     print("=" * 60)
+
+    # Проверяем доступность команды locust
+    if not check_locust_command():
+        response = input("\nПродолжить все равно? (y/N): ").lower().strip()
+        if response != 'y':
+            print("Отмена запуска")
+            return
+
     print("\nДоступные режимы:")
     print("  1. Веб-интерфейс (по умолчанию)")
     print("  2. Быстрый тест (10 users, 1m)")
     print("  3. Средний тест (20 users, 3m)")
     print("  4. Стресс-тест (50 users, 5m)")
+    print("  5. Настроить хост (текущий хост будет изменен)")
     print("\nДля веб-интерфейса откройте: http://localhost:8089")
     print("=" * 60)
 
+    # Настройки по умолчанию
+    host = "http://hauptmann.su"  # Исправлено: добавлен https
+
+    # Получаем режим
     if len(sys.argv) > 1:
         mode = sys.argv[1].lower()
     else:
-        mode = input("\nВыберите режим (1-4 или Enter для веб): ").strip()
+        mode = input("\nВыберите режим (1-5 или Enter для веб): ").strip()
 
-    import subprocess
+    # Обработка выбора хоста
+    if mode == "5" or mode == "host":
+        new_host = input(f"\nТекущий хост: {host}\nВведите новый хост: ").strip()
+        if new_host:
+            host = new_host
+        print(f"Хост установлен: {host}")
+        mode = input("\nТеперь выберите режим тестирования (1-4): ").strip()
 
-    # Настройки по умолчанию
-    host = "http://hauptmann.su"  # Замените на ваш хост
+    # Формируем команду
+    cmd_parts = ['locust', '-f', __file__, '--host', host]
 
     if mode == "2" or mode == "fast":
-        cmd = f"locust -f {__file__} --host={host} --users=10 --spawn-rate=2 --run-time=1m --headless"
+        cmd_parts.extend(['--users', '10', '--spawn-rate', '2', '--run-time', '1m', '--headless'])
     elif mode == "3" or mode == "normal":
-        cmd = f"locust -f {__file__} --host={host} --users=20 --spawn-rate=3 --run-time=3m --headless"
+        cmd_parts.extend(['--users', '20', '--spawn-rate', '3', '--run-time', '3m', '--headless'])
     elif mode == "4" or mode == "stress":
-        cmd = f"locust -f {__file__} --host={host} --users=50 --spawn-rate=5 --run-time=5m --headless"
+        cmd_parts.extend(['--users', '50', '--spawn-rate', '5', '--run-time', '5m', '--headless'])
     else:
         # Веб-интерфейс по умолчанию
-        cmd = f"locust -f {__file__} --host={host} --web-host=localhost --web-port=8089"
+        cmd_parts.extend(['--web-host', 'localhost', '--web-port', '8089'])
+        print(f"\n🌐 Веб-интерфейс будет доступен по адресу: http://localhost:8089")
+        print("   После запуска откройте этот адрес в браузере")
 
-    print(f"\nЗапуск: {cmd}")
-    print("-" * 60)
-
-    try:
-        subprocess.run(cmd.split(), check=True)
-    except KeyboardInterrupt:
-        print("\nТест прерван")
-    except Exception as e:
-        print(f"Ошибка: {e}")
+    # Запускаем команду
+    run_locust_command(cmd_parts)
 
 
 if __name__ == "__main__":
