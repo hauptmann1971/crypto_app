@@ -1,3 +1,4 @@
+gevent
 locust
 # requirements.txt
 # Основные зависимости Flask приложения

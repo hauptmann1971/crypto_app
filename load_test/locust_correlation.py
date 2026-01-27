@@ -1,267 +1,170 @@
-# locust_correlation.py
+# locust_correlation.py - Упрощенная версия
 import random
 import time
-
+import sys
 from locust import HttpUser, task, between
 
 
 class CorrelationUser(HttpUser):
     """
-    Пользователь, который тестирует эндпоинты корреляции:
-    - /correlation (CoinGecko API)
-    - /correlation_binance (Binance API)
+    Простой пользователь для тестирования эндпоинтов корреляции
     """
 
+    # Базовые настройки
     wait_time = between(5, 15)
 
-    # Конфигурация теста
+    # Тестовые данные прямо в коде
     COINGECKO_CRYPTOS = [
         'bitcoin', 'ethereum', 'binancecoin', 'ripple', 'cardano',
-        'solana', 'polkadot', 'dogecoin', 'matic-network', 'chainlink',
-        'litecoin', 'bitcoin-cash', 'stellar', 'monero', 'ethereum-classic'
+        'solana', 'polkadot', 'dogecoin', 'matic-network', 'chainlink'
     ]
 
     BINANCE_CRYPTOS = [
         'ETH', 'BNB', 'SOL', 'ADA', 'XRP', 'DOT', 'DOGE', 'MATIC',
-        'AVAX', 'LINK', 'LTC', 'BCH', 'XLM', 'XMR', 'ETC'
+        'AVAX', 'LINK', 'LTC', 'BCH'
     ]
 
     CURRENCIES = ['usd', 'eur', 'rub']
     BINANCE_CURRENCIES = ['USDT', 'BUSD', 'BTC']
 
-    DAYS_OPTIONS = ['30', '90', '180', '365']
-    TIMEFRAMES = ['1d', '1w', '1M']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.binance_results = None
-        self.coingecko_results = None
-        self.test_start_time = None
-        self.user_id = None
+    DAYS_OPTIONS = ['30', '90', '180']
+    TIMEFRAMES = ['1d', '1w']
 
     def on_start(self):
-        """Инициализация пользователя"""
-        self.user_id = f"corr_user_{random.randint(1000, 9999)}"
-        self.test_start_time = time.time()
-        self.coingecko_results = []
-        self.binance_results = []
+        """Инициализация пользователя при старте"""
+        self.user_id = f"user_{random.randint(1000, 9999)}"
+        print(f"[{self.user_id}] Начал тестирование")
 
-        print(f"[{self.user_id}] Начал тестирование корреляций")
-
-    @task(3)  # Чаще тестируем CoinGecko
+    @task(3)  # CoinGecko тестируем в 3 раза чаще
     def test_coingecko_correlation(self):
-        """Тестирование эндпоинта /correlation (CoinGecko)"""
+        """Тестирование /correlation (CoinGecko)"""
 
-        # 1. Сначала GET запрос для получения формы
-        with self.client.get("/correlation",
-                             name="GET /correlation (форма)",
-                             catch_response=True) as get_response:
+        # 1. Получаем форму
+        self.client.get("/correlation", name="GET /correlation (форма)")
 
-            if get_response.status_code != 200:
-                get_response.failure(f"GET failed: {get_response.status_code}")
-                return
-
-            get_response.success()
-
-        # 2. Подготавливаем данные для POST запроса
-        num_cryptos = random.randint(3, 7)  # 3-7 криптовалют для анализа
+        # 2. Готовим данные
+        num_cryptos = random.randint(2, 5)
         selected_cryptos = random.sample(self.COINGECKO_CRYPTOS, num_cryptos)
 
-        correlation_data = {
-            "cryptos": selected_cryptos,
-            "days": random.choice(self.DAYS_OPTIONS),
-            "timeframe": random.choice(self.TIMEFRAMES),
-            "currency": random.choice(self.CURRENCIES)
+        # 3. Отправляем POST запрос
+        form_data = {
+            'days': random.choice(self.DAYS_OPTIONS),
+            'timeframe': random.choice(self.TIMEFRAMES),
+            'currency': random.choice(self.CURRENCIES)
         }
 
-        # Для отправки массива в форме
-        form_data = {}
-        for i, crypto in enumerate(selected_cryptos):
-            form_data[f'cryptos'] = crypto  # Все с одним ключом
+        # Добавляем криптовалюты
+        for crypto in selected_cryptos:
+            form_data['cryptos'] = crypto
 
-        form_data['days'] = correlation_data['days']
-        form_data['timeframe'] = correlation_data['timeframe']
-        form_data['currency'] = correlation_data['currency']
+        response = self.client.post("/correlation",
+                                    data=form_data,
+                                    name="POST /correlation (расчет)")
 
-        # 3. Отправляем POST запрос для расчета корреляций
-        start_time = time.time()
+        # Простая проверка ответа
+        if response.status_code == 200:
+            print(f"[{self.user_id}] CoinGecko OK: {num_cryptos} крипт")
+        else:
+            print(f"[{self.user_id}] CoinGecko ERROR: {response.status_code}")
 
-        with self.client.post("/correlation",
-                              data=form_data,
-                              name="POST /correlation (расчет)",
-                              catch_response=True) as post_response:
-
-            response_time = int((time.time() - start_time) * 1000)
-
-            if post_response.status_code == 200:
-                # Проверяем содержимое ответа
-                content = post_response.text
-
-                success_indicators = [
-                    'корреляция' in content.lower(),
-                    'correlation' in content.lower(),
-                    'график' in content.lower(),
-                    'bitcoin' in content.lower(),
-                    'результат' in content.lower()
-                ]
-
-                if any(success_indicators):
-                    post_response.success()
-
-                    # Сохраняем метрики
-                    self.coingecko_results.append({
-                        'cryptos_count': num_cryptos,
-                        'days': correlation_data['days'],
-                        'response_time_ms': response_time,
-                        'timestamp': time.time()
-                    })
-
-                    print(f"[{self.user_id}] CoinGecko: {num_cryptos} cryptos, "
-                          f"{correlation_data['days']} days, {response_time}ms")
-
-                    # Дополнительная проверка - ищем JSON данные
-                    if 'plot_json' in content or 'var graph' in content:
-                        print(f"[{self.user_id}] График сгенерирован успешно")
-
-                else:
-                    post_response.failure("Страница не содержит ожидаемых данных корреляции")
-
-            elif post_response.status_code == 429:
-                # Rate limiting - ожидаем и повторяем
-                post_response.failure("Rate limit exceeded (429)")
-                time.sleep(5)
-
-            elif post_response.status_code == 500:
-                post_response.failure("Server error (500)")
-                # Можно добавить логирование
-
-            else:
-                post_response.failure(f"Unexpected status: {post_response.status_code}")
-
-    @task(2)  # Реже тестируем Binance
+    @task(2)  # Binance тестируем в 2 раза реже
     def test_binance_correlation(self):
-        """Тестирование эндпоинта /correlation_binance"""
+        """Тестирование /correlation_binance"""
 
-        # 1. GET запрос для формы
-        with self.client.get("/correlation_binance",
-                             name="GET /correlation_binance (форма)",
-                             catch_response=True) as get_response:
+        # 1. Получаем форму
+        self.client.get("/correlation_binance", name="GET /correlation_binance (форма)")
 
-            if get_response.status_code != 200:
-                get_response.failure(f"GET failed: {get_response.status_code}")
-                return
-
-            get_response.success()
-
-        # 2. Подготовка данных для Binance
-        num_cryptos = random.randint(2, 5)  # Binance может быть более тяжелым
+        # 2. Готовим данные
+        num_cryptos = random.randint(2, 4)
         selected_cryptos = random.sample(self.BINANCE_CRYPTOS, num_cryptos)
-
-        # Форматируем как ожидает форма (через запятую)
         cryptos_string = ','.join(selected_cryptos)
 
-        binance_data = {
+        # 3. Отправляем POST запрос
+        form_data = {
             "cryptos": cryptos_string,
             "days": random.choice(['7', '30', '90']),
             "currency": random.choice(self.BINANCE_CURRENCIES)
         }
 
-        # 3. POST запрос к Binance эндпоинту
-        start_time = time.time()
+        response = self.client.post("/correlation_binance",
+                                    data=form_data,
+                                    name="POST /correlation_binance (расчет)")
 
-        with self.client.post("/correlation_binance",
-                              data=binance_data,
-                              name="POST /correlation_binance (расчет)",
-                              catch_response=True) as post_response:
+        # Простая проверка ответа
+        if response.status_code == 200:
+            print(f"[{self.user_id}] Binance OK: {num_cryptos} крипт")
+        else:
+            print(f"[{self.user_id}] Binance ERROR: {response.status_code}")
 
-            response_time = int((time.time() - start_time) * 1000)
+    @task(1)  # Проверка результатов - самая редкая задача
+    def check_results(self):
+        """Проверяем результаты с GET параметрами"""
 
-            if post_response.status_code == 200:
-                content = post_response.text
+        # Простые GET запросы с параметрами
+        params = {
+            'cryptos': 'bitcoin,ethereum,solana',
+            'days': random.choice(self.DAYS_OPTIONS),
+            'timeframe': random.choice(self.TIMEFRAMES),
+            'currency': random.choice(self.CURRENCIES)
+        }
 
-                success_indicators = [
-                    'binance' in content.lower(),
-                    'корреляция' in content.lower(),
-                    'btc' in content.lower(),
-                    'usdt' in content.lower(),
-                    'график' in content.lower()
-                ]
+        self.client.get("/correlation", params=params, name="GET /correlation (результаты)")
 
-                if any(success_indicators):
-                    post_response.success()
+        # Binance вариант
+        binance_params = {
+            'cryptos': 'ETH,BNB,SOL',
+            'days': random.choice(['7', '30', '90']),
+            'currency': random.choice(self.BINANCE_CURRENCIES)
+        }
 
-                    self.binance_results.append({
-                        'cryptos_count': num_cryptos,
-                        'days': binance_data['days'],
-                        'currency': binance_data['currency'],
-                        'response_time_ms': response_time,
-                        'timestamp': time.time()
-                    })
+        self.client.get("/correlation_binance", params=binance_params, name="GET /correlation_binance (результаты)")
 
-                    print(f"[{self.user_id}] Binance: {num_cryptos} cryptos, "
-                          f"{binance_data['days']} days, {response_time}ms")
+        print(f"[{self.user_id}] Проверил результаты")
 
-                else:
-                    post_response.failure("Страница Binance не содержит ожидаемых данных")
 
-            elif post_response.status_code == 429:
-                post_response.failure("Binance rate limit (429)")
-                time.sleep(10)  # Binance требует больше времени
+def main():
+    """Простой запуск с выбором режима"""
+    print("=" * 60)
+    print("📊 ТЕСТИРОВАНИЕ КОРРЕЛЯЦИЙ КРИПТОВАЛЮТ")
+    print("=" * 60)
+    print("\nДоступные режимы:")
+    print("  1. Веб-интерфейс (по умолчанию)")
+    print("  2. Быстрый тест (10 users, 1m)")
+    print("  3. Средний тест (20 users, 3m)")
+    print("  4. Стресс-тест (50 users, 5m)")
+    print("\nДля веб-интерфейса откройте: http://localhost:8089")
+    print("=" * 60)
 
-            elif post_response.status_code == 502 or post_response.status_code == 504:
-                # Gateway timeout - Binance API может не отвечать
-                post_response.failure(f"Gateway error: {post_response.status_code}")
-                time.sleep(15)
+    if len(sys.argv) > 1:
+        mode = sys.argv[1].lower()
+    else:
+        mode = input("\nВыберите режим (1-4 или Enter для веб): ").strip()
 
-            else:
-                post_response.failure(f"Unexpected status: {post_response.status_code}")
+    import subprocess
 
-    @task(1)  # Проверка результатов
-    def check_correlation_results(self):
-        """Проверка ранее рассчитанных корреляций через GET с параметрами"""
+    # Настройки по умолчанию
+    host = "http://hauptmann.su"  # Замените на ваш хост
 
-        # Для CoinGecko
-        if self.coingecko_results:
-            latest = self.coingecko_results[-1]
+    if mode == "2" or mode == "fast":
+        cmd = f"locust -f {__file__} --host={host} --users=10 --spawn-rate=2 --run-time=1m --headless"
+    elif mode == "3" or mode == "normal":
+        cmd = f"locust -f {__file__} --host={host} --users=20 --spawn-rate=3 --run-time=3m --headless"
+    elif mode == "4" or mode == "stress":
+        cmd = f"locust -f {__file__} --host={host} --users=50 --spawn-rate=5 --run-time=5m --headless"
+    else:
+        # Веб-интерфейс по умолчанию
+        cmd = f"locust -f {__file__} --host={host} --web-host=localhost --web-port=8089"
 
-            # Эмулируем просмотр результатов с параметрами
-            params = {
-                'cryptos': 'bitcoin,ethereum,solana',  # Пример
-                'days': latest['days'],
-                'timeframe': random.choice(self.TIMEFRAMES),
-                'currency': random.choice(self.CURRENCIES)
-            }
+    print(f"\nЗапуск: {cmd}")
+    print("-" * 60)
 
-            self.client.get("/correlation",
-                            params=params,
-                            name="GET /correlation (с параметрами)")
+    try:
+        subprocess.run(cmd.split(), check=True)
+    except KeyboardInterrupt:
+        print("\nТест прерван")
+    except Exception as e:
+        print(f"Ошибка: {e}")
 
-        # Для Binance
-        if self.binance_results:
-            latest = self.binance_results[-1]
 
-            params = {
-                'cryptos': 'ETH,BNB,SOL',
-                'days': latest['days'],
-                'currency': latest['currency']
-            }
-
-            self.client.get("/correlation_binance",
-                            params=params,
-                            name="GET /correlation_binance (с параметрами)")
-
-    def on_stop(self):
-        """Вызывается при завершении пользователя"""
-        duration = time.time() - self.test_start_time
-
-        print(f"\n[{self.user_id}] Итоги тестирования:")
-        print(f"  CoinGecko запросов: {len(self.coingecko_results)}")
-        print(f"  Binance запросов: {len(self.binance_results)}")
-
-        if self.coingecko_results:
-            avg_time = sum(r['response_time_ms'] for r in self.coingecko_results) / len(self.coingecko_results)
-            print(f"  Среднее время CoinGecko: {avg_time:.0f}ms")
-
-        if self.binance_results:
-            avg_time = sum(r['response_time_ms'] for r in self.binance_results) / len(self.binance_results)
-            print(f"  Среднее время Binance: {avg_time:.0f}ms")
+if __name__ == "__main__":
+    main()
