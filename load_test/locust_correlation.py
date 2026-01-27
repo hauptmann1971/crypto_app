@@ -1,9 +1,8 @@
 # locust_correlation.py
-from locust import HttpUser, task, between, events
 import random
 import time
-import json
-from typing import List, Dict
+
+from locust import HttpUser, task, between
 
 
 class CorrelationUser(HttpUser):
@@ -13,7 +12,7 @@ class CorrelationUser(HttpUser):
     - /correlation_binance (Binance API)
     """
 
-    wait_time = between(5, 15)  # Аналитики смотрят данные нечасто
+    wait_time = between(5, 15)
 
     # Конфигурация теста
     COINGECKO_CRYPTOS = [
@@ -32,6 +31,13 @@ class CorrelationUser(HttpUser):
 
     DAYS_OPTIONS = ['30', '90', '180', '365']
     TIMEFRAMES = ['1d', '1w', '1M']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.binance_results = None
+        self.coingecko_results = None
+        self.test_start_time = None
+        self.user_id = None
 
     def on_start(self):
         """Инициализация пользователя"""
