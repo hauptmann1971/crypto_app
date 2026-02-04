@@ -317,7 +317,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.abspath('../..'))
 
 project = 'Crypto Analytics Platform'
-author = 'Ваша команда'
+author = 'Романов Е.В.'
 copyright = f'{datetime.now().year}, {author}'
 release = '1.0.0'
 

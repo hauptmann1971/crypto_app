@@ -1,0 +1,119 @@
+{
+  "total_functions": 61,
+  "functions_by_category": {
+    "database": [
+      "get_db",
+      "init_db_connection",
+      "init_db",
+      "get_user_from_db",
+      "update_user_last_login",
+      "disconnect_db",
+      "connect_db"
+    ],
+    "api": [
+      "get_host_id",
+      "create_crypto_request",
+      "mark_request_as_error",
+      "get_pending_requests_count",
+      "get_processing_requests_count",
+      "get_latest_finished_request",
+      "get_user_requests_history",
+      "process_pending_requests",
+      "get_main_crypto_rates_to_btc",
+      "get_historical_price_range",
+      "get_historical_price_data",
+      "get_correlation_strength",
+      "get_daily_returns",
+      "get_available_crypto_pairs",
+      "get_request_status",
+      "get_ohlc",
+      "show_requests_table",
+      "get_worker_status",
+      "get_all_symbols",
+      "get_historical_klines"
+    ],
+    "routes": [
+      "verify_telegram_authentication",
+      "calculate_correlation_with_btc",
+      "calculate_multiple_correlations",
+      "generate_correlation_plot",
+      "calculate_multiple_correlations_with_retry",
+      "calculate_correlation_with_btc_binance",
+      "calculate_multiple_correlations_binance",
+      "telegram_auth",
+      "auth",
+      "index",
+      "chart",
+      "candlestick_chart",
+      "correlation_analysis",
+      "correlation_binance"
+    ],
+    "utils": [
+      "add_test_logs",
+      "migrate_database_safe",
+      "log_message_test",
+      "log_message",
+      "load_full_crypto_list_async",
+      "load_crypto_list",
+      "logout",
+      "show_crypto_table",
+      "show_log_table",
+      "show_users_table",
+      "verify_code",
+      "show_main_crypto_rates_to_btc",
+      "show_next_crypto_rates_to_btc",
+      "historical_data",
+      "load_thread",
+      "__init__",
+      "run_migration"
+    ],
+    "analysis": [
+      "generate_historical_plot",
+      "generate_plot",
+      "show_status"
+    ]
+  },
+  "most_connected_functions": [
+    [
+      "log_message",
+      26
+    ],
+    [
+      "get_db",
+      18
+    ],
+    [
+      "index",
+      9
+    ],
+    [
+      "load_crypto_list",
+      8
+    ],
+    [
+      "get_host_id",
+      7
+    ],
+    [
+      "update_user_last_login",
+      4
+    ],
+    [
+      "create_crypto_request",
+      4
+    ],
+    [
+      "calculate_correlation_with_btc",
+      4
+    ],
+    [
+      "telegram_auth",
+      4
+    ],
+    [
+      "chart",
+      4
+    ]
+  ],
+  "generated_at": "2026-01-28T15:32:56.817876"
+}

@@ -1,0 +1,880 @@
+{
+  "metadata": {
+    "source_file": "app.py",
+    "total_nodes": 77,
+    "total_edges": 100,
+    "generated_at": "2026-01-28T15:32:56.814485"
+  },
+  "statistics": {
+    "functions": 61,
+    "classes": 8,
+    "methods": 8,
+    "orphan_nodes": 12
+  },
+  "nodes": [
+    {
+      "id": "function:add_test_logs",
+      "type": "function",
+      "line": 166,
+      "module": "app"
+    },
+    {
+      "id": "function:get_db",
+      "type": "function",
+      "line": 245,
+      "module": "app"
+    },
+    {
+      "id": "function:get_host_id",
+      "type": "function",
+      "line": 210,
+      "module": "app"
+    },
+    {
+      "id": "function:init_db_connection",
+      "type": "function",
+      "line": 218,
+      "module": "app"
+    },
+    {
+      "id": "function:migrate_database_safe",
+      "type": "function",
+      "line": 290,
+      "module": "app"
+    },
+    {
+      "id": "function:log_message_test",
+      "type": "function",
+      "line": 339,
+      "module": "app"
+    },
+    {
+      "id": "function:log_message",
+      "type": "function",
+      "line": 358,
+      "module": "app"
+    },
+    {
+      "id": "function:init_db",
+      "type": "function",
+      "line": 467,
+      "module": "app"
+    },
+    {
+      "id": "function:verify_telegram_authentication",
+      "type": "function",
+      "line": 480,
+      "module": "app"
+    },
+    {
+      "id": "function:load_full_crypto_list_async",
+      "type": "function",
+      "line": 519,
+      "module": "app"
+    },
+    {
+      "id": "function:load_crypto_list",
+      "type": "function",
+      "line": 560,
+      "module": "app"
+    },
+    {
+      "id": "function:get_user_from_db",
+      "type": "function",
+      "line": 569,
+      "module": "app"
+    },
+    {
+      "id": "function:update_user_last_login",
+      "type": "function",
+      "line": 596,
+      "module": "app"
+    },
+    {
+      "id": "function:create_crypto_request",
+      "type": "function",
+      "line": 611,
+      "module": "app"
+    },
+    {
+      "id": "function:mark_request_as_error",
+      "type": "function",
+      "line": 645,
+      "module": "app"
+    },
+    {
+      "id": "function:get_pending_requests_count",
+      "type": "function",
+      "line": 660,
+      "module": "app"
+    },
+    {
+      "id": "function:get_processing_requests_count",
+      "type": "function",
+      "line": 673,
+      "module": "app"
+    },
+    {
+      "id": "function:get_latest_finished_request",
+      "type": "function",
+      "line": 686,
+      "module": "app"
+    },
+    {
+      "id": "function:get_user_requests_history",
+      "type": "function",
+      "line": 717,
+      "module": "app"
+    },
+    {
+      "id": "function:process_pending_requests",
+      "type": "function",
+      "line": 751,
+      "module": "app"
+    },
+    {
+      "id": "function:get_main_crypto_rates_to_btc",
+      "type": "function",
+      "line": 777,
+      "module": "app"
+    },
+    {
+      "id": "function:generate_historical_plot",
+      "type": "function",
+      "line": 814,
+      "module": "app"
+    },
+    {
+      "id": "function:get_historical_price_range",
+      "type": "function",
+      "line": 866,
+      "module": "app"
+    },
+    {
+      "id": "function:calculate_correlation_with_btc",
+      "type": "function",
+      "line": 1031,
+      "module": "app"
+    },
+    {
+      "id": "function:get_historical_price_data",
+      "type": "function",
+      "line": 1184,
+      "module": "app"
+    },
+    {
+      "id": "function:get_correlation_strength",
+      "type": "function",
+      "line": 1169,
+      "module": "app"
+    },
+    {
+      "id": "function:calculate_multiple_correlations",
+      "type": "function",
+      "line": 1259,
+      "module": "app"
+    },
+    {
+      "id": "function:generate_correlation_plot",
+      "type": "function",
+      "line": 1287,
+      "module": "app"
+    },
+    {
+      "id": "function:calculate_multiple_correlations_with_retry",
+      "type": "function",
+      "line": 1360,
+      "module": "app"
+    },
+    {
+      "id": "function:calculate_correlation_with_btc_binance",
+      "type": "function",
+      "line": 1520,
+      "module": "app"
+    },
+    {
+      "id": "function:get_daily_returns",
+      "type": "function",
+      "line": 1471,
+      "module": "app"
+    },
+    {
+      "id": "function:calculate_multiple_correlations_binance",
+      "type": "function",
+      "line": 1595,
+      "module": "app"
+    },
+    {
+      "id": "function:get_available_crypto_pairs",
+      "type": "function",
+      "line": 1499,
+      "module": "app"
+    },
+    {
+      "id": "function:telegram_auth",
+      "type": "function",
+      "line": 1640,
+      "module": "app"
+    },
+    {
+      "id": "function:auth",
+      "type": "function",
+      "line": 1713,
+      "module": "app"
+    },
+    {
+      "id": "function:logout",
+      "type": "function",
+      "line": 1725,
+      "module": "app"
+    },
+    {
+      "id": "function:disconnect_db",
+      "type": "function",
+      "line": 1735,
+      "module": "app"
+    },
+    {
+      "id": "function:connect_db",
+      "type": "function",
+      "line": 1749,
+      "module": "app"
+    },
+    {
+      "id": "function:get_request_status",
+      "type": "function",
+      "line": 1766,
+      "module": "app"
+    },
+    {
+      "id": "function:index",
+      "type": "function",
+      "line": 1798,
+      "module": "app"
+    },
+    {
+      "id": "function:show_crypto_table",
+      "type": "function",
+      "line": 1872,
+      "module": "app"
+    },
+    {
+      "id": "function:chart",
+      "type": "function",
+      "line": 1908,
+      "module": "app"
+    },
+    {
+      "id": "function:get_ohlc",
+      "type": "function",
+      "line": 949,
+      "module": "app"
+    },
+    {
+      "id": "function:generate_plot",
+      "type": "function",
+      "line": 975,
+      "module": "app"
+    },
+    {
+      "id": "function:candlestick_chart",
+      "type": "function",
+      "line": 1952,
+      "module": "app"
+    },
+    {
+      "id": "function:show_log_table",
+      "type": "function",
+      "line": 1996,
+      "module": "app"
+    },
+    {
+      "id": "function:show_users_table",
+      "type": "function",
+      "line": 2093,
+      "module": "app"
+    },
+    {
+      "id": "function:show_requests_table",
+      "type": "function",
+      "line": 2134,
+      "module": "app"
+    },
+    {
+      "id": "function:verify_code",
+      "type": "function",
+      "line": 2183,
+      "module": "app"
+    },
+    {
+      "id": "function:show_main_crypto_rates_to_btc",
+      "type": "function",
+      "line": 2196,
+      "module": "app"
+    },
+    {
+      "id": "function:show_next_crypto_rates_to_btc",
+      "type": "function",
+      "line": 2241,
+      "module": "app"
+    },
+    {
+      "id": "function:historical_data",
+      "type": "function",
+      "line": 2300,
+      "module": "app"
+    },
+    {
+      "id": "function:correlation_analysis",
+      "type": "function",
+      "line": 2385,
+      "module": "app"
+    },
+    {
+      "id": "function:correlation_binance",
+      "type": "function",
+      "line": 2505,
+      "module": "app"
+    },
+    {
+      "id": "function:get_worker_status",
+      "type": "function",
+      "line": 2606,
+      "module": "app"
+    },
+    {
+      "id": "function:show_status",
+      "type": "function",
+      "line": 2717,
+      "module": "app"
+    },
+    {
+      "id": "function:load_thread",
+      "type": "function",
+      "line": 528,
+      "module": "app"
+    },
+    {
+      "id": "function:__init__",
+      "type": "function",
+      "line": 1408,
+      "module": "app"
+    },
+    {
+      "id": "function:get_all_symbols",
+      "type": "function",
+      "line": 1412,
+      "module": "app"
+    },
+    {
+      "id": "function:get_historical_klines",
+      "type": "function",
+      "line": 1434,
+      "module": "app"
+    },
+    {
+      "id": "function:run_migration",
+      "type": "function",
+      "line": 440,
+      "module": "app"
+    },
+    {
+      "id": "class:Config",
+      "type": "class",
+      "line": 59,
+      "module": "app"
+    },
+    {
+      "id": "class:TelegramUserData",
+      "type": "class",
+      "line": 98,
+      "module": "app"
+    },
+    {
+      "id": "class:CryptoRate",
+      "type": "class",
+      "line": 109,
+      "module": "app"
+    },
+    {
+      "id": "class:AppLog",
+      "type": "class",
+      "line": 121,
+      "module": "app"
+    },
+    {
+      "id": "class:TelegramUser",
+      "type": "class",
+      "line": 135,
+      "module": "app"
+    },
+    {
+      "id": "class:CryptoRequest",
+      "type": "class",
+      "line": 151,
+      "module": "app"
+    },
+    {
+      "id": "class:CoinGeckoAPI",
+      "type": "class",
+      "line": 945,
+      "module": "app"
+    },
+    {
+      "id": "class:CoinGeckoAPI.__init__",
+      "type": "method",
+      "line": 946,
+      "parent": "CoinGeckoAPI"
+    },
+    {
+      "id": "class:CoinGeckoAPI.get_ohlc",
+      "type": "method",
+      "line": 949,
+      "parent": "CoinGeckoAPI"
+    },
+    {
+      "id": "class:CoinGeckoAPI.generate_plot",
+      "type": "method",
+      "line": 975,
+      "parent": "CoinGeckoAPI"
+    },
+    {
+      "id": "class:BinanceAPI",
+      "type": "class",
+      "line": 1407,
+      "module": "app"
+    },
+    {
+      "id": "class:BinanceAPI.__init__",
+      "type": "method",
+      "line": 1408,
+      "parent": "BinanceAPI"
+    },
+    {
+      "id": "class:BinanceAPI.get_all_symbols",
+      "type": "method",
+      "line": 1412,
+      "parent": "BinanceAPI"
+    },
+    {
+      "id": "class:BinanceAPI.get_historical_klines",
+      "type": "method",
+      "line": 1434,
+      "parent": "BinanceAPI"
+    },
+    {
+      "id": "class:BinanceAPI.get_daily_returns",
+      "type": "method",
+      "line": 1471,
+      "parent": "BinanceAPI"
+    },
+    {
+      "id": "class:BinanceAPI.get_available_crypto_pairs",
+      "type": "method",
+      "line": 1499,
+      "parent": "BinanceAPI"
+    }
+  ],
+  "edges": [
+    {
+      "source": "function:add_test_logs",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:add_test_logs",
+      "target": "function:get_host_id"
+    },
+    {
+      "source": "function:get_db",
+      "target": "function:init_db_connection"
+    },
+    {
+      "source": "function:migrate_database_safe",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:log_message",
+      "target": "function:get_host_id"
+    },
+    {
+      "source": "function:log_message",
+      "target": "function:migrate_database_safe"
+    },
+    {
+      "source": "function:init_db",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:verify_telegram_authentication",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:load_crypto_list",
+      "target": "function:load_full_crypto_list_async"
+    },
+    {
+      "source": "function:get_user_from_db",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:get_user_from_db",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:update_user_last_login",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:update_user_last_login",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:update_user_last_login",
+      "target": "function:get_host_id"
+    },
+    {
+      "source": "function:create_crypto_request",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:create_crypto_request",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:create_crypto_request",
+      "target": "function:get_host_id"
+    },
+    {
+      "source": "function:mark_request_as_error",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:mark_request_as_error",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:mark_request_as_error",
+      "target": "function:get_host_id"
+    },
+    {
+      "source": "function:get_pending_requests_count",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:get_pending_requests_count",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:get_processing_requests_count",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:get_processing_requests_count",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:get_latest_finished_request",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:get_latest_finished_request",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:get_user_requests_history",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:get_user_requests_history",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:process_pending_requests",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:process_pending_requests",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:calculate_correlation_with_btc",
+      "target": "function:get_historical_price_data"
+    },
+    {
+      "source": "function:calculate_correlation_with_btc",
+      "target": "function:get_correlation_strength"
+    },
+    {
+      "source": "function:calculate_multiple_correlations",
+      "target": "function:calculate_correlation_with_btc"
+    },
+    {
+      "source": "function:calculate_multiple_correlations_with_retry",
+      "target": "function:calculate_correlation_with_btc"
+    },
+    {
+      "source": "function:calculate_correlation_with_btc_binance",
+      "target": "function:get_daily_returns"
+    },
+    {
+      "source": "function:calculate_correlation_with_btc_binance",
+      "target": "function:get_correlation_strength"
+    },
+    {
+      "source": "function:get_daily_returns",
+      "target": "function:get_historical_klines"
+    },
+    {
+      "source": "function:calculate_multiple_correlations_binance",
+      "target": "function:get_available_crypto_pairs"
+    },
+    {
+      "source": "function:calculate_multiple_correlations_binance",
+      "target": "function:calculate_correlation_with_btc_binance"
+    },
+    {
+      "source": "function:get_available_crypto_pairs",
+      "target": "function:get_all_symbols"
+    },
+    {
+      "source": "function:telegram_auth",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:telegram_auth",
+      "target": "function:verify_telegram_authentication"
+    },
+    {
+      "source": "function:telegram_auth",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:telegram_auth",
+      "target": "function:get_host_id"
+    },
+    {
+      "source": "function:logout",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:disconnect_db",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:connect_db",
+      "target": "function:init_db_connection"
+    },
+    {
+      "source": "function:connect_db",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:get_request_status",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:index",
+      "target": "function:process_pending_requests"
+    },
+    {
+      "source": "function:index",
+      "target": "function:load_crypto_list"
+    },
+    {
+      "source": "function:index",
+      "target": "function:get_user_from_db"
+    },
+    {
+      "source": "function:index",
+      "target": "function:get_user_requests_history"
+    },
+    {
+      "source": "function:index",
+      "target": "function:get_pending_requests_count"
+    },
+    {
+      "source": "function:index",
+      "target": "function:get_processing_requests_count"
+    },
+    {
+      "source": "function:index",
+      "target": "function:create_crypto_request"
+    },
+    {
+      "source": "function:index",
+      "target": "function:update_user_last_login"
+    },
+    {
+      "source": "function:index",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:show_crypto_table",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:chart",
+      "target": "function:load_crypto_list"
+    },
+    {
+      "source": "function:chart",
+      "target": "function:get_ohlc"
+    },
+    {
+      "source": "function:chart",
+      "target": "function:generate_plot"
+    },
+    {
+      "source": "function:chart",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:candlestick_chart",
+      "target": "function:load_crypto_list"
+    },
+    {
+      "source": "function:candlestick_chart",
+      "target": "function:get_ohlc"
+    },
+    {
+      "source": "function:candlestick_chart",
+      "target": "function:generate_plot"
+    },
+    {
+      "source": "function:candlestick_chart",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:show_log_table",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:show_users_table",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:show_users_table",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:show_requests_table",
+      "target": "function:get_db"
+    },
+    {
+      "source": "function:show_requests_table",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:show_main_crypto_rates_to_btc",
+      "target": "function:get_main_crypto_rates_to_btc"
+    },
+    {
+      "source": "function:show_main_crypto_rates_to_btc",
+      "target": "function:load_crypto_list"
+    },
+    {
+      "source": "function:show_main_crypto_rates_to_btc",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:show_next_crypto_rates_to_btc",
+      "target": "function:load_crypto_list"
+    },
+    {
+      "source": "function:show_next_crypto_rates_to_btc",
+      "target": "function:get_main_crypto_rates_to_btc"
+    },
+    {
+      "source": "function:show_next_crypto_rates_to_btc",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:historical_data",
+      "target": "function:load_crypto_list"
+    },
+    {
+      "source": "function:historical_data",
+      "target": "function:get_historical_price_range"
+    },
+    {
+      "source": "function:historical_data",
+      "target": "function:generate_historical_plot"
+    },
+    {
+      "source": "function:historical_data",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:correlation_analysis",
+      "target": "function:load_crypto_list"
+    },
+    {
+      "source": "function:correlation_analysis",
+      "target": "function:calculate_multiple_correlations_with_retry"
+    },
+    {
+      "source": "function:correlation_analysis",
+      "target": "function:generate_correlation_plot"
+    },
+    {
+      "source": "function:correlation_analysis",
+      "target": "function:log_message"
+    },
+    {
+      "source": "function:correlation_binance",
+      "target": "function:calculate_multiple_correlations_binance"
+    },
+    {
+      "source": "function:correlation_binance",
+      "target": "function:generate_correlation_plot"
+    },
+    {
+      "source": "function:get_worker_status",
+      "target": "function:get_host_id"
+    },
+    {
+      "source": "function:run_migration",
+      "target": "function:migrate_database_safe"
+    },
+    {
+      "source": "class:CoinGeckoAPI",
+      "target": "class:CoinGeckoAPI.__init__"
+    },
+    {
+      "source": "class:CoinGeckoAPI",
+      "target": "class:CoinGeckoAPI.get_ohlc"
+    },
+    {
+      "source": "class:CoinGeckoAPI",
+      "target": "class:CoinGeckoAPI.generate_plot"
+    },
+    {
+      "source": "class:BinanceAPI",
+      "target": "class:BinanceAPI.__init__"
+    },
+    {
+      "source": "class:BinanceAPI",
+      "target": "class:BinanceAPI.get_all_symbols"
+    },
+    {
+      "source": "class:BinanceAPI",
+      "target": "class:BinanceAPI.get_historical_klines"
+    },
+    {
+      "source": "class:BinanceAPI",
+      "target": "class:BinanceAPI.get_daily_returns"
+    },
+    {
+      "source": "class:BinanceAPI",
+      "target": "class:BinanceAPI.get_available_crypto_pairs"
+    },
+    {
+      "source": "class:BinanceAPI.get_daily_returns",
+      "target": "function:get_historical_klines"
+    },
+    {
+      "source": "class:BinanceAPI.get_available_crypto_pairs",
+      "target": "function:get_all_symbols"
+    }
+  ]
+}
