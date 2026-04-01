@@ -26,20 +26,20 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">📈 Binance Correlation</a>
+            <a class="navbar-brand" href="{{ url_for('market.index') }}">📈 Binance Correlation</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">Главная</a>
+                        <a class="nav-link" href="{{ url_for('market.index') }}">Главная</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('correlation_binance') }}">Корреляция (Binance)</a>
+                        <a class="nav-link" href="{{ url_for('analytics.correlation_binance') }}">Корреляция (Binance)</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('historical_data') }}">История</a>
+                        <a class="nav-link" href="{{ url_for('analytics.historical_data') }}">История</a>
                     </li>
                 </ul>
                 {% if user %}
@@ -57,7 +57,7 @@
     <div class="container mt-4">
         <!-- Кнопка возврата на главную -->
         <div class="back-button">
-            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <a href="{{ url_for('market.index') }}" class="btn btn-secondary">
                 ← Назад на главную
             </a>
         </div>
@@ -123,7 +123,7 @@
                             <button type="submit" class="btn btn-primary">
                                 Рассчитать корреляцию
                             </button>
-                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary ms-2">
+                            <a href="{{ url_for('market.index') }}" class="btn btn-outline-secondary ms-2">
                                 ← На главную
                             </a>
                         </div>
@@ -281,7 +281,7 @@
 
         <!-- Дополнительная кнопка возврата в конце страницы -->
         <div class="mt-4 mb-4 text-center">
-            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+            <a href="{{ url_for('market.index') }}" class="btn btn-outline-secondary">
                 ← Вернуться на главную страницу
             </a>
         </div>
@@ -292,7 +292,7 @@
     <footer class="bg-dark text-light py-4 mt-5">
         <div class="container text-center">
             <p class="mb-0">Crypto Analysis App &copy; 2025 |
-                <a href="{{ url_for('index') }}" class="text-light">На главную</a> |
+                <a href="{{ url_for('market.index') }}" class="text-light">На главную</a> |
                 Данные предоставлены Binance API
             </p>
         </div>

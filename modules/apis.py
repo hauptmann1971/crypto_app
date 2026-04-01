@@ -12,8 +12,8 @@ import base64
 import plotly.graph_objs as go
 import plotly.utils
 import json
-import logging
 
+from modules.config import Config
 from modules.utils import get_correlation_strength, load_crypto_list
 import matplotlib
 
@@ -25,6 +25,8 @@ import matplotlib.dates as mdates
 class CoinGeckoAPI:
     def __init__(self):
         self.base_url = "https://api.coingecko.com/api/v3"
+        self.timeout_short = Config.API_TIMEOUT_SHORT
+        self.timeout_long = Config.API_TIMEOUT_LONG
 
     def get_ohlc(self, coin_id: str, vs_currency: str, days: str) -> Optional[pd.DataFrame]:
         """Получение OHLC данных"""
@@ -38,7 +40,7 @@ class CoinGeckoAPI:
                 'days': days
             }
 
-            response = requests.get(url, params=params, timeout=10)
+            response = requests.get(url, params=params, timeout=self.timeout_short)
             if response.status_code == 200:
                 data = response.json()
                 df = pd.DataFrame(data, columns=['timestamp', 'open', 'high', 'low', 'close'])

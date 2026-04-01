@@ -3,13 +3,13 @@ import time
 import requests
 import json
 import logging
-from sqlalchemy import create_engine, Column, Integer, String, Float, Text, BigInteger, Boolean, and_
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app import Base, CryptoRequest, CryptoRate, log_message # Импортируем CryptoRequest
+from modules.models import CryptoRequest, CryptoRate
 import os
 from dotenv import load_dotenv
 from contextlib import contextmanager
-from typing import Dict, Optional
+from typing import Dict, Any, Optional
 
 # Загрузка переменных окружения
 load_dotenv()
@@ -27,7 +27,7 @@ logging.basicConfig(
 class Config:
     DB_URI = f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
 
-def get_crypto_rate(crypto: str, currency: str) -> Dict[str, any]:
+def get_crypto_rate(crypto: str, currency: str) -> Dict[str, Any]:
     """Получает курс криптовалюты к валюте - ТОЛЬКО В WORKER"""
     try:
         # Валидация входных параметров

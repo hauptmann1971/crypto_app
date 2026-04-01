@@ -31,20 +31,20 @@
 <body>
      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="{{ url_for('index') }}">📝 Application Logs</a>
+        <a class="navbar-brand" href="{{ url_for('market.index') }}">📝 Application Logs</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('index') }}">← На главную</a>
+                    <a class="nav-link" href="{{ url_for('market.index') }}">← На главную</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('show_crypto_table') }}">Таблица курсов</a>
+                    <a class="nav-link" href="{{ url_for('market.show_crypto_table') }}">Таблица курсов</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('show_requests_table') }}">Очередь запросов</a>
+                    <a class="nav-link" href="{{ url_for('admin.show_requests_table') }}">Очередь запросов</a>
                 </li>
             </ul>
         </div>
@@ -63,12 +63,12 @@
         <div class="filter-buttons">
             <strong>Фильтр по уровню:</strong>
             {% for level in available_levels %}
-                <a href="{{ url_for('show_log_table', level=level) }}"
+                <a href="{{ url_for('admin.show_log_table', level=level) }}"
                    class="btn btn-outline-secondary btn-sm {% if current_level == level %}active{% endif %}">
                     {{ level|upper }}
                 </a>
             {% endfor %}
-            <a href="{{ url_for('show_log_table') }}" class="btn btn-outline-primary btn-sm">
+            <a href="{{ url_for('admin.show_log_table') }}" class="btn btn-outline-primary btn-sm">
                 Сбросить фильтры
             </a>
         </div>

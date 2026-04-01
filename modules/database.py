@@ -25,7 +25,7 @@ except ImportError as e:
     MODULES_IMPORTED = False
 
     # Создаем заглушки для автономной работы
-    from sqlalchemy.ext.declarative import declarative_base
+    from sqlalchemy.orm import declarative_base  # Обновлённый импорт
 
     Base = declarative_base()
 
@@ -62,7 +62,7 @@ class DatabaseManager:
         """Возвращает идентификатор хоста"""
         try:
             return socket.gethostname()[:50]
-        except:
+        except Exception:
             return "localhost"
 
     def _log(self, message: str, level: str = 'info'):

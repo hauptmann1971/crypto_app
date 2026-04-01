@@ -1,6 +1,6 @@
 # modules/models.py
 from sqlalchemy import Column, Integer, String, Float, Text, BigInteger, Boolean
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base  # Обновлённый импорт для SQLAlchemy 2.0+
 
 Base = declarative_base()
 

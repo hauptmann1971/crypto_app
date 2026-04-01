@@ -57,38 +57,38 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">📊 Crypto Rates</a>
+            <a class="navbar-brand" href="{{ url_for('market.index') }}">📊 Crypto Rates</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">Курсы</a>
+                        <a class="nav-link" href="{{ url_for('market.index') }}">Курсы</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('chart') }}">Графики</a>
+                        <a class="nav-link" href="{{ url_for('analytics.chart') }}">Графики</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('candlestick_chart') }}">Свечные графики</a>
+                        <a class="nav-link" href="{{ url_for('analytics.candlestick_chart') }}">Свечные графики</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('historical_data') }}">Исторические данные</a>
+                        <a class="nav-link active" href="{{ url_for('analytics.historical_data') }}">Исторические данные</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('show_crypto_table') }}">Таблица курсов</a>
+                        <a class="nav-link" href="{{ url_for('market.show_crypto_table') }}">Таблица курсов</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('show_requests_table') }}">Очередь запросов</a>
+                        <a class="nav-link" href="{{ url_for('admin.show_requests_table') }}">Очередь запросов</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('show_users_table') }}">Пользователи</a>
+                        <a class="nav-link" href="{{ url_for('admin.show_users_table') }}">Пользователи</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('show_log_table') }}">Логи</a>
+                        <a class="nav-link" href="{{ url_for('admin.show_log_table') }}">Логи</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('show_main_crypto_rates_to_btc') }}">Курсы к BTC</a>
+                        <a class="nav-link" href="{{ url_for('market.show_main_crypto_rates_to_btc') }}">Курсы к BTC</a>
                     </li>
                 </ul>
                 {% if user %}
@@ -98,9 +98,9 @@
                     <span class="text-muted">@{{ user.username }}</span>
                     {% endif %}
                 </div>
-                <a href="{{ url_for('logout') }}" class="btn btn-outline-light ms-2">Выйти</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light ms-2">Выйти</a>
                 {% else %}
-                <a href="{{ url_for('auth') }}" class="btn btn-outline-light">Авторизация</a>
+                <a href="{{ url_for('auth.auth') }}" class="btn btn-outline-light">Авторизация</a>
                 {% endif %}
             </div>
         </div>
@@ -111,7 +111,7 @@
 
         <!-- Кнопка возврата -->
         <div class="mb-3">
-            <a href="{{ url_for('index') }}" class="btn btn-secondary">← Назад к конвертеру</a>
+            <a href="{{ url_for('market.index') }}" class="btn btn-secondary">← Назад к конвертеру</a>
         </div>
 
         <!-- Форма выбора параметров -->

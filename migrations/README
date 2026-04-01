@@ -1,0 +1,8 @@
+Generic single-database configuration with an async dbapi.
+
+Команды Alembic:
+    alembic revision --autogenerate -m "описание"  # Создать миграцию
+    alembic upgrade head                            # Применить миграции
+    alembic downgrade -1                            # Откатить последнюю
+    alembic current                                 # Текущая ревизия
+    alembic history                                 # История миграций

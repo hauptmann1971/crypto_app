@@ -144,7 +144,7 @@
             {% endwith %}
 
             <!-- Форма ввода кода подтверждения -->
-            <form method="POST" action="{{ url_for('verify_code') }}">
+            <form method="POST" action="{{ url_for('auth.verify_code') }}">
                 <input type="hidden" name="phone_number" value="{{ phone_number }}">
                 
                 <div class="mb-4">
@@ -174,7 +174,7 @@
                         {% endif %}
                     </div>
                     {% if code_expired %}
-                        <a href="{{ url_for('auth') }}" class="btn btn-outline-primary btn-sm">
+                        <a href="{{ url_for('auth.auth') }}" class="btn btn-outline-primary btn-sm">
                             Запросить новый код
                         </a>
                     {% else %}
@@ -189,11 +189,11 @@
                         ✅ Подтвердить и войти
                     </button>
                     
-                    <a href="{{ url_for('auth') }}" class="btn btn-outline-secondary">
+                    <a href="{{ url_for('auth.auth') }}" class="btn btn-outline-secondary">
                         ← Изменить номер телефона
                     </a>
                     
-                    <a href="{{ url_for('index') }}" class="btn btn-link text-muted">
+                    <a href="{{ url_for('market.index') }}" class="btn btn-link text-muted">
                         ← Назад к курсам
                     </a>
                 </div>
@@ -270,7 +270,7 @@
         // Кнопка повторной отправки
         if (resendBtn) {
             resendBtn.addEventListener('click', function() {
-                window.location.href = "{{ url_for('auth') }}";
+                window.location.href = "{{ url_for('auth.auth') }}";
             });
         }
 

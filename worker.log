@@ -1,0 +1,33 @@
+2026-04-01 10:53:13,619 - INFO - Worker: Инициализировано подключение к базе данных
+2026-04-01 10:53:13,619 - INFO - Worker: Запуск воркера обработки запросов
+2026-04-01 10:53:14,242 - INFO - Worker: Found processing request: ID=976, 0x/usd
+2026-04-01 10:53:14,290 - INFO - Worker: Processing request 976 for 0x/usd
+2026-04-01 10:53:14,290 - INFO - Worker: Calling API for 0x/usd
+2026-04-01 10:53:15,002 - INFO - Worker: Successfully processed request 976 - 0x/usd: 0.104788
+2026-04-01 10:53:15,122 - INFO - Worker: Found processing request: ID=977, bitcoin/usd
+2026-04-01 10:53:15,122 - INFO - Worker: Waiting 2.9s before API call
+2026-04-01 10:53:18,111 - INFO - Worker: Processing request 977 for bitcoin/usd
+2026-04-01 10:53:18,111 - INFO - Worker: Calling API for bitcoin/usd
+2026-04-01 10:53:18,576 - INFO - Worker: Successfully processed request 977 - bitcoin/usd: 68719
+2026-04-01 10:53:18,745 - INFO - Worker: Cleaned up 3 old requests
+2026-04-01 11:04:59,643 - INFO - Worker: Получен сигнал остановки
+2026-04-01 11:04:59,643 - INFO - Worker: Остановка воркера
+2026-04-01 12:46:55,431 - INFO - Worker: Инициализировано подключение к базе данных
+2026-04-01 12:46:55,432 - INFO - Worker: Запуск воркера обработки запросов
+2026-04-01 12:46:55,652 - INFO - Worker: Found processing request: ID=978, ethereum/usd
+2026-04-01 12:46:55,699 - INFO - Worker: Processing request 978 for ethereum/usd
+2026-04-01 12:46:55,699 - INFO - Worker: Calling API for ethereum/usd
+2026-04-01 12:46:59,717 - INFO - Worker: Successfully processed request 978 - ethereum/usd: 2129.76
+2026-04-01 13:44:51,971 - INFO - Worker: Инициализировано подключение к базе данных
+2026-04-01 13:44:51,972 - INFO - Worker: Запуск воркера обработки запросов
+2026-04-01 13:45:38,215 - INFO - Worker: Found processing request: ID=979, bitcoin/cny
+2026-04-01 13:45:38,260 - INFO - Worker: Processing request 979 for bitcoin/cny
+2026-04-01 13:45:38,261 - INFO - Worker: Calling API for bitcoin/cny
+2026-04-01 13:45:38,931 - INFO - Worker: Successfully processed request 979 - bitcoin/cny: 471040
+2026-04-01 14:09:46,545 - INFO - Worker: Cleaned up 1 old requests
+2026-04-01 14:48:06,017 - INFO - Worker: Инициализировано подключение к базе данных
+2026-04-01 14:48:06,017 - INFO - Worker: Запуск воркера обработки запросов
+2026-04-01 15:01:46,081 - INFO - Worker: Инициализировано подключение к базе данных
+2026-04-01 15:01:46,081 - INFO - Worker: Запуск воркера обработки запросов
+2026-04-01 15:02:05,882 - INFO - Worker: Инициализировано подключение к базе данных
+2026-04-01 15:02:05,882 - INFO - Worker: Запуск воркера обработки запросов

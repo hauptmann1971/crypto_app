@@ -1,14 +1,12 @@
 # modules/services.py
 import json
 import time
+import logging
 from typing import Optional, Dict, List, Any
 from sqlalchemy.exc import SQLAlchemyError
-from modules.database import get_db
-from modules.models import TelegramUser, CryptoRequest
-from modules.database import get_host_id
-from modules.app_logging import log_message
 
-import logging
+from modules.database import get_db, get_db_connection_active, get_host_id
+from modules.models import TelegramUser, CryptoRequest
 
 
 def get_user_from_db(telegram_id: int) -> Optional[Dict[str, Any]]:
@@ -17,7 +15,7 @@ def get_user_from_db(telegram_id: int) -> Optional[Dict[str, Any]]:
         with get_db() as db:
             user = db.query(TelegramUser).filter(
                 TelegramUser.telegram_id == telegram_id,
-                TelegramUser.is_active == True
+                TelegramUser.is_active.is_(True)  # SQLAlchemy-way
             ).first()
 
             if user:
@@ -53,8 +51,13 @@ def update_user_last_login(telegram_id: int):
         logging.error(f"Error updating user last login: {e}")
 
 
-def create_crypto_request(user_id: int, crypto: str, currency: str) -> int:
-    """Создает новый запрос в очереди и сразу помечает как processing"""
+def create_crypto_request(user_id: int, crypto: str, currency: str) -> Optional[int]:
+    """
+    Создает новый запрос в очереди и сразу помечает как processing.
+
+    Returns:
+        Optional[int]: ID созданного запроса или None при ошибке
+    """
     try:
         with get_db() as db:
             existing_request = db.query(CryptoRequest).filter(
@@ -77,11 +80,10 @@ def create_crypto_request(user_id: int, crypto: str, currency: str) -> int:
             )
             db.add(request)
             db.commit()
-            request_id = request.id
-            return request_id
+            return request.id
     except SQLAlchemyError as e:
         logging.error(f"Error creating crypto request: {e}")
-        return -1
+        return None
 
 
 def mark_request_as_error(request_id: int, error_message: str):
@@ -193,8 +195,7 @@ def get_user_requests_history(user_id: int, limit: int = 10) -> List[Dict[str, A
 def process_pending_requests():
     """Обрабатывает ТОЛЬКО СТАРЫЕ pending запросы"""
     try:
-        from modules.database import db_connection_active
-        if not db_connection_active:
+        if not get_db_connection_active():
             return
 
         with get_db() as db:

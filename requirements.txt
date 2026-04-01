@@ -1,27 +1,42 @@
-networkx
-gevent
-locust
 # requirements.txt
 # Основные зависимости Flask приложения
-Flask==2.3.3
-requests==2.31.0
-pandas==2.1.3
-numpy>=1.26.0
-matplotlib==3.7.2
-plotly==5.17.0
-scipy==1.11.3
-python-dotenv==1.0.0
-cachetools==5.3.1
-psutil==5.9.6
-SQLAlchemy==2.0.19
-Werkzeug==2.3.7
-pymysql
-gunicorn==21.2.0
-locust
 
-# Дополнительные зависимости для совместимости
+# Web Framework
+Flask==2.3.3
+Werkzeug==2.3.7
 click==8.1.6
 itsdangerous==2.1.2
 Jinja2==3.1.2
 MarkupSafe==2.1.3
+
+# Database
+SQLAlchemy==2.0.48
+pymysql
+
+# HTTP Requests
+requests==2.31.0
 tenacity==8.2.3
+
+# Data Processing
+pandas==2.0.3
+numpy==1.24.4
+scipy==1.11.4
+
+# Visualization
+matplotlib==3.7.3
+plotly==5.18.0
+
+# Configuration
+python-dotenv==1.0.0
+
+# Caching & Utils
+cachetools==5.3.1
+psutil==5.9.6
+
+# Server
+gunicorn==21.2.0
+gevent
+
+# Load Testing
+locust
+networkx
