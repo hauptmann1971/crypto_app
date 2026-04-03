@@ -1,95 +1,46 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Авторизация - Crypto App</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .auth-container {
-            max-width: 500px;
-            margin: 50px auto;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            background: white;
-        }
-        .telegram-icon {
-            font-size: 3rem;
-            color: #0088cc;
-            margin-bottom: 20px;
-        }
-        .instructions {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .divider {
-            text-align: center;
-            margin: 20px 0;
-            position: relative;
-        }
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #dee2e6;
-        }
-        .divider-text {
-            background: white;
-            padding: 0 15px;
-            color: #6c757d;
-        }
-    </style>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('market.index') }}">💰 Crypto Rates</a>
-        </div>
-    </nav>
+{% extends "base.html" %}
 
-    <div class="container">
-        <div class="auth-container">
-            <!-- Заголовок с иконкой Telegram -->
-            <div class="text-center">
-                <div class="telegram-icon">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+{% block title %}Авторизация - Crypto App{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body text-center p-5">
+                <!-- Telegram Icon -->
+                <div class="mb-4">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="#0088cc">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.78 5.42-.9 6.8-.06.67-.36.89-.89.56-2.45-1.83-3.57-2.98-5.79-4.78-.54-.45-.92-.68-.89-1.07.03-.39.43-.56.98-.4 3.87 1.56 5.57 2.47 8.39 4.01.38.21.67.1.77-.32.23-.85.78-3.57.9-5.08.07-.85-.25-1.18-.82-1.18-.27 0-.58.05-.92.12-1.37.45-7.92 3.14-8.07 3.19-.38.13-.74.19-1.08.19-.54 0-.8-.26-.8-.67 0-.34.23-.73.68-1.05 4.78-3.28 7.74-5.14 9.14-5.98 2.08-1.23 2.52-1.44 2.82-1.44.2 0 .65.04.94.31.29.27.28.8.25 1.13z"/>
                     </svg>
                 </div>
-                <h2 class="mb-4">Авторизация через Telegram</h2>
-            </div>
-
-            <!-- Flash сообщения -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <!-- Блок с инструкциями -->
-            <div class="instructions">
-                <h6>Как авторизоваться:</h6>
-                <ul class="mb-0 small">
-                    <li>Нажмите на кнопку "Авторизация через Telegram" ниже</li>
-                    <li>Разрешите доступ к вашему Telegram аккаунту</li>
-                    <li>После успешной авторизации вы будете перенаправлены на главную страницу</li>
-                </ul>
-            </div>
-
-            <!-- Контейнер для Telegram Widget -->
-            <div class="text-center mb-4">
-                <div id="telegram-widget-container">
+                
+                <h2 class="mb-3">Вход через Telegram</h2>
+                <p class="text-muted mb-4">Быстрая и безопасная авторизация</p>
+                
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- Instructions -->
+                <div class="bg-light p-3 rounded mb-4 text-start">
+                    <h6 class="fw-bold mb-2">📋 Как это работает:</h6>
+                    <ul class="small mb-0 ps-3">
+                        <li>Нажмите кнопку ниже</li>
+                        <li>Разрешите доступ к Telegram</li>
+                        <li>Автоматический вход в систему</li>
+                    </ul>
+                </div>
+                
+                <!-- Telegram Widget -->
+                <div id="telegram-widget-container" class="mb-4">
                     <script async src="https://telegram.org/js/telegram-widget.js?22"
                             data-telegram-login="{{ bot_username.replace('@', '') }}"
                             data-size="large"
@@ -97,128 +48,80 @@
                             data-request-access="write">
                     </script>
                 </div>
-            </div>
-
-            <!-- Разделитель -->
-            <div class="divider">
-                <span class="divider-text">или</span>
-            </div>
-
-            <!-- Альтернативные способы -->
-            <div class="text-center">
-                <a href="{{ url_for('market.index') }}" class="btn btn-outline-secondary">
-                    ← Вернуться на главную
-                </a>
-            </div>
-
-            <!-- Дополнительная информация -->
-            <div class="mt-4">
-                <div class="alert alert-info">
-                    <h6>💡 Зачем нужна авторизация?</h6>
-                    <ul class="mb-0 small">
-                        <li>Персонализированная история запросов</li>
-                        <li>Быстрый доступ к избранным парам</li>
-                        <li>Уведомления о изменениях курсов (в будущем)</li>
-                        <li>Синхронизация настроек между устройствами</li>
+                
+                <!-- Benefits -->
+                <div class="alert alert-info text-start small">
+                    <h6 class="fw-bold mb-2">💡 Преимущества:</h6>
+                    <ul class="mb-0 ps-3">
+                        <li>История запросов</li>
+                        <li>Избранные пары</li>
+                        <li>Персональные уведомления</li>
+                        <li>Синхронизация настроек</li>
                     </ul>
                 </div>
+                
+                <!-- Back Button -->
+                <a href="{{ url_for('market.index') }}" class="btn btn-outline-secondary mt-3">
+                    ← На главную
+                </a>
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <footer class="bg-dark text-light py-4 mt-5">
-        <div class="container text-center">
-            <p class="mb-0">Crypto Rates App &copy; 2024 | Real-time cryptocurrency rates</p>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        // Функция для обработки авторизации Telegram
-        function onTelegramAuth(user) {
-            console.log('Telegram auth callback received:', user);
-
-            const widgetContainer = document.getElementById('telegram-widget-container');
-            if (widgetContainer) {
-                widgetContainer.innerHTML = '<div class="text-center">⏳ Обработка авторизации...</div>';
+{% block extra_js %}
+<script>
+function onTelegramAuth(user) {
+    console.log('Telegram auth:', user);
+    
+    const container = document.getElementById('telegram-widget-container');
+    if (container) {
+        container.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Загрузка...</span></div><p class="mt-2">Обработка авторизации...</p>';
+    }
+    
+    fetch('/telegram-auth', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(user)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (window.CryptoApp && window.CryptoApp.showNotification) {
+                window.CryptoApp.showNotification('✅ Авторизация успешна! Перенаправление...', 'success');
             }
-
-            fetch('/telegram-auth', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(user)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Показываем сообщение об успехе
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
-                    alertDiv.innerHTML = `
-                        ✅ Авторизация прошла успешно! Перенаправление на главную страницу...
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    `;
-                    document.querySelector('.auth-container').insertBefore(alertDiv, document.querySelector('.auth-container').firstChild);
-
-                    // Перенаправляем на главную страницу через 1 секунду
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 1000);
-                } else {
-                    // Показываем сообщение об ошибке
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-                    alertDiv.innerHTML = `
-                        ❌ Ошибка авторизации: ${data.error}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    `;
-                    document.querySelector('.auth-container').insertBefore(alertDiv, document.querySelector('.auth-container').firstChild);
-
-                    // Восстанавливаем виджет
-                    restoreTelegramWidget();
-                }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-                const alertDiv = document.createElement('div');
-                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-                alertDiv.innerHTML = `
-                    ❌ Произошла ошибка при авторизации. Попробуйте еще раз.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                `;
-                document.querySelector('.auth-container').insertBefore(alertDiv, document.querySelector('.auth-container').firstChild);
-
-                restoreTelegramWidget();
-            });
-        }
-
-        function restoreTelegramWidget() {
-            const widgetContainer = document.getElementById('telegram-widget-container');
-            if (widgetContainer) {
-                widgetContainer.innerHTML = `
-                    <script async src="https://telegram.org/js/telegram-widget.js?22"
-                            data-telegram-login="{{ bot_username.replace('@', '') }}"
-                            data-size="large"
-                            data-onauth="onTelegramAuth(user)"
-                            data-request-access="write">
-                    <\/script>
-                `;
+            setTimeout(() => window.location.href = '/', 1000);
+        } else {
+            if (window.CryptoApp && window.CryptoApp.showNotification) {
+                window.CryptoApp.showNotification('❌ Ошибка: ' + data.error, 'error');
             }
+            restoreWidget();
         }
+    })
+    .catch(error => {
+        console.error('Auth error:', error);
+        if (window.CryptoApp && window.CryptoApp.showNotification) {
+            window.CryptoApp.showNotification('❌ Ошибка соединения. Попробуйте ещё раз.', 'error');
+        }
+        restoreWidget();
+    });
+}
 
-        // Автоматическое скрытие alert через 5 секунд
-        document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                setTimeout(function() {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
-                }, 5000);
-            });
-        });
-    </script>
-</body>
-</html>
+function restoreWidget() {
+    const container = document.getElementById('telegram-widget-container');
+    if (container) {
+        container.innerHTML = `
+            <script async src="https://telegram.org/js/telegram-widget.js?22"
+                    data-telegram-login="{{ bot_username.replace('@', '') }}"
+                    data-size="large"
+                    data-onauth="onTelegramAuth(user)"
+                    data-request-access="write">
+            <\/script>
+        `;
+    }
+}
+</script>
+{% endblock %}

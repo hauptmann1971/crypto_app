@@ -117,6 +117,7 @@
         <!-- Форма выбора параметров -->
         <div class="form-container">
             <form method="POST" class="row g-3" id="historicalForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="col-md-3">
                     <label for="crypto" class="form-label">Криптовалюта:</label>
                     <select class="form-select" id="crypto" name="crypto" required>

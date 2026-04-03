@@ -1,114 +1,23 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Конвертер криптовалют</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .rate-display {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .form-container {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .history-item {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .history-item:last-child {
-            border-bottom: none;
-        }
-        .status-pending, .status-processing { color: #007bff; }
-        .status-finished { color: #28a745; }
-        .status-error { color: #dc3545; }
-        /* Стиль для скроллируемого списка в модальном окне */
-        .modal-list-container {
-            max-height: 400px; /* Высота до появления скролла */
-            overflow-y: auto;
-        }
-    </style>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('market.index') }}">💰 Crypto Rates</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('market.index') }}">Курсы</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('analytics.chart') }}">Графики</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('market.show_crypto_table') }}">Таблица курсов</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('analytics.historical_data') }}">Исторические данные</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('analytics.correlation_analysis') }}">Корреляция с BTC (CoinGecko)</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('analytics.correlation_binance') }}">Корреляция с BTC (Binance)</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.show_requests_table') }}">Очередь запросов</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.show_users_table') }}">Пользователи</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.show_log_table') }}">Логи</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('market.show_main_crypto_rates_to_btc') }}">Курсы криптовалют к BTC</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                <li class="nav-item">
-                    <span class="nav-link text-light">
-                        <small>🕐 GMT+3: <span id="current-time"></span></small>
-                    </span>
-                </li>
-                </ul>
-                <!-- Информация о пользователе и ссылки на авторизацию -->
-                {% if user %}
-                <div class="user-info text-light">
-                    <span>{{ user.first_name }}</span>
-                    {% if user.username %}
-                    <span class="text-muted">@{{ user.username }}</span>
-                    {% endif %}
-                </div>
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light ms-2">Выйти</a>
-                {% else %}
-                <a href="{{ url_for('auth.auth') }}" class="btn btn-outline-light">Авторизация</a>
-                {% endif %}
-            </div>
-        </div>
-    </nav>
-    <div class="container mt-4">
-        <h1 class="mb-4">💰 Конвертер криптовалют</h1>
+{% extends "base.html" %}
+
+{% block title %}Конвертер криптовалют - Crypto App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4 text-center">💰 Конвертер криптовалют</h1>
+        
         <!-- Статус подключения к БД -->
         {% if not db_connected %}
         <div class="alert alert-danger" role="alert">
             ⚠️ Подключение к базе данных отключено. Некоторые функции могут не работать.
-            <form method="POST" action="{{ url_for('market.connect_db') }}" class="d-inline">
-                <button type="submit" class="btn btn-success btn-sm ms-2">Подключить</button>
+            <form method="POST" action="{{ url_for('market.connect_db') }}" class="d-inline ms-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="btn btn-success btn-sm">Подключить</button>
             </form>
         </div>
         {% endif %}
+        
         <!-- Flash сообщения -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -120,312 +29,312 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        <!-- Статистика -->
+        
+        <!-- Статистика пользователя -->
         {% if user %}
         <div class="row mb-3">
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="card bg-light">
-                    <div class="card-body">
-                        <h6 class="card-title">Pending запросы</h6>
-                        <p class="card-text">{{ pending_requests_count }}</p>
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Pending запросы</h6>
+                            <small class="text-muted">Ожидают обработки</small>
+                        </div>
+                        <span class="fs-3 fw-bold text-primary">{{ pending_requests_count }}</span>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="card bg-light">
-                    <div class="card-body">
-                        <h6 class="card-title">Processing запросы</h6>
-                        <p class="card-text">{{ processing_requests_count }}</p>
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Processing запросы</h6>
+                            <small class="text-muted">В обработке</small>
+                        </div>
+                        <span class="fs-3 fw-bold text-warning">{{ processing_requests_count }}</span>
                     </div>
                 </div>
             </div>
         </div>
         {% endif %}
-        <!-- Форма запроса -->
-        <div class="form-container">
-            <form method="POST" action="{{ url_for('market.index') }}">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label for="crypto" class="form-label">Криптовалюта</label>
-                        <select class="form-select" id="crypto" name="crypto" required>
-                            <option value="">Выберите криптовалюту...</option>
-                            <!-- Отображаем только первые 50 криптовалют -->
-                            {% for crypto in cryptos[:50] %}
-                                <option value="{{ crypto }}" {{'selected' if current_crypto == crypto }}>
-                                    {{ crypto.upper() }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                        <!-- Кнопка для открытия модального окна -->
-                        <button type="button" class="btn btn-link p-0 mt-1" data-bs-toggle="modal" data-bs-target="#cryptoModal">
-                            Показать все...
-                        </button>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="currency" class="form-label">Валюта</label>
-                        <select class="form-select" id="currency" name="currency" required>
-                            <option value="">Выберите валюту...</option>
-                            {% for currency in currencies %}
-                                <option value="{{ currency }}" {{ 'selected' if current_currency == currency }}>
-                                    {{ currency.upper() }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label>&nbsp;</label> <!-- Пустая метка для выравнивания -->
-                        <button type="submit" class="btn btn-primary w-100">
-                            Получить курс
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <!-- Модальное окно для остальных криптовалют -->
-        <div class="modal fade" id="cryptoModal" tabindex="-1" aria-labelledby="cryptoModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="cryptoModalLabel">Выберите криптовалюту</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <!-- Контейнер для списка с возможностью скролла -->
-                        <div class="modal-list-container">
-                            <ul class="list-group">
-                                <!-- Отображаем остальные криптовалюты (после первых 50) -->
-                                {% for crypto in cryptos[50:] %}
-                                    <li class="list-group-item list-group-item-action crypto-item" data-crypto="{{ crypto }}">
+        
+        <!-- Форма запроса курса -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">🚀 Запрос курса криптовалюты</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('market.index') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="crypto" class="form-label">Криптовалюта</label>
+                            <select class="form-select" id="crypto" name="crypto" required>
+                                <option value="">Выберите криптовалюту...</option>
+                                {% for crypto in cryptos[:50] %}
+                                    <option value="{{ crypto }}" {{ 'selected' if current_crypto == crypto }}>
                                         {{ crypto.upper() }}
-                                    </li>
+                                    </option>
                                 {% endfor %}
-                            </ul>
+                            </select>
+                            <button type="button" class="btn btn-link p-0 mt-1" data-bs-toggle="modal" data-bs-target="#cryptoModal">
+                                Показать все криптовалюты...
+                            </button>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="currency" class="form-label">Валюта</label>
+                            <select class="form-select" id="currency" name="currency" required>
+                                <option value="">Выберите валюту...</option>
+                                {% for currency in currencies %}
+                                    <option value="{{ currency }}" {{ 'selected' if current_currency == currency }}>
+                                        {{ currency.upper() }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                📊 Получить курс
+                            </button>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
-        <!-- Отображение результата последнего отправленного запроса -->
+        
+        <!-- Результат запроса -->
         {% if current_request_id %}
-        <div class="rate-display">
-            <!-- Заголовок "Результат запроса ID: ..." теперь мелкий и серый -->
-            <div class="text-muted small mb-3">📊 Результат запроса ID: {{ current_request_id }}</div>
-            <div id="request-result-container">
-                <div id="request-result-placeholder"></div>
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">📊 Результат запроса ID: {{ current_request_id }}</h5>
+            </div>
+            <div class="card-body">
+                <div id="request-result-container">
+                    <div id="request-result-placeholder" class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p class="text-muted mt-2">Загрузка данных...</p>
+                    </div>
+                </div>
             </div>
         </div>
         {% else %}
-        <div class="rate-display">
-            <!-- Заголовок "Результат запроса" теперь мелкий и серый -->
-            <div class="text-muted small mb-3">📊 Результат запроса</div>
-            <p>Запрос не отправлен.</p>
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">📊 Результат запроса</h5>
+            </div>
+            <div class="card-body text-center text-muted">
+                <p class="mb-0">Запрос ещё не отправлен. Выберите криптовалюту и валюту выше.</p>
+            </div>
         </div>
         {% endif %}
-
+        
         <!-- История запросов -->
         {% if user %}
         <div class="card mt-4">
             <div class="card-header">
-                <h5 class="card-title">📋 История ваших запросов</h5>
+                <h5 class="card-title mb-0">📋 История ваших запросов</h5>
             </div>
             <div class="card-body">
                 {% if requests_history %}
-                    {% for req in requests_history %}
-                    <div class="history-item">
-                        <strong>{{ req.crypto.upper() }} / {{ req.currency.upper() }}</strong> -
-                        Статус: <span class="status-{{ req.status }}">{{ req.status }}</span>
-                        {% if req.rate %} | Курс: {{ "%.8f"|format(req.rate) }} {% endif %}
-                        {% if req.error %} | Ошибка: {{ req.error }} {% endif %}
-                        <small class="text-muted">({{ req.created_at }})</small>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Пара</th>
+                                    <th>Статус</th>
+                                    <th>Курс</th>
+                                    <th>Дата</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for req in requests_history %}
+                                <tr>
+                                    <td><strong>{{ req.crypto.upper() }}/{{ req.currency.upper() }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-{% if req.status == 'finished' %}success{% elif req.status == 'error' %}danger{% else %}warning{% endif %}">
+                                            {{ req.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if req.rate %}
+                                            <span class="text-success">{{ "%.8f"|format(req.rate) }} {{ req.currency.upper() }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted small">{{ req.created_at }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                    {% endfor %}
                 {% else %}
-                    <p class="text-muted">История запросов пуста.</p>
+                    <p class="text-muted text-center mb-0">История запросов пуста.</p>
                 {% endif %}
             </div>
         </div>
         {% endif %}
     </div>
-    <footer class="bg-dark text-light py-4 mt-5">
-        <div class="container text-center">
-            <p class="mb-0">Crypto Rates App &copy; 2025 | Real-time cryptocurrency rates</p>
+</div>
+
+<!-- Модальное окно для выбора криптовалюты -->
+<div class="modal fade" id="cryptoModal" tabindex="-1" aria-labelledby="cryptoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cryptoModalLabel">🪙 Выберите криптовалюту</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group">
+                    {% for crypto in cryptos[50:] %}
+                        <button type="button" class="list-group-item list-group-item-action crypto-item" data-crypto="{{ crypto }}">
+                            {{ crypto.upper() }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
         </div>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Функция для получения статуса последнего запроса с повторными попытками
-        function fetchLastRequestStatus(requestId) {
-            if (!requestId) return;
+    </div>
+</div>
+{% endblock %}
 
-            const resultDiv = document.getElementById('request-result-placeholder');
-            if (!resultDiv) return;
+{% block extra_js %}
+<script>
+// Получение статуса запроса
+function fetchLastRequestStatus(requestId) {
+    if (!requestId) return;
 
-            let isChecking = true; // Флаг для остановки проверок
+    const resultDiv = document.getElementById('request-result-placeholder');
+    if (!resultDiv) return;
 
-            const checkStatus = () => {
-                if (!isChecking) return; // Если проверки остановлены, выходим
+    let isChecking = true;
 
-                fetch(`/request-status/${requestId}`)
-                 .then(response => {
-                     if (!response.ok) {
-                         throw new Error(`HTTP error! status: ${response.status}`);
-                     }
-                     return response.json();
-                 })
-                 .then(data => {
-                     if (!isChecking) return; // Проверяем флаг снова после получения данных
+    const checkStatus = async () => {
+        if (!isChecking) return;
 
-                     if (data.success) {
-                         let statusText = `Статус: ${data.status}`;
-                         let rateText = '';
-                         if (data.status === 'finished' && data.rate !== undefined) {
-                             // --- ИЗМЕНЕНИЕ: Отображение курса ---
-                             rateText = `<p class="fs-4 fw-bold text-primary">Курс: ${data.rate.toFixed(8)} ${data.currency.toUpperCase()}</p>`;
-                             // Останавливаем проверки, так как результат получен
-                             isChecking = false;
-                         } else if (data.status === 'error' && data.error) {
-                             statusText += ` | Ошибка: ${data.error}`;
-                             // Останавливаем проверки, так как ошибка
-                             isChecking = false;
-                         }
-                         // --- ИЗМЕНЕНИЕ: Отображение статуса ---
-                         resultDiv.innerHTML = `<p class="text-muted small">${statusText}</p>`;
-                         // Если курс был установлен, добавляем его после статуса
-                         if (rateText) {
-                             resultDiv.innerHTML += rateText;
-                         }
-                     } else {
-                         resultDiv.innerHTML = `<p class="text-danger small">Ошибка получения статуса: ${data.error || 'Неизвестная ошибка'}</p>`;
-                         // Останавливаем проверки при ошибке ответа от сервера
-                         isChecking = false;
-                     }
-                 })
-                 .catch(error => {
-                     console.error('Error fetching request status:', error);
-                     if (isChecking) { // Проверяем флаг, чтобы не перезаписать финальный результат
-                         resultDiv.innerHTML = '<p class="text-danger small">Ошибка загрузки статуса запроса.</p>';
-                         // Останавливаем проверки при ошибке сети/запроса
-                         isChecking = false;
-                     }
-                 });
-            };
+        try {
+            const response = await fetch(`/request-status/${requestId}`);
+            const data = await response.json();
 
-            // Вызываем проверку сразу
-            checkStatus();
-            // Устанавливаем интервал для повторной проверки каждые 2 секунды
-            const intervalId = setInterval(checkStatus, 2000);
+            if (!isChecking) return;
 
-            // Функция для остановки интервала (на всякий случай)
-            const stopChecking = () => {
+            if (data.success) {
+                let statusText = `Статус: ${data.status}`;
+                let rateHtml = '';
+                
+                if (data.status === 'finished' && data.rate !== undefined) {
+                    rateHtml = `
+                        <div class="alert alert-success mt-3">
+                            <h4 class="alert-heading">✅ Курс получен!</h4>
+                            <p class="mb-0 fs-4">
+                                <strong>1 ${data.crypto.toUpperCase()} = ${data.rate.toFixed(8)} ${data.currency.toUpperCase()}</strong>
+                            </p>
+                        </div>
+                    `;
+                    isChecking = false;
+                } else if (data.status === 'error' && data.error) {
+                    statusText += ` | Ошибка: ${data.error}`;
+                    rateHtml = `
+                        <div class="alert alert-danger mt-3">
+                            <h4 class="alert-heading">❌ Ошибка</h4>
+                            <p class="mb-0">${data.error}</p>
+                        </div>
+                    `;
+                    isChecking = false;
+                }
+                
+                resultDiv.innerHTML = `
+                    <p class="text-muted">${statusText}</p>
+                    ${rateHtml}
+                `;
+            } else {
+                resultDiv.innerHTML = `<div class="alert alert-danger">Ошибка: ${data.error || 'Неизвестная ошибка'}</div>`;
                 isChecking = false;
-                clearInterval(intervalId);
-            };
-
-            // Привязываем остановку проверок к событию разгрузки окна (переход по ссылке, закрытие вкладки)
-            // Это предотвращает выполнение запросов, когда страница уже не активна
-            window.addEventListener('beforeunload', stopChecking);
+            }
+        } catch (error) {
+            console.error('Error fetching request status:', error);
+            if (isChecking) {
+                resultDiv.innerHTML = '<div class="alert alert-warning">Ошибка загрузки статуса...</div>';
+                isChecking = false;
+            }
         }
+    };
 
-        // Запуск проверки при загрузке страницы, если есть ID запроса
-        document.addEventListener('DOMContentLoaded', function() {
-            // Обновляем селектор для поиска ID запроса, так как заголовок теперь div
-            const currentRequestIdElement = document.querySelector('div.rate-display div.text-muted.small'); // Находим элемент с ID запроса
-            if (currentRequestIdElement) {
-                const requestIdText = currentRequestIdElement.textContent; // Получаем текст "📊 Результат запроса ID: 123"
-                const requestIdMatch = requestIdText.match(/ID: (\d+)/); // Ищем число после "ID: "
-                if (requestIdMatch) {
-                    const requestId = parseInt(requestIdMatch[1], 10);
-                    if (!isNaN(requestId)) {
-                        fetchLastRequestStatus(requestId);
-                    }
-                }
-            }
+    checkStatus();
+    const intervalId = setInterval(checkStatus, 2000);
 
-            // Автоматическое закрытие алертов через 5 секунд
-            setTimeout(function() {
-                var alerts = document.querySelectorAll('.alert');
-                alerts.forEach(function(alert) {
-                    if (!alert.classList.contains('alert-dismissible')) return; // Только если есть кнопка закрытия
-                    var bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
-                });
+    window.addEventListener('beforeunload', () => {
+        isChecking = false;
+        clearInterval(intervalId);
+    });
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    // Автозакрытие алертов
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                alert.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => alert.remove(), 300);
             }, 5000);
+        });
+    }, 1000);
 
-            // --- Логика для модального окна ---
-            // Находим основной select
-            const cryptoSelect = document.getElementById('crypto');
-            if (!cryptoSelect) {
-                console.error("Элемент с ID 'crypto' не найден!");
-                return; // Прерываем выполнение, если select не найден
-            }
-
-            // Функция для добавления опции в select, если её нет
-            function addOptionToSelect(selectElement, value, text) {
-                // Проверяем, есть ли уже такая опция
-                const existingOption = Array.from(selectElement.options).find(option => option.value === value);
-                if (!existingOption) {
-                    const newOption = document.createElement('option');
-                    newOption.value = value;
-                    newOption.textContent = text;
-                    selectElement.appendChild(newOption);
-                } else {
-                    // Если опция уже есть, просто убедимся, что она выбрана
-                    existingOption.selected = true;
-                }
-            }
-
-            // Обработчик события 'shown.bs.modal' для #cryptoModal
-            // Это событие срабатывает после того, как модальное окно открыто и его DOM-содержимое доступно
-            document.getElementById('cryptoModal').addEventListener('shown.bs.modal', function () {
-                console.log("Модальное окно открыто, ищем .crypto-item"); // Отладка
-
-                // Находим все элементы списка *внутри* модального окна *сейчас*
-                const cryptoItems = this.querySelectorAll('.crypto-item');
-                console.log(`Найдено ${cryptoItems.length} элементов .crypto-item внутри модального окна`); // Отладка
-
-                cryptoItems.forEach(item => {
-                    // Убедимся, что обработчик не добавляется дважды
-                    // (хотя при каждом открытии модального окна он будет добавляться заново, но это нормально,
-                    // т.к. старые обработчики теряются при закрытии модального окна)
-                    item.addEventListener('click', function() {
-                        const selectedCrypto = this.getAttribute('data-crypto');
-                        const selectedCryptoText = this.textContent.trim(); // Берем текст из элемента списка
-                        console.log(`Клик по элементу в модальном окне: ${selectedCrypto}, текст: ${selectedCryptoText}`); // Отладка
-                        if (selectedCrypto) {
-                            // Добавляем опцию в основной select, если её там нет
-                            addOptionToSelect(cryptoSelect, selectedCrypto, selectedCryptoText);
-                            // Теперь устанавливаем значение (это сработает, так как опция теперь существует)
-                            cryptoSelect.value = selectedCrypto;
-                            console.log(`Установлено значение в #crypto: ${selectedCrypto}`); // Отладка
-                            // Закрываем модальное окно
-                            const modal = bootstrap.Modal.getInstance(this.closest('.modal'));
-                            if (modal) {
-                                modal.hide();
-                            }
+    // Обработка модального окна
+    const cryptoSelect = document.getElementById('crypto');
+    const cryptoModal = document.getElementById('cryptoModal');
+    
+    if (cryptoModal && cryptoSelect) {
+        cryptoModal.addEventListener('shown.bs.modal', function () {
+            const cryptoItems = this.querySelectorAll('.crypto-item');
+            
+            cryptoItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const selectedCrypto = this.getAttribute('data-crypto');
+                    const selectedCryptoText = this.textContent.trim();
+                    
+                    if (selectedCrypto) {
+                        // Проверяем наличие опции
+                        let existingOption = Array.from(cryptoSelect.options).find(opt => opt.value === selectedCrypto);
+                        
+                        if (!existingOption) {
+                            const newOption = document.createElement('option');
+                            newOption.value = selectedCrypto;
+                            newOption.textContent = selectedCryptoText;
+                            cryptoSelect.appendChild(newOption);
                         }
-                    });
+                        
+                        cryptoSelect.value = selectedCrypto;
+                        
+                        const modal = bootstrap.Modal.getInstance(cryptoModal);
+                        if (modal) modal.hide();
+                    }
                 });
             });
-
         });
-    </script>
-    <script>
-    function updateTime() {
-        const now = new Date();
-        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-        const gmt3 = new Date(utc + (3 * 3600000));
-        const timeString = gmt3.toLocaleTimeString('ru-RU', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        });
-        document.getElementById('current-time').textContent = timeString;
     }
-    updateTime();
-    setInterval(updateTime, 1000);
-    </script>
-</body>
-</html>
+
+    // Запуск проверки статуса если есть ID запроса
+    const requestIdElement = document.querySelector('.card-header.bg-primary');
+    if (requestIdElement) {
+        const match = requestIdElement.textContent.match(/ID: (\d+)/);
+        if (match) {
+            const requestId = parseInt(match[1], 10);
+            if (!isNaN(requestId)) {
+                fetchLastRequestStatus(requestId);
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

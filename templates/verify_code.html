@@ -145,6 +145,7 @@
 
             <!-- Форма ввода кода подтверждения -->
             <form method="POST" action="{{ url_for('auth.verify_code') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <input type="hidden" name="phone_number" value="{{ phone_number }}">
                 
                 <div class="mb-4">

@@ -31,3 +31,109 @@
 2026-04-01 15:01:47,243 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
 2026-04-01 15:02:06,881 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
 2026-04-01 15:02:06,941 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-01 15:56:29,064 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
+2026-04-01 15:56:29,125 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-01 16:20:10,811 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-01 16:20:10,815 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-01 16:20:13,438 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-01 16:20:13,442 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 14:50:33,434 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 14:50:33,436 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 14:50:36,247 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 14:50:36,250 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 14:58:11,610 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 14:58:11,611 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 14:58:14,419 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 14:58:14,421 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 14:58:28,647 - modules.app_logging - ERROR - [crypto_api.backend] User=None | Ошибка подключения к БД: Ошибка подключения: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'mysql-beget.com' ([Errno 11001] getaddrinfo failed)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-04-02 15:08:13,676 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:08:13,678 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:08:16,351 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:08:16,354 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:11:36,337 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:11:36,340 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:11:39,021 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:11:39,024 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:15:22,894 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:15:22,897 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:15:29,645 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:15:29,647 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:16:24,324 - modules.app_logging - ERROR - [crypto_api.backend] User=None | Ошибка подключения к БД: Ошибка подключения: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'mysql-beget.com' ([Errno 11001] getaddrinfo failed)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-04-02 15:17:07,091 - modules.app_logging - INFO - [crypto_api.backend] User=None | Сгенерирован свечной график для litecoin/jpy за 1 дней
+2026-04-02 15:17:30,093 - modules.app_logging - INFO - [crypto_api.backend] User=None | Сгенерирован исторический график для bitcoin/usd за период 2026-03-03 - 2026-04-02
+2026-04-02 15:22:28,519 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:22:28,521 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:22:35,269 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:22:35,271 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:23:54,984 - modules.app_logging - INFO - [crypto_api.backend] User=None | Сгенерирован график для stellar/usd за 7 дней
+2026-04-02 15:24:01,040 - modules.app_logging - INFO - [crypto_api.backend] User=None | Сгенерирован график для bitcoin/usd за 90 дней
+2026-04-02 15:27:04,669 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:27:04,671 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:27:11,421 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:27:11,423 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:28:05,620 - modules.app_logging - INFO - [crypto_api.backend] User=None | Сгенерирован график для bitcoin/usd за 7 дней
+2026-04-02 15:28:21,660 - modules.app_logging - INFO - [crypto_api.backend] User=None | Сгенерирован свечной график для bitcoin/usd за 1 дней
+2026-04-02 15:28:40,204 - modules.app_logging - ERROR - [crypto_api.backend] User=None | Ошибка подключения к БД: Ошибка подключения: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-04-02 15:29:01,471 - modules.app_logging - ERROR - [crypto_api.backend] User=None | Ошибка подключения к БД: Ошибка подключения: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-04-02 15:30:16,938 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:30:16,940 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:30:23,675 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:30:23,678 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:33:09,184 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:33:09,186 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:33:15,944 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:33:15,945 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:33:29,406 - modules.app_logging - ERROR - [crypto_api.backend] User=None | Ошибка подключения к БД: Ошибка подключения: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-04-02 15:43:09,005 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:43:09,007 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:43:11,837 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:43:11,840 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:48:35,697 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:48:35,699 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:48:42,778 - modules.app_logging - WARNING - [crypto_api.backend] User=None | Подключение к БД не удалось, приложение работает без БД
+2026-04-02 15:48:42,779 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:51:22,850 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
+2026-04-02 15:51:22,911 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:51:26,248 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
+2026-04-02 15:51:26,303 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:52:41,998 - modules.app_logging - ERROR - [crypto_api.backend] User=None | Ошибка подключения к БД: Ошибка подключения: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-04-02 15:53:01,465 - modules.app_logging - ERROR - [crypto_api.backend] User=None | Ошибка подключения к БД: Ошибка подключения: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-04-02 15:55:57,631 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
+2026-04-02 15:55:57,693 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:56:01,061 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
+2026-04-02 15:56:01,117 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 15:56:44,134 - modules.app_logging - ERROR - [crypto_api.backend] User=None | Ошибка подключения к БД: Ошибка подключения: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-04-02 15:57:31,539 - modules.app_logging - ERROR - [crypto_api.backend] User=None | Ошибка подключения к БД: Ошибка подключения: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-04-02 16:00:05,594 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
+2026-04-02 16:00:05,654 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 16:00:08,973 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
+2026-04-02 16:00:09,033 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 16:01:10,481 - modules.app_logging - ERROR - [crypto_api.backend] User=None | Ошибка подключения к БД: Ошибка подключения: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-04-02 16:03:23,937 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
+2026-04-02 16:03:23,997 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-02 16:04:09,261 - modules.app_logging - ERROR - [crypto_api.backend] User=None | Ошибка подключения к БД: Ошибка подключения: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-04-02 16:18:18,938 - modules.app_logging - ERROR - [crypto_api.backend] User=None | Ошибка подключения к БД: Ошибка подключения: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-04-03 10:29:17,655 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
+2026-04-03 10:29:17,715 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-03 10:29:20,944 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
+2026-04-03 10:29:21,000 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-03 10:30:58,164 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
+2026-04-03 10:30:58,221 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-03 10:31:01,361 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
+2026-04-03 10:31:01,423 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-03 10:31:58,001 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
+2026-04-03 10:31:58,058 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано
+2026-04-03 10:32:01,184 - modules.app_logging - INFO - [crypto_api.backend] User=None | База данных успешно инициализирована
+2026-04-03 10:32:01,239 - modules.app_logging - INFO - [crypto_api.backend] User=None | Приложение успешно инициализировано

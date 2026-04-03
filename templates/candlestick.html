@@ -84,6 +84,7 @@
         <!-- Форма выбора параметров -->
         <div class="form-container">
             <form method="POST" action="{{ url_for('analytics.candlestick_chart') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label for="crypto" class="form-label">Криптовалюта</label>

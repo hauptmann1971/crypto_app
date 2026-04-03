@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from flask import Flask
+from flask_wtf.csrf import CSRFProtect
 
 from modules.config import Config
 from modules.routes import register_routes
@@ -13,5 +14,9 @@ def create_app() -> Flask:
     app = Flask(__name__, template_folder=template_folder)
     app.secret_key = Config.SECRET_KEY
     app.config['JSON_SORT_KEYS'] = False
+    
+    # Инициализация CSRF защиты
+    csrf = CSRFProtect(app)
+    
     register_routes(app)
     return app
