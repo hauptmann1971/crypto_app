@@ -137,3 +137,8 @@
 2026-04-03 10:31:58,058 - modules.app_logging - INFO - [crypto_api.backend] User=None | ѕриложение успешно инициализировано
 2026-04-03 10:32:01,184 - modules.app_logging - INFO - [crypto_api.backend] User=None | Ѕаза данных успешно инициализирована
 2026-04-03 10:32:01,239 - modules.app_logging - INFO - [crypto_api.backend] User=None | ѕриложение успешно инициализировано
+2026-04-03 10:35:03,387 - modules.app_logging - INFO - [crypto_api.backend] User=None | Ѕаза данных успешно инициализирована
+2026-04-03 10:35:03,447 - modules.app_logging - INFO - [crypto_api.backend] User=None | ѕриложение успешно инициализировано
+2026-04-03 10:35:06,729 - modules.app_logging - INFO - [crypto_api.backend] User=None | Ѕаза данных успешно инициализирована
+2026-04-03 10:35:06,790 - modules.app_logging - INFO - [crypto_api.backend] User=None | ѕриложение успешно инициализировано
+2026-04-03 10:35:51,067 - modules.app_logging - INFO - [crypto_api.backend] User=None | Request created for ripple/usd (ID: 980)
